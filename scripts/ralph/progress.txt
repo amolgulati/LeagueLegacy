@@ -84,6 +84,23 @@ Started: 2026-01-08
   - Using animationDelay on skeleton items creates staggered entrance effect
   - Background colors (slate-700/50, slate-600) match actual content for smoother transition
 
+## 2026-01-08 - IMP-014: Add React Error Boundary
+- What was implemented:
+  - Created ErrorBoundary class component to catch rendering errors in child components
+  - Error state displays user-friendly message with error icon and "Try Again" button
+  - Collapsible error details section shows error message and component stack for debugging
+  - All errors logged to console via componentDidCatch
+  - App.tsx wraps main content area with ErrorBoundary
+- Files created:
+  - `frontend/src/components/ErrorBoundary.tsx` - React error boundary class component
+- Files modified:
+  - `frontend/src/App.tsx` - Import ErrorBoundary, wrap main content with ErrorBoundary
+- **Learnings:**
+  - React requires class components for error boundaries (hooks cannot catch errors)
+  - componentDidCatch lifecycle method captures error info for logging
+  - Providing both "Try Again" and error details gives users recovery options
+  - Error boundaries prevent white screen of death for JavaScript errors
+
 ## 2026-01-08 - IMP-015: API Documentation
 - What was implemented:
   - Created comprehensive ENDPOINTS.md file (~1000 lines)
