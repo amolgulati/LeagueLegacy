@@ -943,3 +943,36 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (frontend builds successfully, 204 backend tests passing)
 
 **Tests:** 204 backend tests passing, frontend builds and lint passes
+
+### IMP-013: Loading State Improvements ✅
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Added skeleton loader components for Seasons and Records pages
+- Updated loading states to show content structure instead of simple spinners
+- Verified HallOfFame.tsx already had skeleton loaders implemented
+
+**Files Modified:**
+- `frontend/src/components/LoadingStates.tsx` - Added 5 new skeleton components:
+  - SeasonCardSkeleton - Skeleton for individual season cards
+  - SeasonsGridSkeleton - Full grid skeleton for Seasons page
+  - RecordCardSkeleton - Skeleton for record cards
+  - LeaderboardSkeleton - Skeleton for leaderboard tables
+  - RecordsPageSkeleton - Full skeleton for Records page
+- `frontend/src/pages/Seasons.tsx` - Use SeasonsGridSkeleton for loading state
+- `frontend/src/pages/Records.tsx` - Use RecordsPageSkeleton for loading state
+
+**Features:**
+- Shimmer animation effect on skeleton elements
+- Staggered entrance animations using animationDelay
+- Skeleton structure matches actual content layout
+- No white flash on initial page load
+
+**Acceptance Criteria Met:**
+- ✅ Seasons page shows skeleton loader while fetching data
+- ✅ Records page shows skeleton loader while fetching data
+- ✅ HallOfFame page shows skeleton loader while fetching data (already implemented)
+- ✅ No white flash on initial page load for any of these pages
+- ✅ typecheck passes (frontend builds successfully, 204 backend tests passing)
+
+**Tests:** 204 backend tests passing, frontend builds and lint passes

@@ -68,3 +68,19 @@ Started: 2026-01-08
   - README tables provide clear documentation for environment variables
   - Yahoo Developer Console requires specific redirect URI configuration
 
+## 2026-01-08 - IMP-013: Loading State Improvements
+- What was implemented:
+  - Added SeasonCardSkeleton and SeasonsGridSkeleton components for Seasons page
+  - Added RecordCardSkeleton, LeaderboardSkeleton, and RecordsPageSkeleton components for Records page
+  - Updated Seasons.tsx to use skeleton loader instead of simple spinner
+  - Updated Records.tsx to use skeleton loader instead of simple spinner
+  - Verified HallOfFame.tsx already had skeleton loaders implemented
+- Files modified:
+  - `frontend/src/components/LoadingStates.tsx` - Added 5 new skeleton components
+  - `frontend/src/pages/Seasons.tsx` - Use SeasonsGridSkeleton for loading state
+  - `frontend/src/pages/Records.tsx` - Use RecordsPageSkeleton for loading state
+- **Learnings:**
+  - Skeleton loaders provide better UX than simple spinners by showing content structure
+  - Using animationDelay on skeleton items creates staggered entrance effect
+  - Background colors (slate-700/50, slate-600) match actual content for smoother transition
+
