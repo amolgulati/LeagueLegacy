@@ -150,3 +150,32 @@ Otherwise, end normally after completing one story.
 - DELETE `/api/owners/{id}/mapping/{platform}` - Unlink a platform
 
 **Tests:** All 85 tests passing (14 models + 24 sleeper + 28 yahoo + 19 owners)
+
+
+### FLH-006: Build league history API endpoints ✅
+**Completed:** 2025-01-08
+
+**Implementation:**
+- Created league history API with comprehensive endpoints
+- Career stats aggregation across all seasons and platforms
+- Full owner history with season-by-season breakdown
+- Head-to-head rivalry statistics with matchup history
+
+**Files Created:**
+- `backend/app/api/history.py` - League history API endpoints
+- `backend/tests/test_history.py` - 16 comprehensive tests
+
+**API Endpoints:**
+- GET `/api/history/owners` - List all owners with career stats (sorted by wins)
+- GET `/api/history/owners/{id}` - Full history for one owner with season breakdown
+- GET `/api/history/seasons` - List all seasons with champions (filterable by league)
+- GET `/api/history/head-to-head/{owner1}/{owner2}` - Rivalry stats between two owners
+
+**Features:**
+- Win percentage calculations
+- Playoff and championship tracking
+- Cross-season head-to-head aggregation
+- Average scores in matchups
+- Matchup detail history
+
+**Tests:** All 101 tests passing (14 models + 24 sleeper + 28 yahoo + 19 owners + 16 history)
