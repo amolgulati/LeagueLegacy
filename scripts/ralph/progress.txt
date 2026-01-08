@@ -118,3 +118,18 @@ Started: 2026-01-07
   - Tests need unique session IDs to avoid cross-test pollution from file cache
   - Tests: 40 yahoo tests now passing (28 + 12 new)
   - Total backend tests: 184 passing
+
+## 2025-01-10 - IMP-008
+- What was implemented: Full Yahoo Fantasy league import functionality with champion detection
+- Files changed:
+  - `backend/app/services/yahoo_service.py` - Added detect_and_set_champion(), import_full_league_with_champion(), import_historical_leagues()
+  - `backend/app/api/yahoo.py` - Added POST /api/yahoo/import/all endpoint, ImportHistoricalResponse model, updated ImportLeagueResponse
+  - `backend/tests/test_yahoo.py` - Added 10 new tests for import functionality
+- **Learnings:**
+  - Yahoo's API returns data from finished seasons via "is_finished" flag on league data
+  - Championship game is identified by is_playoffs=true AND is_consolation=false in the final week
+  - Historical imports use different "game_keys" for each NFL season (e.g., "449" for 2024, "423" for 2023)
+  - Import is idempotent - existing records are updated rather than duplicated
+  - Champion detection looks at the end_week matchups to find the championship game winner
+  - Tests: 50 yahoo tests now passing (40 + 10 new)
+  - Total backend tests: 194 passing

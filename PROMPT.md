@@ -729,3 +729,40 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (184 tests passing)
 
 **Tests:** 40 yahoo tests passing (28 + 12 new), 184 total backend tests passing
+
+### IMP-008: Import Yahoo Fantasy league data ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Added comprehensive import functionality for Yahoo Fantasy leagues
+- Champion detection identifies championship game winner from playoff matchups
+- Historical league import fetches data across multiple NFL seasons (2024-2019 by default)
+- Full import pipeline: league -> standings -> matchups -> trades -> champion
+
+**Files Modified:**
+- `backend/app/services/yahoo_service.py` - Added detect_and_set_champion(), import_full_league_with_champion(), import_historical_leagues()
+- `backend/app/api/yahoo.py` - Added POST /api/yahoo/import/all endpoint, updated ImportLeagueResponse with champion fields
+- `backend/tests/test_yahoo.py` - Added 10 new tests for import, champion detection, and historical import
+
+**API Endpoints:**
+- POST `/api/yahoo/import` - Import single league with champion detection
+- POST `/api/yahoo/import/all` - Import all leagues from user's history (multiple seasons)
+
+**Key Features:**
+- Imports standings (teams and owners) for each league
+- Imports all matchups/scores for each week
+- Imports trade history with player names
+- Detects and stores champion for completed seasons
+- Supports importing leagues from multiple NFL seasons via game_keys
+- Returns champion_team_id and champion_name in import response
+- Idempotent import - re-importing updates existing records without duplicates
+
+**Acceptance Criteria Met:**
+- ✅ Fetch and import leagues user has access to
+- ✅ Import standings for each season
+- ✅ Import matchups/scores for each week
+- ✅ Import trade history
+- ✅ All data stored in database with proper relationships
+- ✅ typecheck passes (194 tests passing)
+
+**Tests:** 50 yahoo tests passing (40 + 10 new), 194 total backend tests passing
