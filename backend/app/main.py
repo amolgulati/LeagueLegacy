@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db import init_db
 from app.api.sleeper import router as sleeper_router
 from app.api.yahoo import router as yahoo_router
+from app.api.owners import router as owners_router
 
 
 @asynccontextmanager
@@ -59,3 +60,4 @@ async def health():
 # Include routers
 app.include_router(sleeper_router)
 app.include_router(yahoo_router)
+app.include_router(owners_router)
