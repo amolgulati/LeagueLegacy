@@ -8,6 +8,7 @@ Tests cover:
 
 import json
 from datetime import datetime
+from typing import Optional
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -323,6 +324,95 @@ class TestSleeperClient:
 
 
 # ============================================================================
+# Multi-Season Historical Import Fixtures
+# ============================================================================
+
+
+def make_league_data(league_id: str, year: str, prev_id: Optional[str] = None) -> dict:
+    """Helper to create league data for a specific year."""
+    return {
+        "league_id": league_id,
+        "name": "Test Fantasy League",
+        "season": year,
+        "total_rosters": 10,
+        "status": "complete",
+        "scoring_settings": {"rec": 1},
+        "settings": {
+            "playoff_week_start": 15,
+            "playoff_teams": 6,
+        },
+        "previous_league_id": prev_id,
+    }
+
+
+def make_users_data() -> list[dict]:
+    """Helper to create users data."""
+    return [
+        {
+            "user_id": "user_001",
+            "username": "testuser1",
+            "display_name": "Test User 1",
+            "avatar": "avatar123",
+        },
+        {
+            "user_id": "user_002",
+            "username": "testuser2",
+            "display_name": "Test User 2",
+            "avatar": "avatar456",
+        },
+    ]
+
+
+def make_rosters_data(year: int) -> list[dict]:
+    """Helper to create rosters data with year-specific stats."""
+    base_wins = 10 if year == 2023 else (8 if year == 2022 else 6)
+    return [
+        {
+            "roster_id": 1,
+            "owner_id": "user_001",
+            "settings": {
+                "wins": base_wins,
+                "losses": 14 - base_wins,
+                "ties": 0,
+                "fpts": 1500 + (year - 2020) * 10,
+                "fpts_decimal": 50,
+                "fpts_against": 1400,
+                "fpts_against_decimal": 25,
+            },
+        },
+        {
+            "roster_id": 2,
+            "owner_id": "user_002",
+            "settings": {
+                "wins": base_wins - 2,
+                "losses": 14 - base_wins + 2,
+                "ties": 0,
+                "fpts": 1400 + (year - 2020) * 10,
+                "fpts_decimal": 75,
+                "fpts_against": 1350,
+                "fpts_against_decimal": 0,
+            },
+        },
+    ]
+
+
+def make_matchups_data(year: int) -> list[dict]:
+    """Helper to create matchups data with year-specific scores."""
+    return [
+        {
+            "roster_id": 1,
+            "matchup_id": 1,
+            "points": 125.5 + (year - 2020),
+        },
+        {
+            "roster_id": 2,
+            "matchup_id": 1,
+            "points": 110.25 + (year - 2020),
+        },
+    ]
+
+
+# ============================================================================
 # SleeperService Tests
 # ============================================================================
 
@@ -474,7 +564,7 @@ class TestSleeperService:
         assert "1" in assets or "2" in assets
 
     @pytest.mark.asyncio
-    async def test_import_full_league(
+    async def test_import_full_league_single_season(
         self,
         db_session: Session,
         mock_league_data,
@@ -483,7 +573,7 @@ class TestSleeperService:
         mock_matchups_data,
         mock_transactions_data,
     ):
-        """Test full league import."""
+        """Test full league import with a single season (no history)."""
         mock_client = AsyncMock(spec=SleeperClient)
         mock_client.get_league.return_value = mock_league_data
         mock_client.get_users.return_value = mock_users_data
@@ -492,15 +582,203 @@ class TestSleeperService:
         mock_client.get_all_trades_for_season.return_value = [
             t for t in mock_transactions_data if t.get("type") == "trade"
         ]
+        # Single season - no previous league
+        mock_client.get_league_history_chain.return_value = ["123456789"]
 
         service = SleeperService(db_session, mock_client)
         result = await service.import_full_league("123456789", total_weeks=1)
 
         assert result["league_name"] == "Test Fantasy League"
-        assert result["season_year"] == 2023
+        assert result["seasons_imported"] == 1
+        assert result["seasons"][0]["season_year"] == 2023
         assert result["teams_imported"] == 2
         assert result["matchups_imported"] == 1
         assert result["trades_imported"] == 1
+
+    @pytest.mark.asyncio
+    async def test_import_full_league_multiple_seasons(
+        self,
+        db_session: Session,
+    ):
+        """Test full league import with multiple historical seasons."""
+        # Create mock data for 3 seasons: 2023 -> 2022 -> 2021
+        league_2023 = make_league_data("league_2023", "2023", "league_2022")
+        league_2022 = make_league_data("league_2022", "2022", "league_2021")
+        league_2021 = make_league_data("league_2021", "2021", None)
+
+        users = make_users_data()
+
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_league_history_chain.return_value = [
+            "league_2023", "league_2022", "league_2021"
+        ]
+
+        # Return different league data based on league_id
+        def get_league_side_effect(league_id: str):
+            if league_id == "league_2023":
+                return league_2023
+            elif league_id == "league_2022":
+                return league_2022
+            else:
+                return league_2021
+
+        mock_client.get_league.side_effect = get_league_side_effect
+        mock_client.get_users.return_value = users
+
+        # Return year-specific rosters based on the league_id
+        def get_rosters_side_effect(league_id: str):
+            year = int(league_id.split("_")[1])
+            return make_rosters_data(year)
+
+        mock_client.get_rosters.side_effect = get_rosters_side_effect
+
+        # Return year-specific matchups
+        def get_matchups_side_effect(league_id: str, total_weeks: int):
+            year = int(league_id.split("_")[1])
+            return {1: make_matchups_data(year)}
+
+        mock_client.get_all_matchups_for_season.side_effect = get_matchups_side_effect
+        mock_client.get_all_trades_for_season.return_value = []
+
+        service = SleeperService(db_session, mock_client)
+        result = await service.import_full_league("league_2023", total_weeks=1)
+
+        # Verify all seasons were imported
+        assert result["seasons_imported"] == 3
+        assert result["league_name"] == "Test Fantasy League"
+
+        # Verify totals across all seasons
+        assert result["teams_imported"] == 6  # 2 teams x 3 seasons
+        assert result["matchups_imported"] == 3  # 1 matchup x 3 seasons
+
+        # Verify each season was imported with correct year
+        season_years = [s["season_year"] for s in result["seasons"]]
+        assert 2023 in season_years
+        assert 2022 in season_years
+        assert 2021 in season_years
+
+        # Verify database has the right number of seasons
+        seasons = db_session.query(Season).all()
+        assert len(seasons) == 3
+
+        # Verify only ONE league record (not 3)
+        leagues = db_session.query(League).all()
+        assert len(leagues) == 1
+        assert leagues[0].name == "Test Fantasy League"
+
+    @pytest.mark.asyncio
+    async def test_import_full_league_idempotent(
+        self,
+        db_session: Session,
+    ):
+        """Test that re-importing the same league doesn't create duplicates."""
+        # Single season for simplicity
+        league_data = make_league_data("league_2023", "2023", None)
+        users = make_users_data()
+        rosters = make_rosters_data(2023)
+        matchups = make_matchups_data(2023)
+
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_league_history_chain.return_value = ["league_2023"]
+        mock_client.get_league.return_value = league_data
+        mock_client.get_users.return_value = users
+        mock_client.get_rosters.return_value = rosters
+        mock_client.get_all_matchups_for_season.return_value = {1: matchups}
+        mock_client.get_all_trades_for_season.return_value = []
+
+        service = SleeperService(db_session, mock_client)
+
+        # First import
+        result1 = await service.import_full_league("league_2023", total_weeks=1)
+
+        # Record counts after first import
+        leagues_count_1 = db_session.query(League).count()
+        seasons_count_1 = db_session.query(Season).count()
+        teams_count_1 = db_session.query(Team).count()
+        matchups_count_1 = db_session.query(Matchup).count()
+        owners_count_1 = db_session.query(Owner).count()
+
+        # Second import (same league)
+        result2 = await service.import_full_league("league_2023", total_weeks=1)
+
+        # Record counts after second import should be identical
+        leagues_count_2 = db_session.query(League).count()
+        seasons_count_2 = db_session.query(Season).count()
+        teams_count_2 = db_session.query(Team).count()
+        matchups_count_2 = db_session.query(Matchup).count()
+        owners_count_2 = db_session.query(Owner).count()
+
+        # Verify no duplicates were created
+        assert leagues_count_1 == leagues_count_2 == 1
+        assert seasons_count_1 == seasons_count_2 == 1
+        assert teams_count_1 == teams_count_2 == 2
+        assert matchups_count_1 == matchups_count_2 == 1
+        assert owners_count_1 == owners_count_2 == 2
+
+        # Both imports should return same data
+        assert result1["seasons_imported"] == result2["seasons_imported"]
+        assert result1["teams_imported"] == result2["teams_imported"]
+
+    @pytest.mark.asyncio
+    async def test_import_full_league_multiple_seasons_idempotent(
+        self,
+        db_session: Session,
+    ):
+        """Test that re-importing multiple seasons doesn't create duplicates."""
+        # Create mock data for 2 seasons: 2023 -> 2022
+        league_2023 = make_league_data("league_2023", "2023", "league_2022")
+        league_2022 = make_league_data("league_2022", "2022", None)
+
+        users = make_users_data()
+
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_league_history_chain.return_value = ["league_2023", "league_2022"]
+
+        def get_league_side_effect(league_id: str):
+            if league_id == "league_2023":
+                return league_2023
+            return league_2022
+
+        mock_client.get_league.side_effect = get_league_side_effect
+        mock_client.get_users.return_value = users
+
+        def get_rosters_side_effect(league_id: str):
+            year = int(league_id.split("_")[1])
+            return make_rosters_data(year)
+
+        mock_client.get_rosters.side_effect = get_rosters_side_effect
+
+        def get_matchups_side_effect(league_id: str, total_weeks: int):
+            year = int(league_id.split("_")[1])
+            return {1: make_matchups_data(year)}
+
+        mock_client.get_all_matchups_for_season.side_effect = get_matchups_side_effect
+        mock_client.get_all_trades_for_season.return_value = []
+
+        service = SleeperService(db_session, mock_client)
+
+        # First import
+        await service.import_full_league("league_2023", total_weeks=1)
+
+        # Record counts after first import
+        leagues_count_1 = db_session.query(League).count()
+        seasons_count_1 = db_session.query(Season).count()
+        teams_count_1 = db_session.query(Team).count()
+        owners_count_1 = db_session.query(Owner).count()
+
+        # Second import (should not create duplicates)
+        await service.import_full_league("league_2023", total_weeks=1)
+
+        # Record counts should be unchanged
+        leagues_count_2 = db_session.query(League).count()
+        seasons_count_2 = db_session.query(Season).count()
+        teams_count_2 = db_session.query(Team).count()
+        owners_count_2 = db_session.query(Owner).count()
+
+        assert leagues_count_1 == leagues_count_2 == 1  # Only ONE league
+        assert seasons_count_1 == seasons_count_2 == 2  # 2 seasons
+        assert teams_count_1 == teams_count_2 == 4  # 2 teams x 2 seasons
+        assert owners_count_1 == owners_count_2 == 2  # Only 2 unique owners
 
 
 # ============================================================================

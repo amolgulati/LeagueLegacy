@@ -77,19 +77,23 @@ class SleeperService:
         return league
 
     async def import_season(
-        self, league_id: str, year: Optional[int] = None
+        self, league_id: str, year: Optional[int] = None, league: Optional[League] = None
     ) -> Season:
         """Import or update a season from Sleeper.
 
         Args:
-            league_id: The Sleeper league ID.
+            league_id: The Sleeper league ID (for this specific season).
             year: Optional year override (fetches from API if not provided).
+            league: Optional League model to use. If not provided, creates/fetches
+                    one based on league_id. Pass this when importing historical
+                    seasons that should all belong to the same League record.
 
         Returns:
             The created or updated Season model.
         """
-        # Ensure league exists
-        league = await self.import_league(league_id)
+        # Ensure league exists (use provided league or create/fetch one)
+        if league is None:
+            league = await self.import_league(league_id)
 
         # Fetch league data to get season info
         league_data = await self.client.get_league(league_id)
@@ -118,17 +122,20 @@ class SleeperService:
 
         return season
 
-    async def import_users_and_rosters(self, league_id: str) -> list[Team]:
+    async def import_users_and_rosters(
+        self, league_id: str, league: Optional[League] = None
+    ) -> list[Team]:
         """Import users and rosters from Sleeper, creating owners and teams.
 
         Args:
             league_id: The Sleeper league ID.
+            league: Optional League model to use for the season.
 
         Returns:
             List of created/updated Team models.
         """
         # Ensure season exists
-        season = await self.import_season(league_id)
+        season = await self.import_season(league_id, league=league)
 
         # Fetch users and rosters
         users = await self.client.get_users(league_id)
@@ -216,19 +223,22 @@ class SleeperService:
 
         return teams
 
-    async def import_matchups(self, league_id: str, total_weeks: int = 18) -> list[Matchup]:
+    async def import_matchups(
+        self, league_id: str, total_weeks: int = 18, league: Optional[League] = None
+    ) -> list[Matchup]:
         """Import all matchups for a season from Sleeper.
 
         Args:
             league_id: The Sleeper league ID.
             total_weeks: Total number of weeks to import.
+            league: Optional League model to use for the season.
 
         Returns:
             List of created/updated Matchup models.
         """
         # Ensure teams exist
-        teams = await self.import_users_and_rosters(league_id)
-        season = teams[0].season if teams else await self.import_season(league_id)
+        teams = await self.import_users_and_rosters(league_id, league=league)
+        season = teams[0].season if teams else await self.import_season(league_id, league=league)
 
         # Build team lookup by roster_id (platform_team_id)
         team_lookup = {t.platform_team_id: t for t in teams}
@@ -324,19 +334,22 @@ class SleeperService:
 
         return matchups
 
-    async def import_trades(self, league_id: str, total_weeks: int = 18) -> list[Trade]:
+    async def import_trades(
+        self, league_id: str, total_weeks: int = 18, league: Optional[League] = None
+    ) -> list[Trade]:
         """Import all trades for a season from Sleeper.
 
         Args:
             league_id: The Sleeper league ID.
             total_weeks: Total number of weeks to check for trades.
+            league: Optional League model to use for the season.
 
         Returns:
             List of created/updated Trade models.
         """
         # Ensure teams exist
-        teams = await self.import_users_and_rosters(league_id)
-        season = teams[0].season if teams else await self.import_season(league_id)
+        teams = await self.import_users_and_rosters(league_id, league=league)
+        season = teams[0].season if teams else await self.import_season(league_id, league=league)
 
         # Build team lookup by roster_id
         team_lookup = {int(t.platform_team_id): t for t in teams if t.platform_team_id}
@@ -427,32 +440,79 @@ class SleeperService:
 
         return trades
 
-    async def import_full_league(
-        self, league_id: str, total_weeks: int = 18
+    async def import_single_season(
+        self, league_id: str, total_weeks: int = 18, league: Optional[League] = None
     ) -> dict:
-        """Import all data for a league from Sleeper.
-
-        This is the main entry point for importing a complete league,
-        including league info, users, rosters, matchups, and trades.
+        """Import data for a single season from Sleeper.
 
         Args:
-            league_id: The Sleeper league ID.
+            league_id: The Sleeper league ID for a specific season.
             total_weeks: Total number of weeks in the season.
+            league: Optional League model. If provided, all data for this season
+                    will be linked to this League record (used for historical imports).
 
         Returns:
-            Dictionary with counts of imported entities.
+            Dictionary with counts of imported entities for this season.
         """
-        league = await self.import_league(league_id)
-        season = await self.import_season(league_id)
-        teams = await self.import_users_and_rosters(league_id)
-        matchups = await self.import_matchups(league_id, total_weeks)
-        trades = await self.import_trades(league_id, total_weeks)
+        season = await self.import_season(league_id, league=league)
+        teams = await self.import_users_and_rosters(league_id, league=league)
+        matchups = await self.import_matchups(league_id, total_weeks, league=league)
+        trades = await self.import_trades(league_id, total_weeks, league=league)
 
         return {
-            "league_id": league.id,
-            "league_name": league.name,
             "season_year": season.year,
             "teams_imported": len(teams),
             "matchups_imported": len(matchups),
             "trades_imported": len(trades),
+        }
+
+    async def import_full_league(
+        self, league_id: str, total_weeks: int = 18
+    ) -> dict:
+        """Import all data for a league from Sleeper, including all historical seasons.
+
+        This is the main entry point for importing a complete league,
+        including league info, users, rosters, matchups, and trades
+        for ALL historical seasons (not just the current one).
+
+        Uses the league history chain to traverse previous_league_id links
+        and import data from each historical season.
+
+        Args:
+            league_id: The Sleeper league ID (typically the most recent season).
+            total_weeks: Total number of weeks in each season.
+
+        Returns:
+            Dictionary with counts of imported entities across all seasons.
+        """
+        # Get the chain of all historical league IDs (newest to oldest)
+        league_ids = await self.client.get_league_history_chain(league_id)
+
+        # Import the league record (uses first/current league ID)
+        league = await self.import_league(league_id)
+
+        # Track totals across all seasons
+        total_teams = 0
+        total_matchups = 0
+        total_trades = 0
+        seasons_imported: list[dict] = []
+
+        # Import each historical season (all linked to the same League record)
+        for historical_league_id in league_ids:
+            season_result = await self.import_single_season(
+                historical_league_id, total_weeks, league=league
+            )
+            total_teams += season_result["teams_imported"]
+            total_matchups += season_result["matchups_imported"]
+            total_trades += season_result["trades_imported"]
+            seasons_imported.append(season_result)
+
+        return {
+            "league_id": league.id,
+            "league_name": league.name,
+            "seasons_imported": len(seasons_imported),
+            "seasons": seasons_imported,
+            "teams_imported": total_teams,
+            "matchups_imported": total_matchups,
+            "trades_imported": total_trades,
         }
