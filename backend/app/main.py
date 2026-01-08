@@ -10,6 +10,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import init_db
+from app.api.sleeper import router as sleeper_router
 
 
 @asynccontextmanager
@@ -52,3 +53,7 @@ async def root():
 async def health():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+
+# Include routers
+app.include_router(sleeper_router)
