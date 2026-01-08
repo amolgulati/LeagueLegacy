@@ -1,0 +1,40 @@
+"""
+Fantasy League History Tracker - FastAPI Backend
+
+This API provides endpoints for tracking fantasy league history
+across Yahoo Fantasy and Sleeper platforms.
+"""
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(
+    title="Fantasy League History Tracker",
+    description="Unified fantasy league history tracking for Yahoo Fantasy and Sleeper",
+    version="0.1.0",
+)
+
+# Configure CORS for frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/")
+async def root():
+    """Root endpoint returning API info."""
+    return {
+        "name": "Fantasy League History Tracker API",
+        "version": "0.1.0",
+        "status": "running",
+    }
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint."""
+    return {"status": "healthy"}
