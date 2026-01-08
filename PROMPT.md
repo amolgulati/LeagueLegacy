@@ -354,3 +354,43 @@ Otherwise, end normally after completing one story.
 - ✅ Display trade frequency stats
 
 **Tests:** Frontend builds successfully, all 118 backend tests passing
+
+
+### FLH-012: Create league records page ✅
+**Completed:** 2025-01-09
+
+**Implementation:**
+- Created records API endpoint with comprehensive all-time statistics
+- Four main record categories: highest week score, most season points, longest win streak, most trades
+- Visually appealing frontend with gradient cards and medal rankings
+- Top 10 leaderboard tables for each record type
+
+**Files Created:**
+- `backend/app/api/records.py` - Records API with 4 record types + leaderboards
+- `backend/tests/test_records.py` - 9 comprehensive tests for records API
+- `frontend/src/pages/Records.tsx` - Records page with hero cards and leaderboards
+
+**Files Modified:**
+- `backend/app/main.py` - Include records_router
+- `frontend/src/App.tsx` - Added Records tab to navigation (trophy icon)
+
+**API Endpoints:**
+- GET `/api/records` - Returns all records with owner name, year, and details
+
+**Features:**
+- Hero cards for each record with colored gradient backgrounds
+- Top 10 leaderboard tables for weekly scores, season points, and win streaks
+- Medal rankings (gold/silver/bronze for top 3)
+- Owner name and year displayed for every record
+- Responsive 4-column grid for record cards
+- Empty state handling when no data exists
+- Loading and error states
+
+**Acceptance Criteria Met:**
+- ✅ Highest single-week score (all-time)
+- ✅ Most points in a season
+- ✅ Longest win streak
+- ✅ Most trades in a season
+- ✅ Records show owner name and year
+
+**Tests:** Frontend builds successfully, all 127 backend tests passing (118 previous + 9 new)

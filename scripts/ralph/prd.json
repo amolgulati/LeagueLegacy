@@ -148,7 +148,7 @@
         "Records show owner name and year"
       ],
       "priority": 12,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-013",

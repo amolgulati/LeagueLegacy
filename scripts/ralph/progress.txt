@@ -233,3 +233,27 @@ Started: 2025-01-07
   - useMemo is essential for filtering and transforming trade data efficiently
   - Trade partnerships require bidirectional counting (both owners in each trade)
   - Consistent key generation for partnerships prevents duplicates (use smaller ID first)
+
+## 2025-01-09 - FLH-012
+- What was implemented: League records page showing all-time achievements
+- Files changed:
+  - Created backend/app/api/records.py - Records API with 4 record types + leaderboards
+  - Created backend/tests/test_records.py - 9 comprehensive tests for records API
+  - Updated backend/app/main.py - Include records_router
+  - Created frontend/src/pages/Records.tsx - Visually appealing records display
+  - Updated frontend/src/App.tsx - Added Records tab to navigation
+- **API Endpoints:**
+  - GET `/api/records` - Returns all records: highest week score, most season points, longest win streak, most trades in season
+- **Features:**
+  - Hero cards for each record with gradient backgrounds
+  - Top 10 leaderboard tables for weekly scores, season points, and win streaks
+  - Medal rankings (gold/silver/bronze for top 3)
+  - Owner name and year displayed for every record
+  - Responsive 4-column grid for record cards
+  - Empty state handling when no data exists
+- **Learnings:**
+  - Weekly scores require iterating through all matchups to get individual team scores
+  - Team.longest_win_streak is already in the model, so win streak record is straightforward
+  - Trade counting per owner/season uses nested defaultdict for efficient aggregation
+  - Pydantic Optional fields default to None, simplifying empty database handling
+  - All 127 tests passing (118 previous + 9 new records tests)
