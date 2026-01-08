@@ -4,12 +4,16 @@ Tests cover:
 - SleeperClient API calls
 - SleeperService database operations
 - API endpoint functionality
+- Player cache functionality
 """
 
 import json
+import os
+import tempfile
+import time
 from datetime import datetime
 from typing import Optional
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -18,6 +22,7 @@ from sqlalchemy.orm import Session
 from app.db.models import League, Season, Team, Owner, Matchup, Trade, Platform
 from app.services.sleeper_client import SleeperClient
 from app.services.sleeper_service import SleeperService
+from app.services.player_cache import PlayerCache
 
 
 # ============================================================================
@@ -1000,3 +1005,280 @@ class TestEdgeCases:
         )
 
         assert league.scoring_type == "Standard"
+
+
+# ============================================================================
+# Player Cache Test Fixtures
+# ============================================================================
+
+
+@pytest.fixture
+def mock_players_data():
+    """Sample Sleeper players data (subset of actual response)."""
+    return {
+        "4046": {
+            "player_id": "4046",
+            "full_name": "Davante Adams",
+            "first_name": "Davante",
+            "last_name": "Adams",
+            "team": "LV",
+            "position": "WR",
+            "status": "Active",
+        },
+        "4981": {
+            "player_id": "4981",
+            "full_name": "Tyreek Hill",
+            "first_name": "Tyreek",
+            "last_name": "Hill",
+            "team": "MIA",
+            "position": "WR",
+            "status": "Active",
+        },
+        "6794": {
+            "player_id": "6794",
+            "full_name": "Justin Jefferson",
+            "first_name": "Justin",
+            "last_name": "Jefferson",
+            "team": "MIN",
+            "position": "WR",
+            "status": "Active",
+        },
+        "9999": {
+            "player_id": "9999",
+            "full_name": None,  # Some players may have null names
+            "first_name": "Unknown",
+            "last_name": "Player",
+            "team": None,
+            "position": "DEF",
+        },
+    }
+
+
+@pytest.fixture
+def temp_cache_dir():
+    """Create a temporary directory for cache tests."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        yield tmpdir
+
+
+# ============================================================================
+# Player Cache Tests
+# ============================================================================
+
+
+class TestPlayerCache:
+    """Tests for the PlayerCache class."""
+
+    @pytest.mark.asyncio
+    async def test_fetch_players_from_api(self, mock_players_data, temp_cache_dir):
+        """Test fetching players from Sleeper API."""
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_players.return_value = mock_players_data
+
+        cache = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=24,
+        )
+
+        players = await cache.fetch_players()
+
+        mock_client.get_players.assert_called_once()
+        assert len(players) == 4
+        assert "4046" in players
+        assert players["4046"]["full_name"] == "Davante Adams"
+
+    @pytest.mark.asyncio
+    async def test_players_cached_to_file(self, mock_players_data, temp_cache_dir):
+        """Test that players are cached to a file after fetching."""
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_players.return_value = mock_players_data
+
+        cache = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=24,
+        )
+
+        await cache.fetch_players()
+
+        # Verify cache file was created
+        cache_file = os.path.join(temp_cache_dir, "sleeper_players.json")
+        assert os.path.exists(cache_file)
+
+        # Verify cache contents
+        with open(cache_file, "r") as f:
+            cached_data = json.load(f)
+        assert "data" in cached_data
+        assert "timestamp" in cached_data
+        assert cached_data["data"]["4046"]["full_name"] == "Davante Adams"
+
+    @pytest.mark.asyncio
+    async def test_players_loaded_from_cache(self, mock_players_data, temp_cache_dir):
+        """Test that players are loaded from cache when not expired."""
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_players.return_value = mock_players_data
+
+        cache = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=24,
+        )
+
+        # First fetch - hits API
+        await cache.fetch_players()
+        assert mock_client.get_players.call_count == 1
+
+        # Second fetch - should use cache
+        cache2 = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=24,
+        )
+        players = await cache2.fetch_players()
+        # Should still be 1, no additional API call
+        assert mock_client.get_players.call_count == 1
+        assert players["4046"]["full_name"] == "Davante Adams"
+
+    @pytest.mark.asyncio
+    async def test_cache_expires_after_ttl(self, mock_players_data, temp_cache_dir):
+        """Test that cache is refreshed after TTL expires."""
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_players.return_value = mock_players_data
+
+        cache = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=0,  # 0 hours = immediately expired
+        )
+
+        # First fetch
+        await cache.fetch_players()
+        assert mock_client.get_players.call_count == 1
+
+        # Modify cache file timestamp to be in the past
+        cache_file = os.path.join(temp_cache_dir, "sleeper_players.json")
+        with open(cache_file, "r") as f:
+            cached_data = json.load(f)
+        cached_data["timestamp"] = time.time() - 3600  # 1 hour ago
+        with open(cache_file, "w") as f:
+            json.dump(cached_data, f)
+
+        # Second fetch - should hit API since TTL is 0
+        cache2 = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=0,
+        )
+        await cache2.fetch_players()
+        assert mock_client.get_players.call_count == 2
+
+    def test_get_player_name(self, mock_players_data, temp_cache_dir):
+        """Test looking up player name by ID."""
+        mock_client = MagicMock(spec=SleeperClient)
+
+        cache = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=24,
+        )
+
+        # Manually set the cached players
+        cache._players = mock_players_data
+
+        assert cache.get_player_name("4046") == "Davante Adams"
+        assert cache.get_player_name("4981") == "Tyreek Hill"
+        assert cache.get_player_name("6794") == "Justin Jefferson"
+
+    def test_get_player_name_fallback(self, mock_players_data, temp_cache_dir):
+        """Test player name lookup with fallback to first/last name."""
+        mock_client = MagicMock(spec=SleeperClient)
+
+        cache = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=24,
+        )
+
+        cache._players = mock_players_data
+
+        # Player with null full_name should fallback to first/last
+        assert cache.get_player_name("9999") == "Unknown Player"
+
+    def test_get_player_name_unknown(self, temp_cache_dir):
+        """Test player name lookup for unknown player ID."""
+        mock_client = MagicMock(spec=SleeperClient)
+
+        cache = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=24,
+        )
+
+        cache._players = {}
+
+        # Unknown player should return the ID itself
+        assert cache.get_player_name("999999") == "Player 999999"
+
+    @pytest.mark.asyncio
+    async def test_force_refresh(self, mock_players_data, temp_cache_dir):
+        """Test force refresh ignores cache and fetches from API."""
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_players.return_value = mock_players_data
+
+        cache = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=24,
+        )
+
+        # First fetch
+        await cache.fetch_players()
+        assert mock_client.get_players.call_count == 1
+
+        # Force refresh - should hit API again
+        await cache.fetch_players(force_refresh=True)
+        assert mock_client.get_players.call_count == 2
+
+    def test_get_player_info(self, mock_players_data, temp_cache_dir):
+        """Test getting full player info by ID."""
+        mock_client = MagicMock(spec=SleeperClient)
+
+        cache = PlayerCache(
+            client=mock_client,
+            cache_dir=temp_cache_dir,
+            ttl_hours=24,
+        )
+
+        cache._players = mock_players_data
+
+        player = cache.get_player("4046")
+        assert player is not None
+        assert player["full_name"] == "Davante Adams"
+        assert player["team"] == "LV"
+        assert player["position"] == "WR"
+
+        # Unknown player should return None
+        assert cache.get_player("999999") is None
+
+
+# ============================================================================
+# SleeperClient get_players Tests
+# ============================================================================
+
+
+class TestSleeperClientPlayers:
+    """Tests for SleeperClient.get_players method."""
+
+    @pytest.mark.asyncio
+    async def test_get_players(self, mock_players_data):
+        """Test fetching all NFL players from Sleeper API."""
+        client = SleeperClient()
+
+        with patch.object(client, "_get", new_callable=AsyncMock) as mock_get:
+            mock_get.return_value = mock_players_data
+            result = await client.get_players()
+
+            mock_get.assert_called_once_with("/players/nfl")
+            assert len(result) == 4
+            assert result["4046"]["full_name"] == "Davante Adams"

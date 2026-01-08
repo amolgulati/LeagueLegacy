@@ -268,3 +268,25 @@ class SleeperClient:
             current_id = self.get_previous_league_id(league_data)
 
         return chain
+
+    async def get_players(self, sport: str = "nfl") -> dict[str, Any]:
+        """Fetch all players for a sport from the Sleeper API.
+
+        This endpoint returns a large (~30MB) dictionary of all players.
+        The response is keyed by player_id.
+
+        Args:
+            sport: Sport identifier (default: "nfl").
+
+        Returns:
+            Dictionary mapping player_id to player data containing:
+            - player_id: str
+            - full_name: str (may be null)
+            - first_name: str
+            - last_name: str
+            - team: str (NFL team abbreviation, may be null)
+            - position: str (e.g., "WR", "RB", "QB")
+            - status: str (e.g., "Active", "Injured Reserve")
+            - And many other fields...
+        """
+        return await self._get(f"/players/{sport}")

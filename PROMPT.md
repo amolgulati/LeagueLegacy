@@ -563,3 +563,30 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes
 
 **Tests:** 31 sleeper tests passing, 153 total backend tests passing
+
+### IMP-003: Fetch and cache Sleeper player database ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Added `get_players()` method to SleeperClient to fetch player database from Sleeper API
+- Created `PlayerCache` class with file-based caching at `~/.fantasy-league-history/sleeper_players.json`
+- Implemented TTL-based cache expiration (default 24 hours)
+- Player lookup functions: `get_player()` for full data, `get_player_name()` for display name
+- Force refresh option available via `fetch_players(force_refresh=True)`
+
+**Files Created:**
+- `backend/app/services/player_cache.py` - PlayerCache class with file-based caching
+
+**Files Modified:**
+- `backend/app/services/sleeper_client.py` - Added get_players() method
+- `backend/app/services/__init__.py` - Export PlayerCache
+- `backend/tests/test_sleeper.py` - Added 10 new tests for player cache functionality
+
+**Acceptance Criteria Met:**
+- ✅ SleeperClient fetches player database from Sleeper API
+- ✅ Player data is cached to avoid repeated fetches (file-based)
+- ✅ Player lookup function returns player name given player ID
+- ✅ Cache has reasonable TTL (24h default) and manual refresh option
+- ✅ typecheck passes (all tests pass)
+
+**Tests:** 41 sleeper tests passing, 163 total backend tests passing

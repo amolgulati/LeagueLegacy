@@ -47,3 +47,19 @@ Started: 2026-01-07
   - Tests: 31 sleeper tests now passing (was 28, added 4 - but net +3 since one was renamed)
   - Total backend tests: 153 passing
 
+## 2025-01-10 - IMP-003
+- What was implemented: Sleeper player database fetch and caching functionality
+- Files changed:
+  - `backend/app/services/sleeper_client.py` - Added get_players() method for fetching player database
+  - `backend/app/services/player_cache.py` - New PlayerCache class with file-based caching
+  - `backend/app/services/__init__.py` - Export PlayerCache
+  - `backend/tests/test_sleeper.py` - Added 10 new tests for player cache functionality
+- **Learnings:**
+  - Sleeper /players/nfl endpoint returns large (~30MB) JSON with all NFL players
+  - Player cache stores data in ~/.fantasy-league-history/sleeper_players.json
+  - Cache includes timestamp for TTL-based expiration (default 24 hours)
+  - get_player_name() has fallback: full_name -> first_name + last_name -> "Player {id}"
+  - force_refresh option allows manual cache refresh when needed
+  - Tests: 41 sleeper tests now passing (31 + 10 new)
+  - Total backend tests: 163 passing
+
