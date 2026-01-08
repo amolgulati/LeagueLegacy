@@ -2,27 +2,19 @@
  * Owners Page
  *
  * Lists all owners with their career stats.
+ * Supports both card view (profile cards) and list view (table).
  * Provides quick access to owner profiles and mapping.
  */
 
 import { useState, useEffect } from 'react';
 import { OwnerMapping } from '../components/OwnerMapping';
+import { OwnerProfileCard } from '../components/OwnerProfileCard';
+import type { OwnerWithStats } from '../types/owner';
 
-interface OwnerWithStats {
-  owner_id: number;
-  owner_name: string;
-  total_wins: number;
-  total_losses: number;
-  total_ties: number;
-  playoff_appearances: number;
-  championships: number;
-  win_percentage: number;
-}
-
-type ViewMode = 'list' | 'mapping';
+type ViewMode = 'cards' | 'list' | 'mapping';
 
 export function Owners() {
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [owners, setOwners] = useState<OwnerWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +40,7 @@ export function Owners() {
       <div>
         <div className="p-6 pb-0">
           <button
-            onClick={() => setViewMode('list')}
+            onClick={() => setViewMode('cards')}
             className="text-blue-400 hover:text-blue-300 flex items-center gap-2 mb-4"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -69,15 +61,48 @@ export function Owners() {
           <h2 className="text-2xl font-bold text-white">Owners</h2>
           <p className="text-slate-400">Career statistics across all platforms</p>
         </div>
-        <button
-          onClick={() => setViewMode('mapping')}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white text-sm flex items-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-          </svg>
-          Manage Mappings
-        </button>
+        <div className="flex items-center gap-3">
+          {/* View Toggle */}
+          <div className="flex items-center bg-slate-800 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                viewMode === 'cards'
+                  ? 'bg-slate-700 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Card View"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-slate-700 text-white'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="List View"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Manage Mappings Button */}
+          <button
+            onClick={() => setViewMode('mapping')}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white text-sm flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            <span className="hidden sm:inline">Manage Mappings</span>
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -100,7 +125,19 @@ export function Owners() {
             Import league data from Sleeper or Yahoo Fantasy to see owners here.
           </p>
         </div>
+      ) : viewMode === 'cards' ? (
+        /* Card View */
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {owners.map((owner, index) => (
+            <OwnerProfileCard
+              key={owner.id}
+              owner={owner}
+              rank={index + 1}
+            />
+          ))}
+        </div>
       ) : (
+        /* List View (Table) */
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -116,7 +153,7 @@ export function Owners() {
             <tbody>
               {owners.map((owner, index) => (
                 <tr
-                  key={owner.owner_id}
+                  key={owner.id}
                   className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
                 >
                   <td className="py-4 px-4">
@@ -132,10 +169,18 @@ export function Owners() {
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                        {owner.owner_name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="font-medium text-white">{owner.owner_name}</span>
+                      {owner.avatar_url ? (
+                        <img
+                          src={owner.avatar_url}
+                          alt={owner.display_name || owner.name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                          {(owner.display_name || owner.name).charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="font-medium text-white">{owner.display_name || owner.name}</span>
                     </div>
                   </td>
                   <td className="py-4 px-4 text-center text-white font-mono">
@@ -143,7 +188,7 @@ export function Owners() {
                     {owner.total_ties > 0 && `-${owner.total_ties}`}
                   </td>
                   <td className="py-4 px-4 text-center text-slate-300 hidden sm:table-cell">
-                    {(owner.win_percentage * 100).toFixed(1)}%
+                    {owner.win_percentage.toFixed(1)}%
                   </td>
                   <td className="py-4 px-4 text-center text-slate-300 hidden md:table-cell">
                     {owner.playoff_appearances}
@@ -152,7 +197,7 @@ export function Owners() {
                     {owner.championships > 0 ? (
                       <span className="inline-flex items-center gap-1 text-yellow-400 font-bold">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M5 2a2 2 0 00-2 2v1a2 2 0 002 2h1v1H5a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3v-6a3 3 0 00-3-3h-1V7h1a2 2 0 002-2V4a2 2 0 00-2-2H5zm0 2h10v1H5V4zm3 4h4v1H8V8z" clipRule="evenodd" />
+                          <path fillRule="evenodd" d="M10 2a1 1 0 00-1 1v1H6a1 1 0 00-1 1v3a3 3 0 003 3h.17A5.986 5.986 0 0110 12.17V15H8a1 1 0 000 2h4a1 1 0 000-2h-2v-2.83A5.986 5.986 0 0011.83 11H12a3 3 0 003-3V5a1 1 0 00-1-1h-3V3a1 1 0 00-1-1zM7 5h6v3a1 1 0 01-1 1H8a1 1 0 01-1-1V5z" clipRule="evenodd" />
                         </svg>
                         {owner.championships}
                       </span>

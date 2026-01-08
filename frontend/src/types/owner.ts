@@ -43,3 +43,21 @@ export interface MergeOwnersRequest {
   primary_owner_id: number;
   secondary_owner_id: number;
 }
+
+/**
+ * Owner with career statistics from the history API.
+ */
+export interface OwnerWithStats {
+  id: number;
+  name: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  total_wins: number;
+  total_losses: number;
+  total_ties: number;
+  total_points: number;
+  seasons_played: number;
+  playoff_appearances: number;
+  championships: number;
+  win_percentage: number;
+}
