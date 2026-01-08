@@ -912,3 +912,34 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (frontend builds successfully)
 
 **Tests:** 204 backend tests passing, frontend builds and lint passes
+
+### IMP-012: Environment Configuration Setup ✅
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Created backend/.env.example with all required environment variables
+- Created frontend/.env.example with VITE_API_URL
+- Updated main.py to read CORS_ORIGINS from environment variable
+- Updated README.md with comprehensive environment setup instructions
+
+**Files Created:**
+- `backend/.env.example` - Documents YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET, YAHOO_REDIRECT_URI, FRONTEND_URL, CORS_ORIGINS
+- `frontend/.env.example` - Documents VITE_API_URL
+
+**Files Modified:**
+- `backend/app/main.py` - Added get_cors_origins() function, reads CORS_ORIGINS env var with localhost:5173 default
+- `README.md` - Added Environment Variables section with tables and Yahoo Developer Console setup guide
+
+**Features:**
+- CORS_ORIGINS env var supports comma-separated list of allowed origins
+- Default values work out of the box for local development
+- Comprehensive documentation for Yahoo API credential setup
+
+**Acceptance Criteria Met:**
+- ✅ backend/.env.example documents YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET, YAHOO_REDIRECT_URI, FRONTEND_URL, CORS_ORIGINS
+- ✅ frontend/.env.example documents VITE_API_URL
+- ✅ CORS origins in main.py read from CORS_ORIGINS env var with localhost:5173 default
+- ✅ README.md updated with environment setup instructions
+- ✅ typecheck passes (frontend builds successfully, 204 backend tests passing)
+
+**Tests:** 204 backend tests passing, frontend builds and lint passes

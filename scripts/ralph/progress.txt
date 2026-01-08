@@ -50,3 +50,21 @@ Started: 2026-01-08
   - Existing ImportedLeagues component already supports both platforms via onReimport callback
   - Pre-existing test failures can be discovered when running full test suite
 
+## 2026-01-08 - IMP-012: Environment Configuration Setup
+- What was implemented:
+  - Created backend/.env.example with all required environment variables
+  - Created frontend/.env.example with VITE_API_URL
+  - Updated main.py to read CORS_ORIGINS from environment variable
+  - Updated README.md with comprehensive environment setup instructions
+- Files created:
+  - `backend/.env.example` - Documents YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET, YAHOO_REDIRECT_URI, FRONTEND_URL, CORS_ORIGINS
+  - `frontend/.env.example` - Documents VITE_API_URL
+- Files modified:
+  - `backend/app/main.py` - Added get_cors_origins() function, reads CORS_ORIGINS env var
+  - `README.md` - Added Environment Variables section with tables and Yahoo setup guide
+- **Learnings:**
+  - CORS origins can be comma-separated for multiple allowed origins
+  - Using get_cors_origins() function keeps CORS configuration clean
+  - README tables provide clear documentation for environment variables
+  - Yahoo Developer Console requires specific redirect URI configuration
+
