@@ -5,11 +5,25 @@ This API provides endpoints for tracking fantasy league history
 across Yahoo Fantasy and Sleeper platforms.
 """
 
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.db import init_db
+
+
+def get_cors_origins() -> list[str]:
+    """Get CORS origins from environment variable.
+
+    Returns:
+        List of allowed origins. Defaults to localhost:5173 if not set.
+    """
+    cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5173")
+    # Split by comma and strip whitespace
+    return [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+
+
 from app.api.sleeper import router as sleeper_router
 from app.api.yahoo import router as yahoo_router
 from app.api.owners import router as owners_router
@@ -38,9 +52,10 @@ app = FastAPI(
 )
 
 # Configure CORS for frontend
+# Origins read from CORS_ORIGINS env var, defaults to localhost:5173
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

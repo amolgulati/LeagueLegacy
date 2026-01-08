@@ -32,6 +32,11 @@ cd backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
+
+# Copy and configure environment variables
+cp .env.example .env
+# Edit .env with your configuration (see Environment Variables section)
+
 uvicorn app.main:app --reload
 ```
 
@@ -42,10 +47,42 @@ The API will be available at `http://localhost:8000`.
 ```bash
 cd frontend
 npm install
+
+# Copy and configure environment variables
+cp .env.example .env
+# Edit .env if needed (see Environment Variables section)
+
 npm run dev
 ```
 
 The frontend will be available at `http://localhost:5173`.
+
+## Environment Variables
+
+### Backend (`backend/.env`)
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `YAHOO_CLIENT_ID` | Yahoo OAuth2 Client ID | *Required for Yahoo import* |
+| `YAHOO_CLIENT_SECRET` | Yahoo OAuth2 Client Secret | *Required for Yahoo import* |
+| `YAHOO_REDIRECT_URI` | OAuth2 callback URL | `http://localhost:8000/api/yahoo/auth/callback` |
+| `FRONTEND_URL` | Frontend URL for OAuth redirects | `http://localhost:5173` |
+| `CORS_ORIGINS` | Comma-separated allowed CORS origins | `http://localhost:5173` |
+
+#### Setting up Yahoo API Credentials
+
+1. Go to [Yahoo Developer Console](https://developer.yahoo.com/apps/create/)
+2. Create a new app with the following settings:
+   - Application Type: **Web Application**
+   - Redirect URI: `http://localhost:8000/api/yahoo/auth/callback`
+   - API Permissions: **Fantasy Sports (Read)**
+3. Copy your Client ID and Client Secret to your `.env` file
+
+### Frontend (`frontend/.env`)
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_URL` | Backend API URL | `http://localhost:8000` |
 
 ## API Documentation
 
