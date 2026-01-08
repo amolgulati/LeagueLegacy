@@ -802,3 +802,47 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (frontend builds successfully)
 
 **Tests:** Frontend builds successfully, 194 backend tests passing
+
+### IMP-010: Add import history and re-import functionality ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Created leagues API with endpoints for listing, getting, and deleting leagues
+- Cascade delete removes all associated seasons, teams, matchups, and trades
+- Dashboard displays list of imported leagues with statistics and management actions
+- Re-import functionality pre-fills league ID in import modal
+- Delete with confirmation and loading state
+
+**Files Created:**
+- `backend/app/api/leagues.py` - Leagues API with GET/DELETE endpoints
+- `backend/tests/test_leagues.py` - 10 comprehensive tests for leagues API
+- `frontend/src/components/ImportedLeagues.tsx` - Imported leagues list component
+
+**Files Modified:**
+- `backend/app/main.py` - Include leagues_router
+- `frontend/src/pages/Dashboard.tsx` - Integrated ImportedLeagues component
+- `frontend/src/components/ImportModal.tsx` - Added initialLeagueId prop for re-import
+- `frontend/src/components/LoadingStates.tsx` - Added red color option for spinner
+
+**API Endpoints:**
+- GET `/api/leagues` - List all imported leagues with stats
+- GET `/api/leagues/{id}` - Get specific league details
+- DELETE `/api/leagues/{id}` - Delete league and all associated data
+
+**Features:**
+- Shows league name, platform (Sleeper/Yahoo), scoring type
+- Displays counts: seasons, teams, matchups, trades
+- Shows import date and season year range
+- Re-import button opens modal with pre-filled league ID
+- Delete with confirmation (click twice to confirm)
+- Loading state during delete operation
+- Owners are preserved when deleting leagues
+
+**Acceptance Criteria Met:**
+- ✅ Dashboard shows list of imported leagues with import date
+- ✅ User can trigger re-import for any previously imported league
+- ✅ Re-import updates existing data without creating duplicates
+- ✅ Delete option removes a league and all its data
+- ✅ typecheck passes (frontend builds successfully)
+
+**Tests:** 10 leagues tests passing, 204 total backend tests passing
