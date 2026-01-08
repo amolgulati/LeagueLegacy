@@ -1,60 +1,137 @@
 /**
  * Trades Page
  *
- * Displays trade history and analytics.
+ * Displays trade history visualization with:
+ * - Timeline view of all trades
+ * - Filter by owner or season
+ * - Trade partners network graph
+ * - Trade frequency stats
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { TradeTimeline } from '../components/TradeTimeline';
+import { TradeFilters } from '../components/TradeFilters';
+import { TradeNetwork } from '../components/TradeNetwork';
+
+interface Team {
+  id: number;
+  name: string;
+  owner: {
+    id: number;
+    name: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+}
 
 interface Trade {
   id: number;
+  week: number | null;
+  trade_date: string;
   season_id: number;
-  week: number;
-  transaction_id: string | null;
-  executed_at: string | null;
-  teams: Array<{
+  season_year: number;
+  league_id: number;
+  league_name: string;
+  assets_exchanged: string | null;
+  status: string;
+  teams: Team[];
+}
+
+interface TraderStats {
+  owner: {
     id: number;
     name: string;
-    owner_id: number;
-    owner_name: string;
-  }>;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+  trade_count: number;
+}
+
+interface SeasonTradeStats {
+  season_id: number;
+  year: number;
+  league_name: string;
+  trade_count: number;
 }
 
 interface TradeStats {
   total_trades: number;
-  most_active_traders: Array<{
-    owner_id: number;
-    owner_name: string;
-    trade_count: number;
-  }>;
-  trades_by_season: Array<{
-    season_id: number;
-    year: number;
-    league_name: string;
-    trade_count: number;
-  }>;
+  most_active_traders: TraderStats[];
+  trades_by_season: SeasonTradeStats[];
+  avg_trades_per_season: number;
 }
+
+interface Owner {
+  id: number;
+  name: string;
+  display_name: string | null;
+}
+
+interface Season {
+  id: number;
+  year: number;
+  league_name: string;
+}
+
+type ViewMode = 'timeline' | 'network';
 
 export function Trades() {
   const [trades, setTrades] = useState<Trade[]>([]);
+  const [allTrades, setAllTrades] = useState<Trade[]>([]);
   const [stats, setStats] = useState<TradeStats | null>(null);
+  const [owners, setOwners] = useState<Owner[]>([]);
+  const [seasons, setSeasons] = useState<Season[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const pageSize = 20;
+  const [viewMode, setViewMode] = useState<ViewMode>('timeline');
 
+  // Filter states
+  const [selectedOwnerId, setSelectedOwnerId] = useState<number | null>(null);
+  const [selectedSeasonId, setSelectedSeasonId] = useState<number | null>(null);
+
+  // Load initial data
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [tradesRes, statsRes] = await Promise.all([
-          fetch(`http://localhost:8000/api/trades?page=${page}&page_size=${pageSize}`).then(r => r.ok ? r.json() : { trades: [], total_count: 0 }),
-          fetch('http://localhost:8000/api/trades/stats').then(r => r.ok ? r.json() : null),
+        setError(null);
+
+        // Load all data in parallel
+        const [tradesRes, statsRes, ownersRes, seasonsRes] = await Promise.all([
+          fetch('http://localhost:8000/api/trades?limit=100').then((r) =>
+            r.ok ? r.json() : { trades: [], total: 0 }
+          ),
+          fetch('http://localhost:8000/api/trades/stats').then((r) => (r.ok ? r.json() : null)),
+          fetch('http://localhost:8000/api/history/owners').then((r) => (r.ok ? r.json() : [])),
+          fetch('http://localhost:8000/api/history/seasons').then((r) => (r.ok ? r.json() : [])),
         ]);
-        setTrades(tradesRes.trades || []);
-        setTotalCount(tradesRes.total_count || 0);
+
+        const tradesList = tradesRes.trades || [];
+        setAllTrades(tradesList);
+        setTrades(tradesList);
         setStats(statsRes);
+
+        // Extract unique owners from trades or use history endpoint
+        if (Array.isArray(ownersRes)) {
+          setOwners(
+            ownersRes.map((o: { id: number; name: string; display_name: string | null }) => ({
+              id: o.id,
+              name: o.name,
+              display_name: o.display_name,
+            }))
+          );
+        }
+
+        // Extract unique seasons
+        if (Array.isArray(seasonsRes)) {
+          setSeasons(
+            seasonsRes.map((s: { id: number; year: number; league: { name: string } }) => ({
+              id: s.id,
+              year: s.year,
+              league_name: s.league?.name || 'Unknown League',
+            }))
+          );
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load trades');
       } finally {
@@ -62,138 +139,153 @@ export function Trades() {
       }
     };
     loadData();
-  }, [page]);
+  }, []);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Filter trades when filters change
+  const filterTrades = useCallback(() => {
+    let filtered = [...allTrades];
 
-  return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-white">Trades</h2>
-        <p className="text-slate-400">Trade history and analytics across all leagues</p>
-      </div>
+    if (selectedOwnerId !== null) {
+      filtered = filtered.filter((trade) =>
+        trade.teams.some((team) => team.owner.id === selectedOwnerId)
+      );
+    }
 
-      {/* Stats Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
-            <p className="text-slate-400 text-sm">Total Trades</p>
-            <p className="text-2xl font-bold text-white">{stats.total_trades}</p>
-          </div>
+    if (selectedSeasonId !== null) {
+      filtered = filtered.filter((trade) => trade.season_id === selectedSeasonId);
+    }
 
-          {stats.most_active_traders.slice(0, 3).map((trader, index) => (
-            <div key={trader.owner_id} className="bg-slate-800 rounded-lg p-4 border border-slate-700">
-              <p className="text-slate-400 text-sm flex items-center gap-1">
-                {index === 0 ? (
-                  <>
-                    <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5 2a2 2 0 00-2 2v1a2 2 0 002 2h1v1H5a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3v-6a3 3 0 00-3-3h-1V7h1a2 2 0 002-2V4a2 2 0 00-2-2H5z" clipRule="evenodd" />
-                    </svg>
-                    Trade King
-                  </>
-                ) : (
-                  `#${index + 1} Trader`
-                )}
-              </p>
-              <p className="text-lg font-bold text-white truncate">{trader.owner_name}</p>
-              <p className="text-sm text-slate-400">{trader.trade_count} trades</p>
-            </div>
-          ))}
+    setTrades(filtered);
+  }, [allTrades, selectedOwnerId, selectedSeasonId]);
+
+  useEffect(() => {
+    filterTrades();
+  }, [filterTrades]);
+
+  const handleOwnerChange = (ownerId: number | null) => {
+    setSelectedOwnerId(ownerId);
+  };
+
+  const handleSeasonChange = (seasonId: number | null) => {
+    setSelectedSeasonId(seasonId);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-white">Trade History</h2>
+          <p className="text-slate-400">Trade visualization and analytics</p>
         </div>
-      )}
-
-      {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
         </div>
-      ) : error ? (
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-white">Trade History</h2>
+          <p className="text-slate-400">Trade visualization and analytics</p>
+        </div>
         <div className="bg-red-900/30 border border-red-600 rounded-lg p-4">
           <p className="text-red-400">{error}</p>
         </div>
-      ) : trades.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-700 flex items-center justify-center">
-            <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Trade History</h2>
+          <p className="text-slate-400">Trade visualization and analytics across all leagues</p>
+        </div>
+
+        {/* View Mode Toggle */}
+        <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700">
+          <button
+            onClick={() => setViewMode('timeline')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'timeline'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Timeline
+          </button>
+          <button
+            onClick={() => setViewMode('network')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              viewMode === 'network'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            Network
+          </button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <TradeFilters
+        owners={owners}
+        seasons={seasons}
+        selectedOwnerId={selectedOwnerId}
+        selectedSeasonId={selectedSeasonId}
+        onOwnerChange={handleOwnerChange}
+        onSeasonChange={handleSeasonChange}
+        loading={loading}
+      />
+
+      {/* No Data State */}
+      {allTrades.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-slate-700 flex items-center justify-center">
+            <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">No Trades Found</h3>
           <p className="text-slate-400 max-w-md mx-auto">
-            Import league data from Sleeper or Yahoo Fantasy to see trades here.
+            Import league data from Sleeper or Yahoo Fantasy to see trade history and analytics here.
           </p>
         </div>
       ) : (
         <>
-          <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-700 bg-slate-800">
-                    <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Week</th>
-                    <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Teams Involved</th>
-                    <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm hidden sm:table-cell">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {trades.map(trade => (
-                    <tr
-                      key={trade.id}
-                      className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
-                    >
-                      <td className="py-4 px-4">
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-600/20 text-purple-400 text-sm font-bold">
-                          {trade.week}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex flex-wrap items-center gap-2">
-                          {trade.teams.map((team, index) => (
-                            <span key={team.id}>
-                              <span className="text-white font-medium">{team.owner_name}</span>
-                              {index < trade.teams.length - 1 && (
-                                <svg className="w-4 h-4 text-slate-500 inline mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                                </svg>
-                              )}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-slate-400 hidden sm:table-cell">
-                        {trade.executed_at
-                          ? new Date(trade.executed_at).toLocaleDateString()
-                          : '-'
-                        }
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          {/* View Content */}
+          {viewMode === 'timeline' ? (
+            <TradeTimeline
+              trades={trades}
+              tradesBySeasonData={stats?.trades_by_season || []}
+              loading={loading}
+            />
+          ) : (
+            <TradeNetwork
+              trades={trades}
+              mostActiveTraders={stats?.most_active_traders || []}
+              avgTradesPerSeason={stats?.avg_trades_per_season || 0}
+              loading={loading}
+            />
+          )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
+          {/* Results Count */}
+          {(selectedOwnerId !== null || selectedSeasonId !== null) && (
+            <div className="text-center py-4">
               <p className="text-slate-400 text-sm">
-                Page {page} of {totalPages} ({totalCount} total trades)
+                Showing {trades.length} of {allTrades.length} trades
               </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-sm"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-sm"
-                >
-                  Next
-                </button>
-              </div>
             </div>
           )}
         </>
