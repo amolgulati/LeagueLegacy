@@ -102,3 +102,16 @@ Started: 2025-01-07
   - Pydantic v2 deprecates class-based Config, use ConfigDict instead
   - React 19 works well with async API calls and state management
   - All 85 tests pass (14 models + 24 sleeper + 28 yahoo + 19 owners)
+
+## 2025-01-08 - FLH-006
+- What was implemented: League history API endpoints for career stats, owner history, seasons, and head-to-head
+- Files changed:
+  - Created backend/app/api/history.py - League history API with 4 endpoints
+  - Created backend/tests/test_history.py - 16 comprehensive tests
+  - Updated backend/app/main.py - Include history_router
+- **Learnings:**
+  - SQLAlchemy joinedload is essential for avoiding N+1 queries when loading relationships
+  - Head-to-head queries require joining matchups with team IDs from both owners
+  - Pydantic models with from_attributes=True work seamlessly with SQLAlchemy models
+  - Sorting by computed fields (like total_wins) needs to be done in Python after aggregation
+  - All 101 tests pass (14 models + 24 sleeper + 28 yahoo + 19 owners + 16 history)

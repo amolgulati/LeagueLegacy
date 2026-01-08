@@ -72,7 +72,7 @@
         "GET /head-to-head/{owner1}/{owner2} - rivalry stats"
       ],
       "priority": 6,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-007",
