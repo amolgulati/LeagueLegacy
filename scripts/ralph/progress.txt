@@ -25,3 +25,21 @@ Started: 2025-01-07
   - Tailwind CSS v3 needs explicit content paths in tailwind.config.js
   - CORS middleware is essential for frontend-backend communication during development
   - Both apps verified to start without errors (backend on 8000, frontend on 5173)
+
+## 2025-01-07 - FLH-002
+- What was implemented: SQLite database schema with SQLAlchemy models
+- Files changed:
+  - Created backend/app/db/__init__.py - Database module exports
+  - Created backend/app/db/database.py - Engine, session factory, and init_db()
+  - Created backend/app/db/models.py - All 6 models (Owner, League, Season, Team, Matchup, Trade)
+  - Created backend/tests/__init__.py - Tests module
+  - Created backend/tests/conftest.py - Pytest fixtures for in-memory SQLite testing
+  - Created backend/tests/test_models.py - 14 comprehensive model tests
+  - Updated backend/app/main.py - Added lifespan handler to init_db on startup
+  - Updated backend/requirements.txt - Added pytest, pytest-asyncio
+- **Learnings:**
+  - Platform enum (YAHOO, SLEEPER) in SQLAlchemy uses SQLEnum for database storage
+  - Owner model has unique yahoo_user_id and sleeper_user_id for cross-platform mapping
+  - Trade-Team is a many-to-many relationship using association table
+  - FastAPI lifespan context manager is preferred over on_event decorators
+  - All 14 tests pass, including cross-platform owner aggregation test

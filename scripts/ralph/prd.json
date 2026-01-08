@@ -23,7 +23,7 @@
         "Schema supports both Yahoo and Sleeper data"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-003",

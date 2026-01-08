@@ -5,13 +5,27 @@ This API provides endpoints for tracking fantasy league history
 across Yahoo Fantasy and Sleeper platforms.
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.db import init_db
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan handler - runs on startup and shutdown."""
+    # Startup: Initialize database
+    init_db()
+    yield
+    # Shutdown: cleanup if needed
+
 
 app = FastAPI(
     title="Fantasy League History Tracker",
     description="Unified fantasy league history tracking for Yahoo Fantasy and Sleeper",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 # Configure CORS for frontend
