@@ -56,7 +56,7 @@ export function LoadingSpinner({
 // Skeleton for profile/owner cards
 export function CardSkeleton() {
   return (
-    <div className="bg-slate-800 rounded-xl p-5 animate-card-entrance">
+    <div className="rounded-xl p-5 animate-card-entrance" style={{ backgroundColor: 'var(--bg-card)' }}>
       {/* Avatar and header */}
       <div className="flex items-center gap-4 mb-4">
         <Skeleton className="w-16 h-16 rounded-full" />
@@ -80,18 +80,18 @@ export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; column
   return (
     <div className="overflow-hidden rounded-lg">
       {/* Header */}
-      <div className="bg-slate-700 p-4 flex gap-4">
+      <div className="p-4 flex gap-4" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
         {Array.from({ length: columns }).map((_, i) => (
           <Skeleton key={i} className="h-4 flex-1" />
         ))}
       </div>
       {/* Rows */}
-      <div className="divide-y divide-slate-700/50">
+      <div style={{ borderColor: 'var(--border-primary)' }}>
         {Array.from({ length: rows }).map((_, rowIdx) => (
           <div
             key={rowIdx}
-            className="bg-slate-800 p-4 flex gap-4 animate-card-entrance"
-            style={{ animationDelay: `${rowIdx * 0.05}s` }}
+            className="p-4 flex gap-4 animate-card-entrance"
+            style={{ backgroundColor: 'var(--bg-card)', animationDelay: `${rowIdx * 0.05}s`, borderTop: '1px solid var(--border-primary)' }}
           >
             {Array.from({ length: columns }).map((_, colIdx) => (
               <Skeleton
@@ -109,7 +109,7 @@ export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; column
 // Skeleton for stat cards (like on Dashboard)
 export function StatCardSkeleton() {
   return (
-    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 animate-card-entrance">
+    <div className="rounded-lg p-6 animate-card-entrance" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
       <div className="flex items-center gap-3">
         <Skeleton className="w-12 h-12 rounded-lg" />
         <div className="flex-1 space-y-2">
@@ -128,8 +128,8 @@ const CHART_BAR_HEIGHTS = [45, 72, 38, 85, 55, 68, 42, 78];
 export function ChartSkeleton({ height = 200 }: { height?: number }) {
   return (
     <div
-      className="bg-slate-800 rounded-lg overflow-hidden animate-card-entrance"
-      style={{ height }}
+      className="rounded-lg overflow-hidden animate-card-entrance"
+      style={{ height, backgroundColor: 'var(--bg-card)' }}
     >
       <div className="h-full flex items-end justify-around gap-2 p-4">
         {CHART_BAR_HEIGHTS.map((barHeight, i) => (
@@ -202,7 +202,7 @@ export function HeroSkeleton() {
 // Skeleton for season cards on Seasons page
 export function SeasonCardSkeleton() {
   return (
-    <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden animate-card-entrance">
+    <div className="rounded-lg overflow-hidden animate-card-entrance" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -213,7 +213,7 @@ export function SeasonCardSkeleton() {
           <Skeleton className="h-4 w-16" />
         </div>
         {/* Champion section */}
-        <div className="mt-4 p-3 bg-slate-700/50 rounded-lg">
+        <div className="mt-4 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
           <div className="flex items-center gap-2">
             <Skeleton className="w-5 h-5 rounded" />
             <div className="space-y-1.5 flex-1">
@@ -256,9 +256,9 @@ export function SeasonsGridSkeleton({ count = 6 }: { count?: number }) {
 // Skeleton for record cards on Records page
 export function RecordCardSkeleton() {
   return (
-    <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg animate-card-entrance">
+    <div className="rounded-xl overflow-hidden shadow-lg animate-card-entrance" style={{ backgroundColor: 'var(--bg-card)' }}>
       {/* Colored header */}
-      <div className="bg-gradient-to-r from-slate-600 to-slate-700 p-4">
+      <div className="p-4" style={{ background: 'linear-gradient(to right, var(--bg-tertiary), var(--bg-secondary))' }}>
         <div className="flex items-center gap-3">
           <Skeleton className="w-10 h-10 rounded-lg" />
           <Skeleton className="h-5 w-32" />
@@ -277,9 +277,9 @@ export function RecordCardSkeleton() {
 // Skeleton for Records page leaderboard table
 export function LeaderboardSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg animate-card-entrance">
+    <div className="rounded-xl overflow-hidden shadow-lg animate-card-entrance" style={{ backgroundColor: 'var(--bg-card)' }}>
       {/* Header */}
-      <div className="bg-slate-700 p-4 flex items-center gap-3">
+      <div className="p-4 flex items-center gap-3" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
         <Skeleton className="w-6 h-6 rounded" />
         <Skeleton className="h-5 w-40" />
       </div>

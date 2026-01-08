@@ -193,16 +193,16 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 animate-fade-in">
-      <div className="bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4 border border-slate-700 shadow-xl">
+      <div className="rounded-xl p-6 w-full max-w-md mx-4 shadow-xl" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(59, 130, 246, 0.2)' }}>
               <span className="text-xl">🌙</span>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Import Sleeper League</h3>
-              <p className="text-slate-400 text-sm">
+              <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Import Sleeper League</h3>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 {isImporting ? 'Importing...' : 'Enter your league ID to get started'}
               </p>
             </div>
@@ -210,7 +210,8 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
           {!isImporting && (
             <button
               onClick={handleClose}
-              className="text-slate-400 hover:text-white transition-colors p-1"
+              className="transition-colors p-1 hover:opacity-80"
+              style={{ color: 'var(--text-secondary)' }}
               aria-label="Close modal"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,7 +225,7 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
         {showInput && !showResult && (
           <div className="space-y-4 animate-fade-in">
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
                 Sleeper League ID
               </label>
               <input
@@ -232,18 +233,24 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
                 value={leagueId}
                 onChange={(e) => setLeagueId(e.target.value)}
                 placeholder="e.g. 123456789012345678"
-                className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                className="w-full px-4 py-3 rounded-lg transition-colors focus:outline-none focus:ring-1"
+                style={{
+                  backgroundColor: 'var(--bg-input)',
+                  border: '1px solid var(--border-secondary)',
+                  color: 'var(--text-primary)',
+                }}
                 autoFocus
               />
-              <p className="text-slate-500 text-xs mt-2">
-                Find your league ID in the Sleeper app URL: <code className="text-slate-400">sleeper.app/leagues/<span className="text-blue-400">[LEAGUE_ID]</span></code>
+              <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                Find your league ID in the Sleeper app URL: <code style={{ color: 'var(--text-secondary)' }}>sleeper.app/leagues/<span style={{ color: 'var(--accent-primary)' }}>[LEAGUE_ID]</span></code>
               </p>
             </div>
 
             <button
               onClick={handleImport}
               disabled={!leagueId.trim()}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -264,13 +271,16 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-300">{progress.message}</span>
-                <span className="text-blue-400 font-medium">{progress.progress}%</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{progress.message}</span>
+                <span className="font-medium" style={{ color: 'var(--accent-primary)' }}>{progress.progress}%</span>
               </div>
-              <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+              <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
                 <div
-                  className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${progress.progress}%` }}
+                  className="h-full rounded-full transition-all duration-500 ease-out"
+                  style={{
+                    width: `${progress.progress}%`,
+                    background: 'linear-gradient(to right, var(--accent-primary), var(--chart-1))',
+                  }}
                 />
               </div>
             </div>
@@ -284,13 +294,19 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
                 return (
                   <div
                     key={step}
-                    className={`text-center p-2 rounded-lg transition-all ${
-                      isComplete
-                        ? 'bg-green-600/20 text-green-400'
+                    className={`text-center p-2 rounded-lg transition-all ${isActive ? 'animate-pulse' : ''}`}
+                    style={{
+                      backgroundColor: isComplete
+                        ? 'var(--success-muted)'
                         : isActive
-                        ? 'bg-blue-600/20 text-blue-400 animate-pulse'
-                        : 'bg-slate-700/50 text-slate-500'
-                    }`}
+                        ? 'rgba(59, 130, 246, 0.2)'
+                        : 'var(--bg-tertiary)',
+                      color: isComplete
+                        ? 'var(--success)'
+                        : isActive
+                        ? 'var(--accent-primary)'
+                        : 'var(--text-muted)',
+                    }}
                   >
                     <div className="text-lg mb-1">
                       {isComplete ? '✓' : ['📡', '📅', '🏈', '🔄'][idx]}
@@ -303,7 +319,7 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
               })}
             </div>
 
-            <p className="text-center text-slate-500 text-sm">
+            <p className="text-center text-sm" style={{ color: 'var(--text-muted)' }}>
               This may take a few moments for leagues with many seasons...
             </p>
           </div>
@@ -314,25 +330,25 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
           <div className="space-y-6 animate-fade-in">
             {/* Success Icon */}
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto bg-green-600/20 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--success-muted)' }}>
+                <svg className="w-8 h-8" style={{ color: 'var(--success)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h4 className="text-xl font-bold text-white mb-2">{result.message}</h4>
+              <h4 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{result.message}</h4>
             </div>
 
             {/* Import Summary */}
             {result.details && (
-              <div className="bg-slate-700/50 rounded-lg p-4 space-y-3">
-                <h5 className="text-slate-300 font-medium text-sm uppercase tracking-wider">Import Summary</h5>
+              <div className="rounded-lg p-4 space-y-3" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                <h5 className="font-medium text-sm uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Import Summary</h5>
                 <div className="grid grid-cols-2 gap-3">
                   {result.details.seasons_imported !== undefined && (
                     <div className="flex items-center gap-2">
                       <span className="text-xl">📅</span>
                       <div>
-                        <div className="text-white font-medium">{result.details.seasons_imported}</div>
-                        <div className="text-slate-400 text-xs">Seasons</div>
+                        <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{result.details.seasons_imported}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Seasons</div>
                       </div>
                     </div>
                   )}
@@ -340,8 +356,8 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
                     <div className="flex items-center gap-2">
                       <span className="text-xl">👥</span>
                       <div>
-                        <div className="text-white font-medium">{result.details.teams_imported}</div>
-                        <div className="text-slate-400 text-xs">Teams</div>
+                        <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{result.details.teams_imported}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Teams</div>
                       </div>
                     </div>
                   )}
@@ -349,8 +365,8 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
                     <div className="flex items-center gap-2">
                       <span className="text-xl">🏈</span>
                       <div>
-                        <div className="text-white font-medium">{result.details.matchups_imported}</div>
-                        <div className="text-slate-400 text-xs">Matchups</div>
+                        <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{result.details.matchups_imported}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Matchups</div>
                       </div>
                     </div>
                   )}
@@ -358,18 +374,18 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
                     <div className="flex items-center gap-2">
                       <span className="text-xl">🔄</span>
                       <div>
-                        <div className="text-white font-medium">{result.details.trades_imported}</div>
-                        <div className="text-slate-400 text-xs">Trades</div>
+                        <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{result.details.trades_imported}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Trades</div>
                       </div>
                     </div>
                   )}
                 </div>
                 {result.details.champion_name && (
-                  <div className="pt-3 border-t border-slate-600 flex items-center gap-2">
+                  <div className="pt-3 flex items-center gap-2" style={{ borderTop: '1px solid var(--border-primary)' }}>
                     <span className="text-xl">🏆</span>
                     <div>
-                      <div className="text-yellow-400 font-medium">{result.details.champion_name}</div>
-                      <div className="text-slate-400 text-xs">Champion</div>
+                      <div className="font-medium" style={{ color: 'var(--trophy-gold)' }}>{result.details.champion_name}</div>
+                      <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Champion</div>
                     </div>
                   </div>
                 )}
@@ -378,7 +394,8 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
 
             <button
               onClick={handleDismissSuccess}
-              className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500 transition-colors"
+              className="w-full py-3 rounded-lg font-medium transition-colors"
+              style={{ backgroundColor: 'var(--success)', color: 'white' }}
             >
               Done
             </button>
@@ -390,19 +407,19 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
           <div className="space-y-6 animate-fade-in">
             {/* Error Icon */}
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto bg-red-600/20 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--error-muted)' }}>
+                <svg className="w-8 h-8" style={{ color: 'var(--error)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <h4 className="text-xl font-bold text-white mb-2">Import Failed</h4>
-              <p className="text-red-400 text-sm">{result?.message}</p>
+              <h4 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Import Failed</h4>
+              <p className="text-sm" style={{ color: 'var(--error)' }}>{result?.message}</p>
             </div>
 
             {/* Error Suggestions */}
-            <div className="bg-slate-700/50 rounded-lg p-4 text-sm text-slate-300 space-y-2">
-              <p className="font-medium">Troubleshooting tips:</p>
-              <ul className="list-disc list-inside text-slate-400 space-y-1">
+            <div className="rounded-lg p-4 text-sm space-y-2" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+              <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>Troubleshooting tips:</p>
+              <ul className="list-disc list-inside space-y-1" style={{ color: 'var(--text-muted)' }}>
                 <li>Verify the league ID is correct</li>
                 <li>Ensure the league is public or you have access</li>
                 <li>Check that the backend server is running</li>
@@ -412,13 +429,15 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
             <div className="flex gap-3">
               <button
                 onClick={handleClose}
-                className="flex-1 py-3 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-600 transition-colors"
+                className="flex-1 py-3 rounded-lg font-medium transition-colors"
+                style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleRetry}
-                className="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                style={{ backgroundColor: 'var(--accent-primary)', color: 'white' }}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

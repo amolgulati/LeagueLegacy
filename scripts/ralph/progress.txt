@@ -158,3 +158,30 @@ Started: 2026-01-08
   - Separating "UI red" (buttons/icons) from "text red" allows aesthetic consistency while meeting accessibility
   - Gold (#FFD700) provides excellent contrast (14.12:1) - use it for emphasis
   - Node.js getLuminance calculation is reliable for quick contrast ratio checks
+
+## 2026-01-08 - IMP-018: Update Core Components for Theming
+- What was implemented:
+  - Updated Dashboard.tsx to use CSS variables for all colors (cards, text, icons, status indicators)
+  - Updated OwnerProfileCard.tsx with theme-aware avatar gradients using CSS variables
+  - Updated rank badge styles to use inline CSS with theme variables
+  - Updated ImportModal.tsx with themed modal background, inputs, progress bars, and result states
+  - Updated ImportedLeagues.tsx with themed cards, buttons, and stats display
+  - Updated LoadingStates.tsx skeleton components to use bg-card, bg-tertiary theme variables
+  - Updated skeleton shimmer animation in index.css to use CSS variables
+  - Updated App.tsx header, navigation tabs, mobile menu, and bottom nav with CSS variables
+  - All components now respect dark, light, and espn-retro theme selections
+- Files modified:
+  - `frontend/src/pages/Dashboard.tsx` - CSS variables for all UI elements
+  - `frontend/src/components/OwnerProfileCard.tsx` - Theme-aware gradients and colors
+  - `frontend/src/components/ImportModal.tsx` - Themed modal with progress/success/error states
+  - `frontend/src/components/ImportedLeagues.tsx` - Themed league cards with platform colors
+  - `frontend/src/components/LoadingStates.tsx` - Skeleton backgrounds use theme variables
+  - `frontend/src/index.css` - Updated skeleton shimmer gradient to use CSS variables
+  - `frontend/src/App.tsx` - Header, navigation, and layout use theme variables
+- **Learnings:**
+  - Using inline `style={{ color: 'var(--text-primary)' }}` for dynamic theming is cleaner than conditional Tailwind classes
+  - Avatar gradients work well with CSS variables when using `linear-gradient(to bottom right, var(--chart-1), var(--accent-secondary))`
+  - Status colors (success-muted, error-muted) provide subtle themed backgrounds for status indicators
+  - The skeleton shimmer animation can use CSS variables directly: `linear-gradient(90deg, var(--bg-tertiary) 25%, var(--border-secondary) 50%, var(--bg-tertiary) 75%)`
+  - Platform-specific colors (Sleeper blue, Yahoo purple) work well with rgba() for transparent backgrounds
+  - Removing unused functions (like getPlatformColor) prevents lint errors after refactoring

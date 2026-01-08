@@ -171,28 +171,28 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, var(--gradient-from), var(--gradient-to))' }}>
       {/* Header */}
-      <header className="border-b border-slate-700 bg-slate-800/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="backdrop-blur-sm sticky top-0 z-40" style={{ borderBottom: '1px solid var(--border-primary)', backgroundColor: 'rgba(var(--bg-card-rgb, 30, 41, 59), 0.5)' }}>
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             {/* Logo and League Name */}
             <div className="flex items-center gap-3">
               {/* Trophy Icon */}
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(to bottom right, var(--trophy-gold), var(--chart-4))' }}>
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5 2a2 2 0 00-2 2v1a2 2 0 002 2h1v1H5a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3v-6a3 3 0 00-3-3h-1V7h1a2 2 0 002-2V4a2 2 0 00-2-2H5zm0 2h10v1H5V4zm3 4h4v1H8V8z" clipRule="evenodd" />
                 </svg>
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-white leading-tight">
+                <h1 className="text-lg font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
                   {leagueName}
                 </h1>
-                <p className="text-slate-400 text-xs">
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                   History Tracker
                 </p>
               </div>
-              <h1 className="sm:hidden text-lg font-bold text-white">
+              <h1 className="sm:hidden text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                 {leagueName.length > 15 ? leagueName.slice(0, 15) + '...' : leagueName}
               </h1>
             </div>
@@ -203,18 +203,18 @@ function App() {
               <div className="hidden md:flex items-center gap-2">
                 {apiStatus ? (
                   <>
-                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                    <span className="text-slate-400 text-sm">API Connected</span>
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--success)' }}></span>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>API Connected</span>
                   </>
                 ) : error ? (
                   <>
-                    <span className="w-2 h-2 bg-red-400 rounded-full"></span>
-                    <span className="text-red-400 text-sm">Disconnected</span>
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--error)' }}></span>
+                    <span className="text-sm" style={{ color: 'var(--error)' }}>Disconnected</span>
                   </>
                 ) : (
                   <>
-                    <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-                    <span className="text-slate-400 text-sm">Connecting...</span>
+                    <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: 'var(--warning)' }}></span>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Connecting...</span>
                   </>
                 )}
               </div>
@@ -222,7 +222,8 @@ function App() {
               {/* Theme Toggle */}
               <button
                 onClick={cycleTheme}
-                className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
+                className="p-2 rounded-lg transition-colors"
+                style={{ backgroundColor: 'var(--bg-tertiary)' }}
                 aria-label={`Switch theme (current: ${THEME_LABELS[theme]})`}
                 title={THEME_LABELS[theme]}
               >
@@ -232,15 +233,16 @@ function App() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
+                className="md:hidden p-2 rounded-lg transition-colors"
+                style={{ backgroundColor: 'var(--bg-tertiary)' }}
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? (
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" style={{ color: 'var(--text-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" style={{ color: 'var(--text-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 )}
@@ -254,11 +256,11 @@ function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
-                  activeTab === tab.id
-                    ? 'bg-slate-700 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                }`}
+                className="flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition-colors"
+                style={{
+                  backgroundColor: activeTab === tab.id ? 'var(--bg-tertiary)' : 'transparent',
+                  color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                }}
               >
                 {tab.icon}
                 {tab.label}
@@ -268,7 +270,7 @@ function App() {
 
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
-            <nav className="md:hidden mt-4 pb-2 border-t border-slate-700 pt-4">
+            <nav className="md:hidden mt-4 pb-2 pt-4" style={{ borderTop: '1px solid var(--border-primary)' }}>
               <div className="flex flex-col gap-1">
                 {tabs.map((tab) => (
                   <button
@@ -277,11 +279,11 @@ function App() {
                       setActiveTab(tab.id);
                       setMobileMenuOpen(false);
                     }}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                      activeTab === tab.id
-                        ? 'bg-slate-700 text-white'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-                    }`}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors"
+                    style={{
+                      backgroundColor: activeTab === tab.id ? 'var(--bg-tertiary)' : 'transparent',
+                      color: activeTab === tab.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    }}
                   >
                     {tab.icon}
                     {tab.label}
@@ -294,17 +296,16 @@ function App() {
       </header>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-800 border-t border-slate-700 z-40">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40" style={{ backgroundColor: 'var(--bg-card)', borderTop: '1px solid var(--border-primary)' }}>
         <div className="flex justify-around">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 px-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'text-blue-400'
-                  : 'text-slate-400 hover:text-white'
-              }`}
+              className="flex-1 flex flex-col items-center gap-1 py-3 px-2 transition-colors"
+              style={{
+                color: activeTab === tab.id ? 'var(--accent-primary)' : 'var(--text-secondary)',
+              }}
             >
               {tab.icon}
               <span className="text-xs font-medium">{tab.label}</span>

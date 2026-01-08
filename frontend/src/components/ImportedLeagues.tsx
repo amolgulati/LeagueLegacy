@@ -99,10 +99,6 @@ export function ImportedLeagues({ onReimport, onDelete, refreshTrigger }: Import
     return platform === 'sleeper' ? '🌙' : '🏈';
   };
 
-  const getPlatformColor = (platform: string) => {
-    return platform === 'sleeper' ? 'bg-blue-600/20 text-blue-400' : 'bg-purple-600/20 text-purple-400';
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -114,8 +110,8 @@ export function ImportedLeagues({ onReimport, onDelete, refreshTrigger }: Import
 
   if (loading) {
     return (
-      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-        <h3 className="text-xl font-bold text-white mb-4">Imported Leagues</h3>
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
+        <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Imported Leagues</h3>
         <div className="flex justify-center py-8">
           <LoadingSpinner size="md" color="blue" />
         </div>
@@ -125,12 +121,13 @@ export function ImportedLeagues({ onReimport, onDelete, refreshTrigger }: Import
 
   if (error) {
     return (
-      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-        <h3 className="text-xl font-bold text-white mb-4">Imported Leagues</h3>
-        <div className="text-red-400 text-center py-4">{error}</div>
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
+        <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Imported Leagues</h3>
+        <div className="text-center py-4" style={{ color: 'var(--error)' }}>{error}</div>
         <button
           onClick={loadLeagues}
-          className="w-full py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+          className="w-full py-2 rounded-lg transition-colors"
+          style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-primary)' }}
         >
           Retry
         </button>
@@ -140,43 +137,50 @@ export function ImportedLeagues({ onReimport, onDelete, refreshTrigger }: Import
 
   if (leagues.length === 0) {
     return (
-      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
-        <h3 className="text-xl font-bold text-white mb-4">Imported Leagues</h3>
-        <div className="text-slate-400 text-center py-8">
+      <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
+        <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Imported Leagues</h3>
+        <div className="text-center py-8" style={{ color: 'var(--text-secondary)' }}>
           <div className="text-4xl mb-2">📊</div>
           <p>No leagues imported yet.</p>
-          <p className="text-sm mt-2">Use the Import League section above to get started!</p>
+          <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>Use the Import League section above to get started!</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800 rounded-lg p-6 border border-slate-700">
+    <div className="rounded-lg p-6" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-white">Imported Leagues</h3>
-        <span className="text-slate-400 text-sm">{leagues.length} league{leagues.length !== 1 ? 's' : ''}</span>
+        <h3 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Imported Leagues</h3>
+        <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{leagues.length} league{leagues.length !== 1 ? 's' : ''}</span>
       </div>
 
       <div className="space-y-4">
         {leagues.map((league) => (
           <div
             key={league.id}
-            className="bg-slate-700/50 rounded-lg p-4 border border-slate-600/50 hover:border-slate-500/50 transition-colors"
+            className="rounded-lg p-4 transition-colors"
+            style={{ backgroundColor: 'var(--bg-tertiary)', border: '1px solid var(--border-secondary)' }}
           >
             {/* Header Row */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${getPlatformColor(league.platform)}`}>
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                  style={{
+                    backgroundColor: league.platform === 'sleeper' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(139, 92, 246, 0.2)',
+                    color: league.platform === 'sleeper' ? 'var(--chart-1)' : 'var(--accent-secondary)',
+                  }}
+                >
                   <span className="text-xl">{getPlatformIcon(league.platform)}</span>
                 </div>
                 <div className="min-w-0">
-                  <div className="text-white font-semibold truncate">{league.name}</div>
-                  <div className="flex items-center gap-2 text-slate-400 text-sm">
+                  <div className="font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{league.name}</div>
+                  <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     <span className="capitalize">{league.platform}</span>
                     {league.scoring_type && (
                       <>
-                        <span className="text-slate-600">•</span>
+                        <span style={{ color: 'var(--text-muted)' }}>•</span>
                         <span>{league.scoring_type}</span>
                       </>
                     )}
@@ -188,11 +192,11 @@ export function ImportedLeagues({ onReimport, onDelete, refreshTrigger }: Import
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => onReimport(league.platform_league_id, league.platform)}
-                  className={`px-3 py-1.5 rounded-lg transition-colors text-sm font-medium flex items-center gap-1.5 ${
-                    league.platform === 'sleeper'
-                      ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30'
-                      : 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30'
-                  }`}
+                  className="px-3 py-1.5 rounded-lg transition-colors text-sm font-medium flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: league.platform === 'sleeper' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(139, 92, 246, 0.2)',
+                    color: league.platform === 'sleeper' ? 'var(--chart-1)' : 'var(--accent-secondary)',
+                  }}
                   title="Re-import league data"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -203,11 +207,11 @@ export function ImportedLeagues({ onReimport, onDelete, refreshTrigger }: Import
                 <button
                   onClick={() => handleDelete(league.id)}
                   disabled={deletingId === league.id}
-                  className={`px-3 py-1.5 rounded-lg transition-colors text-sm font-medium flex items-center gap-1.5 ${
-                    confirmDelete === league.id
-                      ? 'bg-red-600 text-white hover:bg-red-500'
-                      : 'bg-red-600/20 text-red-400 hover:bg-red-600/30'
-                  } disabled:opacity-50`}
+                  className="px-3 py-1.5 rounded-lg transition-colors text-sm font-medium flex items-center gap-1.5 disabled:opacity-50"
+                  style={{
+                    backgroundColor: confirmDelete === league.id ? 'var(--error)' : 'var(--error-muted)',
+                    color: confirmDelete === league.id ? 'white' : 'var(--error)',
+                  }}
                   title={confirmDelete === league.id ? 'Click again to confirm' : 'Delete league'}
                 >
                   {deletingId === league.id ? (
@@ -223,28 +227,28 @@ export function ImportedLeagues({ onReimport, onDelete, refreshTrigger }: Import
             </div>
 
             {/* Stats Row */}
-            <div className="mt-3 pt-3 border-t border-slate-600/50 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="mt-3 pt-3 grid grid-cols-2 sm:grid-cols-4 gap-3" style={{ borderTop: '1px solid var(--border-primary)' }}>
               <div className="text-center">
-                <div className="text-white font-medium">{league.seasons_count}</div>
-                <div className="text-slate-400 text-xs">Season{league.seasons_count !== 1 ? 's' : ''}</div>
+                <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{league.seasons_count}</div>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Season{league.seasons_count !== 1 ? 's' : ''}</div>
               </div>
               <div className="text-center">
-                <div className="text-white font-medium">{league.total_teams}</div>
-                <div className="text-slate-400 text-xs">Teams</div>
+                <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{league.total_teams}</div>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Teams</div>
               </div>
               <div className="text-center">
-                <div className="text-white font-medium">{league.total_matchups}</div>
-                <div className="text-slate-400 text-xs">Matchups</div>
+                <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{league.total_matchups}</div>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Matchups</div>
               </div>
               <div className="text-center">
-                <div className="text-white font-medium">{league.total_trades}</div>
-                <div className="text-slate-400 text-xs">Trades</div>
+                <div className="font-medium" style={{ color: 'var(--text-primary)' }}>{league.total_trades}</div>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>Trades</div>
               </div>
             </div>
 
             {/* Footer Row */}
-            <div className="mt-3 pt-3 border-t border-slate-600/50 flex items-center justify-between text-sm">
-              <div className="text-slate-400">
+            <div className="mt-3 pt-3 flex items-center justify-between text-sm" style={{ borderTop: '1px solid var(--border-primary)' }}>
+              <div style={{ color: 'var(--text-secondary)' }}>
                 {league.latest_season_year && (
                   <span>
                     {league.seasons_count > 1
@@ -254,7 +258,7 @@ export function ImportedLeagues({ onReimport, onDelete, refreshTrigger }: Import
                   </span>
                 )}
               </div>
-              <div className="text-slate-500">
+              <div style={{ color: 'var(--text-muted)' }}>
                 Imported {formatDate(league.created_at)}
               </div>
             </div>
