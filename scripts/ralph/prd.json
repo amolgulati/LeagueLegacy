@@ -1,0 +1,190 @@
+{
+  "branchName": "ralph/fantasy-league-history",
+  "userStories": [
+    {
+      "id": "FLH-001",
+      "title": "Initialize project structure",
+      "acceptanceCriteria": [
+        "Create backend/ folder with FastAPI app skeleton",
+        "Create frontend/ folder with React/Vite setup",
+        "Add README.md with project description",
+        "Both apps start without errors"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "FLH-002",
+      "title": "Create SQLite database schema",
+      "acceptanceCriteria": [
+        "Create models for: League, Season, Team, Owner, Matchup, Trade",
+        "Owners persist across seasons and platforms",
+        "Database initializes on app start",
+        "Schema supports both Yahoo and Sleeper data"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "FLH-003",
+      "title": "Build Sleeper API integration",
+      "acceptanceCriteria": [
+        "Fetch league info by league ID",
+        "Fetch all rosters and users",
+        "Fetch matchups for a season",
+        "Fetch all trades for a season",
+        "Store results in database"
+      ],
+      "priority": 3,
+      "passes": false
+    },
+    {
+      "id": "FLH-004",
+      "title": "Build Yahoo Fantasy API integration",
+      "acceptanceCriteria": [
+        "OAuth2 authentication flow works",
+        "Fetch historical league data",
+        "Fetch standings and matchups",
+        "Fetch trade history",
+        "Store results in database"
+      ],
+      "priority": 4,
+      "passes": false
+    },
+    {
+      "id": "FLH-005",
+      "title": "Create owner mapping system",
+      "acceptanceCriteria": [
+        "UI to link Yahoo user to Sleeper user as same owner",
+        "API endpoint to save owner mappings",
+        "Stats aggregate correctly across platforms"
+      ],
+      "priority": 5,
+      "passes": false
+    },
+    {
+      "id": "FLH-006",
+      "title": "Build league history API endpoints",
+      "acceptanceCriteria": [
+        "GET /owners - list all owners with career stats",
+        "GET /owners/{id}/history - full history for one owner",
+        "GET /seasons - list all seasons with champions",
+        "GET /head-to-head/{owner1}/{owner2} - rivalry stats"
+      ],
+      "priority": 6,
+      "passes": false
+    },
+    {
+      "id": "FLH-007",
+      "title": "Build trade analytics API",
+      "acceptanceCriteria": [
+        "GET /trades - all trades with filters",
+        "GET /owners/{id}/trades - trades for owner",
+        "Calculate trade frequency per owner",
+        "Calculate most common trade partners",
+        "Calculate win rate before/after trades"
+      ],
+      "priority": 7,
+      "passes": false
+    },
+    {
+      "id": "FLH-008",
+      "title": "Create frontend dashboard layout",
+      "acceptanceCriteria": [
+        "Navigation with tabs: Dashboard, Owners, Seasons, Trades",
+        "Responsive design works on mobile",
+        "Dark mode support",
+        "League branding/name displayed"
+      ],
+      "priority": 8,
+      "passes": false
+    },
+    {
+      "id": "FLH-009",
+      "title": "Build owner profile cards",
+      "acceptanceCriteria": [
+        "Display owner name and avatar",
+        "Show career record (W-L)",
+        "Show championships count",
+        "Show playoff appearances",
+        "Visually appealing card design"
+      ],
+      "priority": 9,
+      "passes": false
+    },
+    {
+      "id": "FLH-010",
+      "title": "Build head-to-head rivalry view",
+      "acceptanceCriteria": [
+        "Select two owners to compare",
+        "Show all-time record between them",
+        "Show average score in matchups",
+        "List all historical matchups",
+        "Highlight playoff matchups"
+      ],
+      "priority": 10,
+      "passes": false
+    },
+    {
+      "id": "FLH-011",
+      "title": "Build trade history visualization",
+      "acceptanceCriteria": [
+        "Timeline view of all trades",
+        "Filter by owner or season",
+        "Show trade partners network graph",
+        "Display trade frequency stats"
+      ],
+      "priority": 11,
+      "passes": false
+    },
+    {
+      "id": "FLH-012",
+      "title": "Create league records page",
+      "acceptanceCriteria": [
+        "Highest single-week score (all-time)",
+        "Most points in a season",
+        "Longest win streak",
+        "Most trades in a season",
+        "Records show owner name and year"
+      ],
+      "priority": 12,
+      "passes": false
+    },
+    {
+      "id": "FLH-013",
+      "title": "Build Hall of Fame section",
+      "acceptanceCriteria": [
+        "Display all champions by year",
+        "Trophy icons or visuals",
+        "Championship count leaderboard",
+        "Eye-catching design worthy of bragging"
+      ],
+      "priority": 13,
+      "passes": false
+    },
+    {
+      "id": "FLH-014",
+      "title": "Add season-by-season breakdown",
+      "acceptanceCriteria": [
+        "Select any season to view",
+        "Show final standings",
+        "Show playoff bracket",
+        "Show notable trades that season"
+      ],
+      "priority": 14,
+      "passes": false
+    },
+    {
+      "id": "FLH-015",
+      "title": "Polish UI and add animations",
+      "acceptanceCriteria": [
+        "Smooth page transitions",
+        "Loading states for data fetches",
+        "Celebratory animation for championships",
+        "Consistent color scheme throughout"
+      ],
+      "priority": 15,
+      "passes": false
+    }
+  ]
+}

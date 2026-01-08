@@ -1,0 +1,10 @@
+# Fantasy League History Tracker - Ralph Progress Log
+Started: 2025-01-07
+
+## Codebase Patterns
+(Ralph will add patterns here as it learns)
+
+## Key Files
+(Ralph will document important files here)
+
+---
