@@ -18,12 +18,24 @@ class ImportLeagueRequest(BaseModel):
     league_id: str
 
 
+class SeasonImportDetail(BaseModel):
+    """Detail for a single imported season."""
+
+    season_year: int
+    teams_imported: int
+    matchups_imported: int
+    trades_imported: int
+    champion_team_id: Optional[int] = None
+    runner_up_team_id: Optional[int] = None
+
+
 class ImportLeagueResponse(BaseModel):
     """Response model for league import."""
 
     league_id: int
     league_name: str
-    season_year: int
+    seasons_imported: int
+    seasons: List[SeasonImportDetail]
     teams_imported: int
     matchups_imported: int
     trades_imported: int

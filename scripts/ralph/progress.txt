@@ -1,5 +1,5 @@
-# Fantasy League History Tracker - Ralph Progress Log (Improvements v2)
-Started: 2026-01-07
+# Fantasy League History Tracker - Ralph Progress Log (Improvements v3)
+Started: 2026-01-08
 
 ## Codebase Patterns
 - Backend: FastAPI with uvicorn at http://localhost:8000
@@ -15,163 +15,19 @@ Started: 2026-01-07
 - frontend/src/App.tsx - Main React component
 - frontend/src/index.css - Tailwind CSS imports
 
-## Issues Being Addressed
-1. Sleeper Import - Missing Historical Seasons (only imports current season)
-2. Sleeper Import - No Champion Detection (playoff winner not recorded)
-3. Sleeper Import - Player IDs Not Resolved (trades show numbers not names)
-4. Yahoo Fantasy Import - Not fully implemented
-5. UI/UX Gaps - Import modal needs loading states and error handling
+## Stories for v3
+1. IMP-011: Enable Yahoo League Import Frontend (backend complete, needs frontend UI)
+2. IMP-012: Environment Configuration Setup (foundation for Yahoo setup)
+3. IMP-013: Loading State Improvements (UX polish)
+4. IMP-014: Add React Error Boundary (error resilience)
+5. IMP-015: API Documentation
+
+## Execution Order
+1. IMP-012 (Env Config) - Needed for Yahoo OAuth credentials
+2. IMP-011 (Yahoo Import) - Main feature
+3. IMP-013 (Loading States) - Quick UX win
+4. IMP-014 (Error Boundary) - Safety net
+5. IMP-015 (API Docs) - Documentation polish
 
 ---
 
-## 2025-01-10 - IMP-001
-- What was implemented: Added methods to traverse Sleeper league history chain via previous_league_id
-- Files changed:
-  - `backend/app/services/sleeper_client.py` - Added get_previous_league_id() and get_league_history_chain() methods
-  - `backend/tests/test_sleeper.py` - Added 4 new tests for chain traversal
-- **Learnings:**
-  - Sleeper API returns previous_league_id in league data which links to the same league from prior seasons
-  - Chain traversal allows finding all historical league IDs from a single current league ID
-  - Tests: 28 sleeper tests now passing (was 24, added 4)
-
-## 2025-01-10 - IMP-002
-- What was implemented: Full historical season import functionality for Sleeper leagues
-- Files changed:
-  - `backend/app/services/sleeper_service.py` - Modified import_full_league() and related methods
-  - `backend/tests/test_sleeper.py` - Added 4 new tests for multi-season import and idempotency
-- **Learnings:**
-  - Each Sleeper season has a unique league_id, but they should all link to ONE League record in DB
-  - Added optional `league` parameter to import methods to pass the shared League record through
-  - Idempotency works because existing code checks for duplicate records before creating new ones
-  - import_single_season() helper keeps import_full_league() cleaner
-  - Tests: 31 sleeper tests now passing (was 28, added 4 - but net +3 since one was renamed)
-  - Total backend tests: 153 passing
-
-## 2025-01-10 - IMP-003
-- What was implemented: Sleeper player database fetch and caching functionality
-- Files changed:
-  - `backend/app/services/sleeper_client.py` - Added get_players() method for fetching player database
-  - `backend/app/services/player_cache.py` - New PlayerCache class with file-based caching
-  - `backend/app/services/__init__.py` - Export PlayerCache
-  - `backend/tests/test_sleeper.py` - Added 10 new tests for player cache functionality
-- **Learnings:**
-  - Sleeper /players/nfl endpoint returns large (~30MB) JSON with all NFL players
-  - Player cache stores data in ~/.fantasy-league-history/sleeper_players.json
-  - Cache includes timestamp for TTL-based expiration (default 24 hours)
-  - get_player_name() has fallback: full_name -> first_name + last_name -> "Player {id}"
-  - force_refresh option allows manual cache refresh when needed
-  - Tests: 41 sleeper tests now passing (31 + 10 new)
-  - Total backend tests: 163 passing
-
-## 2025-01-10 - IMP-004
-- What was implemented: Display player names in trades instead of raw player IDs
-- Files changed:
-  - `backend/app/services/sleeper_service.py` - Integrated PlayerCache for player name resolution during trade import
-  - `backend/app/services/player_cache.py` - Added _loaded flag for explicit loading state (testing support)
-  - `backend/app/api/trades.py` - Added TeamTradeDetails model, trade_summary, parse_trade_details helper
-  - `frontend/src/components/TradeTimeline.tsx` - Display trade_details with player names and color highlighting
-  - `frontend/src/pages/Trades.tsx` - Added TeamTradeDetails interface
-  - `backend/tests/test_sleeper.py` - Added mock_player_data fixture and create_mock_player_cache helper
-- **Learnings:**
-  - PlayerCache needs _loaded flag because empty dict is falsy, causing is_loaded() to fail for tests with no players
-  - import_trades() now calls _ensure_player_cache() before processing trades
-  - API returns both raw assets_exchanged JSON and parsed trade_details for flexibility
-  - trade_summary provides human-readable format: "Owner A receives Player X, Player Y"
-  - Frontend uses green color highlighting for received players
-  - Tests: Still 41 sleeper tests (updated existing tests to use mock player cache)
-  - Total backend tests: 163 passing, frontend builds successfully
-
-## 2025-01-10 - IMP-005
-- What was implemented: Sleeper playoff bracket fetching and champion detection
-- Files changed:
-  - `backend/app/services/sleeper_client.py` - Added 6 new methods for playoff bracket functionality:
-    - `get_winners_bracket()` - Fetch winners/championship bracket from API
-    - `get_losers_bracket()` - Fetch consolation bracket from API
-    - `get_championship_round()` - Determine which round is the finals (highest round number)
-    - `get_championship_matchup()` - Find the championship game from bracket data
-    - `get_champion_roster_id()` - Extract winner's roster_id from championship
-    - `get_runner_up_roster_id()` - Extract loser's roster_id from championship
-  - `backend/tests/test_sleeper.py` - Added 6 new tests covering all bracket scenarios
-- **Learnings:**
-  - Sleeper API has `/league/{id}/winners_bracket` and `/league/{id}/losers_bracket` endpoints
-  - Bracket matchups have: r (round), m (match id), t1/t2 (roster IDs), w/l (winner/loser roster IDs)
-  - Championship is the matchup in the highest round number (r)
-  - When multiple matchups in final round (e.g., 3rd place game), championship has lowest match ID
-  - Winner/loser fields are None until matchup is completed
-  - Supports 4-team (2 rounds), 6-team (3 rounds), and 8-team (3 rounds) playoffs
-  - Tests: 47 sleeper tests now passing (41 + 6 new)
-  - Total backend tests: 169 passing
-
-
-## 2025-01-10 - IMP-006
-- What was implemented: Store champion/runner-up in Season record during Sleeper import
-- Files changed:
-  - `backend/app/services/sleeper_service.py` - Added detect_and_set_champion() method, integrated into import_single_season()
-  - `backend/tests/test_sleeper.py` - Added 3 new tests for champion detection
-- **Learnings:**
-  - Champion detection uses winners_bracket to map roster_id to team_id
-  - Season model already had champion_team_id and runner_up_team_id fields
-  - API and Hall of Fame page already display champion info
-  - Tests: 50 sleeper tests now passing (47 + 3 new)
-  - Total backend tests: 172 passing
-
-## 2025-01-10 - IMP-007
-- What was implemented: Yahoo OAuth2 authentication flow with persistent token storage
-- Files changed:
-  - `backend/app/services/yahoo_token_cache.py` - New file for file-based token persistence
-  - `backend/app/services/__init__.py` - Export YahooTokenCache
-  - `backend/app/api/yahoo.py` - Updated OAuth routes to use file-based cache, added callback endpoint
-  - `backend/tests/test_yahoo.py` - Added 12 new tests for token cache and OAuth callback
-- **Learnings:**
-  - Yahoo OAuth2 tokens need to persist across server restarts for good UX
-  - File-based cache at ~/.fantasy-league-history/yahoo_tokens.json works well
-  - OAuth callback endpoint redirects to frontend after successful auth
-  - Environment variables: YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET, YAHOO_REDIRECT_URI, FRONTEND_URL
-  - Tests need unique session IDs to avoid cross-test pollution from file cache
-  - Tests: 40 yahoo tests now passing (28 + 12 new)
-  - Total backend tests: 184 passing
-
-## 2025-01-10 - IMP-008
-- What was implemented: Full Yahoo Fantasy league import functionality with champion detection
-- Files changed:
-  - `backend/app/services/yahoo_service.py` - Added detect_and_set_champion(), import_full_league_with_champion(), import_historical_leagues()
-  - `backend/app/api/yahoo.py` - Added POST /api/yahoo/import/all endpoint, ImportHistoricalResponse model, updated ImportLeagueResponse
-  - `backend/tests/test_yahoo.py` - Added 10 new tests for import functionality
-- **Learnings:**
-  - Yahoo's API returns data from finished seasons via "is_finished" flag on league data
-  - Championship game is identified by is_playoffs=true AND is_consolation=false in the final week
-  - Historical imports use different "game_keys" for each NFL season (e.g., "449" for 2024, "423" for 2023)
-  - Import is idempotent - existing records are updated rather than duplicated
-  - Champion detection looks at the end_week matchups to find the championship game winner
-  - Tests: 50 yahoo tests now passing (40 + 10 new)
-  - Total backend tests: 194 passing
-
-## 2025-01-10 - IMP-009
-- What was implemented: Import modal with loading states, progress indicators, and error handling
-- Files changed:
-  - `frontend/src/components/ImportModal.tsx` - New component with comprehensive loading and error states
-  - `frontend/src/pages/Dashboard.tsx` - Integrated ImportModal, removed old inline modal code
-- **Learnings:**
-  - Progress simulation runs independently of actual API call to show visual feedback
-  - Step indicators provide clear UX showing what's happening (League, Seasons, Matchups, Trades)
-  - Error state includes troubleshooting tips to help users diagnose issues
-  - Success state shows detailed import summary with counts
-  - Modal prevents close during active import to avoid user confusion
-  - LoadingSpinner component from LoadingStates.tsx can be reused across the app
-  - Tests: Frontend builds successfully, 194 backend tests passing
-
-## 2025-01-10 - IMP-010
-- What was implemented: Import history display and re-import/delete functionality for leagues
-- Files changed:
-  - `backend/app/api/leagues.py` - New API with GET/DELETE endpoints for league management
-  - `backend/tests/test_leagues.py` - Added 10 comprehensive tests
-  - `frontend/src/components/ImportedLeagues.tsx` - New component for displaying imported leagues
-  - `frontend/src/pages/Dashboard.tsx` - Integrated ImportedLeagues component
-  - `frontend/src/components/ImportModal.tsx` - Added initialLeagueId prop for re-import
-  - `backend/app/main.py` - Include leagues_router
-- **Learnings:**
-  - Cascade delete removes all associated seasons, teams, matchups, and trades
-  - Owners are preserved when deleting leagues (they may be linked to other leagues)
-  - Re-import uses existing idempotent import logic - just pre-fills the league ID in modal
-  - Delete confirmation uses double-click pattern to prevent accidental deletes
-  - Tests: 10 leagues tests, 204 total backend tests passing

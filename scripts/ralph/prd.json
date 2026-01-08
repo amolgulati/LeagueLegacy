@@ -1,137 +1,70 @@
 {
-  "branchName": "ralph/improvements-v2",
+  "branchName": "ralph/improvements-v3",
   "userStories": [
     {
-      "id": "IMP-001",
-      "title": "Traverse Sleeper league history chain",
+      "id": "IMP-011",
+      "title": "Enable Yahoo League Import Frontend",
       "acceptanceCriteria": [
-        "SleeperClient has method to fetch previous_league_id from league data",
-        "Service can traverse the chain of previous_league_id to find all historical league IDs",
-        "Unit tests verify chain traversal with mocked API responses",
+        "YahooAuthModal component handles OAuth login flow with Yahoo redirect",
+        "YahooImportModal component allows entering league key and triggering import",
+        "Dashboard 'Import from Yahoo' button opens auth/import flow instead of 'Coming soon'",
+        "Imported Yahoo leagues appear in ImportedLeagues list with re-import/delete support",
         "typecheck passes"
       ],
       "priority": 1,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "IMP-002",
-      "title": "Import all historical Sleeper seasons",
+      "id": "IMP-012",
+      "title": "Environment Configuration Setup",
       "acceptanceCriteria": [
-        "import_league fetches and imports all historical seasons (not just current)",
-        "Each historical season creates proper Season, Team, Matchup, Trade records",
-        "Duplicate import is idempotent (re-running doesn't create duplicate records)",
-        "Integration test verifies multiple seasons are imported",
+        "backend/.env.example documents YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET, YAHOO_REDIRECT_URI, FRONTEND_URL, CORS_ORIGINS",
+        "frontend/.env.example documents VITE_API_URL",
+        "CORS origins in main.py read from CORS_ORIGINS env var with localhost:5173 default",
+        "README.md updated with environment setup instructions",
         "typecheck passes"
       ],
       "priority": 2,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "IMP-003",
-      "title": "Fetch and cache Sleeper player database",
+      "id": "IMP-013",
+      "title": "Loading State Improvements",
       "acceptanceCriteria": [
-        "SleeperClient fetches player database from Sleeper API",
-        "Player data is cached to avoid repeated fetches (file or database)",
-        "Player lookup function returns player name given player ID",
-        "Cache has reasonable TTL or manual refresh option",
+        "Seasons page shows skeleton loader while fetching data",
+        "Records page shows skeleton loader while fetching data",
+        "HallOfFame page shows skeleton loader while fetching data",
+        "No white flash on initial page load for any of these pages",
         "typecheck passes"
       ],
       "priority": 3,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "IMP-004",
-      "title": "Display player names in trades",
+      "id": "IMP-014",
+      "title": "Add React Error Boundary",
       "acceptanceCriteria": [
-        "Trade records store resolved player names (not just IDs)",
-        "API returns player names in trade responses",
-        "Frontend displays player names in trade timeline and details",
-        "Existing trades can be updated with player names via re-import",
+        "ErrorBoundary component catches rendering errors in child components",
+        "Error state shows user-friendly message with 'Try Again' button",
+        "App.tsx wraps main content with ErrorBoundary",
+        "Error details logged to console for debugging",
         "typecheck passes"
       ],
       "priority": 4,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "IMP-005",
-      "title": "Detect Sleeper playoff bracket winner",
+      "id": "IMP-015",
+      "title": "API Documentation",
       "acceptanceCriteria": [
-        "SleeperClient fetches playoff bracket or championship matchups",
-        "Service identifies championship game and determines winner",
-        "Championship week/round is correctly identified from bracket or matchups",
-        "Unit tests verify champion detection with mocked playoff data",
+        "ENDPOINTS.md file exists in project root",
+        "All API endpoints documented with method, path, and description",
+        "Endpoints grouped by category (sleeper, yahoo, owners, history, trades, etc.)",
+        "Key endpoints include example request/response",
         "typecheck passes"
       ],
       "priority": 5,
-      "passes": true
-    },
-    {
-      "id": "IMP-006",
-      "title": "Store champion in Season record",
-      "acceptanceCriteria": [
-        "Season model has champion_team_id field if not already present",
-        "import_league sets champion on Season after detecting playoff winner",
-        "API returns champion info in season responses",
-        "Hall of Fame page correctly shows champions from Sleeper leagues",
-        "typecheck passes"
-      ],
-      "priority": 6,
-      "passes": true
-    },
-    {
-      "id": "IMP-007",
-      "title": "Implement Yahoo OAuth2 authentication flow",
-      "acceptanceCriteria": [
-        "Yahoo OAuth2 credentials can be configured via environment variables",
-        "Auth endpoint initiates OAuth2 flow and redirects to Yahoo",
-        "Callback endpoint exchanges code for access/refresh tokens",
-        "Tokens are stored securely and can be refreshed",
-        "User can verify authentication status via API",
-        "typecheck passes"
-      ],
-      "priority": 7,
-      "passes": true
-    },
-    {
-      "id": "IMP-008",
-      "title": "Import Yahoo Fantasy league data",
-      "acceptanceCriteria": [
-        "Fetch and import leagues user has access to",
-        "Import standings for each season",
-        "Import matchups/scores for each week",
-        "Import trade history",
-        "All data stored in database with proper relationships",
-        "typecheck passes"
-      ],
-      "priority": 8,
-      "passes": true
-    },
-    {
-      "id": "IMP-009",
-      "title": "Add import modal loading states and error handling",
-      "acceptanceCriteria": [
-        "Import modal shows loading spinner during import",
-        "Progress indicator shows import steps (fetching league, importing seasons, etc.)",
-        "Error messages are displayed clearly when import fails",
-        "User can dismiss error and retry import",
-        "Success message confirms what was imported",
-        "typecheck passes"
-      ],
-      "priority": 9,
-      "passes": true
-    },
-    {
-      "id": "IMP-010",
-      "title": "Add import history and re-import functionality",
-      "acceptanceCriteria": [
-        "Dashboard shows list of imported leagues with import date",
-        "User can trigger re-import for any previously imported league",
-        "Re-import updates existing data without creating duplicates",
-        "Delete option removes a league and all its data",
-        "typecheck passes"
-      ],
-      "priority": 10,
-      "passes": true
+      "passes": false
     }
   ]
 }
