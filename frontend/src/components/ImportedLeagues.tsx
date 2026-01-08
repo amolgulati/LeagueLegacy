@@ -188,7 +188,11 @@ export function ImportedLeagues({ onReimport, onDelete, refreshTrigger }: Import
               <div className="flex items-center gap-2 shrink-0">
                 <button
                   onClick={() => onReimport(league.platform_league_id, league.platform)}
-                  className="px-3 py-1.5 bg-blue-600/20 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors text-sm font-medium flex items-center gap-1.5"
+                  className={`px-3 py-1.5 rounded-lg transition-colors text-sm font-medium flex items-center gap-1.5 ${
+                    league.platform === 'sleeper'
+                      ? 'bg-blue-600/20 text-blue-400 hover:bg-blue-600/30'
+                      : 'bg-purple-600/20 text-purple-400 hover:bg-purple-600/30'
+                  }`}
                   title="Re-import league data"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1205,7 +1205,17 @@ class TestSleeperEndpoints:
             return_value={
                 "league_id": 1,
                 "league_name": "Test Fantasy League",
-                "season_year": 2023,
+                "seasons_imported": 1,
+                "seasons": [
+                    {
+                        "season_year": 2023,
+                        "teams_imported": 2,
+                        "matchups_imported": 14,
+                        "trades_imported": 5,
+                        "champion_team_id": None,
+                        "runner_up_team_id": None,
+                    }
+                ],
                 "teams_imported": 2,
                 "matchups_imported": 14,
                 "trades_imported": 5,
@@ -1220,6 +1230,7 @@ class TestSleeperEndpoints:
             data = response.json()
             assert data["league_name"] == "Test Fantasy League"
             assert data["teams_imported"] == 2
+            assert data["seasons_imported"] == 1
 
 
 # ============================================================================

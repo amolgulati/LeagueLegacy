@@ -8,9 +8,11 @@
  * - Import functionality
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ImportModal } from '../components/ImportModal';
 import { ImportedLeagues } from '../components/ImportedLeagues';
+import { YahooAuthModal } from '../components/YahooAuthModal';
+import { YahooImportModal } from '../components/YahooImportModal';
 
 interface ApiStatus {
   name: string;
@@ -36,6 +38,12 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
   const [importLeagueId, setImportLeagueId] = useState('');
   const [leagueRefreshTrigger, setLeagueRefreshTrigger] = useState(0);
 
+  // Yahoo auth/import state
+  const [showYahooAuthModal, setShowYahooAuthModal] = useState(false);
+  const [showYahooImportModal, setShowYahooImportModal] = useState(false);
+  const [yahooAuthStatus, setYahooAuthStatus] = useState<'unknown' | 'authenticated' | 'unauthenticated'>('unknown');
+  const [yahooImportLeagueKey, setYahooImportLeagueKey] = useState('');
+
   const loadStats = async () => {
     try {
       const [ownersRes, seasonsRes, tradesRes] = await Promise.all([
@@ -55,16 +63,41 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
     }
   };
 
+  // Check Yahoo authentication status
+  const checkYahooAuth = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/yahoo/auth/status');
+      if (response.ok) {
+        const data = await response.json();
+        setYahooAuthStatus(data.authenticated ? 'authenticated' : 'unauthenticated');
+      } else {
+        setYahooAuthStatus('unauthenticated');
+      }
+    } catch {
+      setYahooAuthStatus('unauthenticated');
+    }
+  }, []);
+
   useEffect(() => {
     loadStats();
-  }, []);
+    checkYahooAuth();
+  }, [checkYahooAuth]);
 
   const handleReimport = (leagueId: string, platform: string) => {
     if (platform === 'sleeper') {
       setImportLeagueId(leagueId);
       setShowImportModal(true);
+    } else if (platform === 'yahoo') {
+      // For Yahoo, check auth status first
+      if (yahooAuthStatus === 'authenticated') {
+        setYahooImportLeagueKey(leagueId);
+        setShowYahooImportModal(true);
+      } else {
+        // Need to authenticate first
+        setYahooImportLeagueKey(leagueId);
+        setShowYahooAuthModal(true);
+      }
     }
-    // Yahoo import would be handled separately when OAuth is available
   };
 
   const handleImportSuccess = () => {
@@ -81,6 +114,37 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
   const handleCloseModal = () => {
     setShowImportModal(false);
     setImportLeagueId('');
+  };
+
+  // Yahoo auth/import handlers
+  const handleYahooClick = () => {
+    if (yahooAuthStatus === 'authenticated') {
+      setShowYahooImportModal(true);
+    } else {
+      setShowYahooAuthModal(true);
+    }
+  };
+
+  const handleYahooAuthSuccess = () => {
+    setYahooAuthStatus('authenticated');
+    setShowYahooAuthModal(false);
+    // Open import modal after successful auth
+    setShowYahooImportModal(true);
+  };
+
+  const handleYahooAuthClose = () => {
+    setShowYahooAuthModal(false);
+    setYahooImportLeagueKey('');
+  };
+
+  const handleYahooImportSuccess = () => {
+    loadStats();
+    setLeagueRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleYahooImportClose = () => {
+    setShowYahooImportModal(false);
+    setYahooImportLeagueKey('');
   };
 
   return (
@@ -189,15 +253,29 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
             </div>
           </div>
           
-          {/* Yahoo Import - Coming Soon */}
-          <div className="p-6 bg-slate-700/30 rounded-lg border-2 border-dashed border-slate-700 opacity-60">
+          {/* Yahoo Import */}
+          <div
+            onClick={handleYahooClick}
+            className="p-6 bg-slate-700/50 rounded-lg border-2 border-dashed border-slate-600 hover:border-purple-500 cursor-pointer transition-colors"
+          >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-lg bg-purple-600/20 flex items-center justify-center">
                 <span className="text-2xl">🏈</span>
               </div>
               <div>
-                <div className="text-white font-semibold">Import from Yahoo</div>
-                <p className="text-slate-400 text-sm">Coming soon - requires OAuth setup</p>
+                <div className="text-white font-semibold flex items-center gap-2">
+                  Import from Yahoo
+                  {yahooAuthStatus === 'authenticated' && (
+                    <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded">
+                      Connected
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-400 text-sm">
+                  {yahooAuthStatus === 'authenticated'
+                    ? 'Click to import a Yahoo Fantasy league'
+                    : 'Login to Yahoo to import your leagues'}
+                </p>
               </div>
             </div>
           </div>
@@ -255,6 +333,21 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
         onClose={handleCloseModal}
         onSuccess={handleImportSuccess}
         initialLeagueId={importLeagueId}
+      />
+
+      {/* Yahoo Auth Modal */}
+      <YahooAuthModal
+        isOpen={showYahooAuthModal}
+        onClose={handleYahooAuthClose}
+        onSuccess={handleYahooAuthSuccess}
+      />
+
+      {/* Yahoo Import Modal */}
+      <YahooImportModal
+        isOpen={showYahooImportModal}
+        onClose={handleYahooImportClose}
+        onSuccess={handleYahooImportSuccess}
+        initialLeagueKey={yahooImportLeagueKey}
       />
     </div>
   );
