@@ -105,3 +105,31 @@ Started: 2026-01-08
   - League key validation prevents wasted API calls for malformed keys
   - Logging with traceback helps debug issues in production
   - SQLAlchemy errors need explicit rollback to prevent transaction issues
+
+## 2026-01-08 - IMP-016: Theme Infrastructure Setup
+- What was implemented:
+  - Created ThemeContext with ThemeProvider managing 3 themes: dark, light, espn-retro
+  - Created useTheme hook for components to access theme state and cycleTheme function
+  - Updated App.tsx theme toggle to cycle through all 3 themes (replaced binary toggle)
+  - Expanded CSS variables to 24 variables across 6 categories:
+    - Background (6): bg-primary, bg-secondary, bg-tertiary, bg-card, bg-hover, bg-input
+    - Text (4): text-primary, text-secondary, text-muted, text-inverted
+    - Border (2): border-primary, border-secondary
+    - Accent (3): accent-primary, accent-primary-hover, accent-secondary
+    - Status (6): success, success-muted, warning, warning-muted, error, error-muted
+    - Chart/Trophy (7): chart-1-4, trophy-gold, trophy-silver, trophy-bronze
+  - Theme persists to localStorage (key: fantasy-league-theme)
+  - Migrates from old dark mode setting if present
+  - ESPN retro theme uses ESPN red (#CC0000) and gold (#FFD700) accents
+- Files created:
+  - `frontend/src/hooks/useTheme.tsx` - ThemeContext, ThemeProvider, useTheme hook
+- Files modified:
+  - `frontend/src/main.tsx` - Wrap App with ThemeProvider
+  - `frontend/src/App.tsx` - Use useTheme hook, update toggle button, add theme icons
+  - `frontend/src/index.css` - Comprehensive CSS variables for all 3 themes
+- **Learnings:**
+  - Use `type` keyword for type-only imports with verbatimModuleSyntax enabled
+  - eslint react-refresh/only-export-components requires disable comment for hooks in same file as components
+  - CSS variables allow theme switching without runtime class changes
+  - Organizing variables by category (bg, text, border, accent, status, chart) makes theming systematic
+  - Migration from old settings (fantasy-league-dark-mode) maintains backward compatibility
