@@ -25,7 +25,7 @@ export function LoadingSpinner({
 }: {
   size?: 'sm' | 'md' | 'lg';
   text?: string;
-  color?: 'blue' | 'yellow' | 'green' | 'purple';
+  color?: 'blue' | 'yellow' | 'green' | 'purple' | 'red';
 }) {
   const sizeClasses = {
     sm: 'h-6 w-6',
@@ -37,7 +37,8 @@ export function LoadingSpinner({
     blue: 'border-blue-400',
     yellow: 'border-yellow-400',
     green: 'border-green-400',
-    purple: 'border-purple-400'
+    purple: 'border-purple-400',
+    red: 'border-red-400'
   };
 
   return (

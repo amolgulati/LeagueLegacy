@@ -8,7 +8,7 @@
  * - Success message with import summary
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LoadingSpinner } from './LoadingStates';
 
 type ImportStep = 'idle' | 'connecting' | 'fetching_league' | 'importing_seasons' | 'importing_teams' | 'importing_matchups' | 'importing_trades' | 'detecting_champion' | 'done' | 'error';
@@ -36,6 +36,7 @@ interface ImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  initialLeagueId?: string;
 }
 
 const IMPORT_STEPS: Record<ImportStep, { label: string; progress: number }> = {
@@ -51,10 +52,17 @@ const IMPORT_STEPS: Record<ImportStep, { label: string; progress: number }> = {
   error: { label: 'Import failed', progress: 0 },
 };
 
-export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
-  const [leagueId, setLeagueId] = useState('');
+export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }: ImportModalProps) {
+  const [leagueId, setLeagueId] = useState(initialLeagueId);
   const [progress, setProgress] = useState<ImportProgress>({ step: 'idle', message: '', progress: 0 });
   const [result, setResult] = useState<ImportResult | null>(null);
+
+  // Sync leagueId with initialLeagueId when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setLeagueId(initialLeagueId);
+    }
+  }, [isOpen, initialLeagueId]);
 
   const resetModal = () => {
     setLeagueId('');

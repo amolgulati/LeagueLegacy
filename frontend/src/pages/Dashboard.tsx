@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from 'react';
 import { ImportModal } from '../components/ImportModal';
+import { ImportedLeagues } from '../components/ImportedLeagues';
 
 interface ApiStatus {
   name: string;
@@ -32,6 +33,8 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
 
   // Import modal state
   const [showImportModal, setShowImportModal] = useState(false);
+  const [importLeagueId, setImportLeagueId] = useState('');
+  const [leagueRefreshTrigger, setLeagueRefreshTrigger] = useState(0);
 
   const loadStats = async () => {
     try {
@@ -55,6 +58,30 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
   useEffect(() => {
     loadStats();
   }, []);
+
+  const handleReimport = (leagueId: string, platform: string) => {
+    if (platform === 'sleeper') {
+      setImportLeagueId(leagueId);
+      setShowImportModal(true);
+    }
+    // Yahoo import would be handled separately when OAuth is available
+  };
+
+  const handleImportSuccess = () => {
+    loadStats();
+    setLeagueRefreshTrigger((prev) => prev + 1);
+    setImportLeagueId('');
+  };
+
+  const handleDeleteLeague = () => {
+    loadStats();
+    setLeagueRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleCloseModal = () => {
+    setShowImportModal(false);
+    setImportLeagueId('');
+  };
 
   return (
     <div className="p-6">
@@ -177,6 +204,15 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
         </div>
       </div>
 
+      {/* Imported Leagues Section */}
+      <div className="mb-8">
+        <ImportedLeagues
+          onReimport={handleReimport}
+          onDelete={handleDeleteLeague}
+          refreshTrigger={leagueRefreshTrigger}
+        />
+      </div>
+
       {/* Getting Started Section */}
       <div className="bg-slate-800 dark:bg-slate-800 rounded-lg p-6 border border-slate-700 dark:border-slate-700 mb-8">
         <h3 className="text-xl font-bold text-white mb-4">Getting Started</h3>
@@ -216,8 +252,9 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
       {/* Import Modal */}
       <ImportModal
         isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onSuccess={loadStats}
+        onClose={handleCloseModal}
+        onSuccess={handleImportSuccess}
+        initialLeagueId={importLeagueId}
       />
     </div>
   );
