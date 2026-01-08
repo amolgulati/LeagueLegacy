@@ -1,83 +1,74 @@
 {
-  "branchName": "ralph/improvements-v3",
+  "branchName": "ralph/improvements-v4",
   "userStories": [
     {
-      "id": "IMP-011",
-      "title": "Enable Yahoo League Import Frontend",
+      "id": "IMP-016",
+      "title": "Theme Infrastructure Setup",
       "acceptanceCriteria": [
-        "YahooAuthModal component handles OAuth login flow with Yahoo redirect",
-        "YahooImportModal component allows entering league key and triggering import",
-        "Dashboard 'Import from Yahoo' button opens auth/import flow instead of 'Coming soon'",
-        "Imported Yahoo leagues appear in ImportedLeagues list with re-import/delete support",
+        "ThemeContext created with provider that manages theme state (dark, light, espn-retro)",
+        "Theme toggle in App.tsx cycles through all 3 themes instead of just dark/light",
+        "Theme preference persists in localStorage",
+        "CSS variables expanded to cover all colors used in app (~20-25 variables)",
+        "useTheme hook available for components to access current theme",
         "typecheck passes"
       ],
       "priority": 1,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "IMP-012",
-      "title": "Environment Configuration Setup",
+      "id": "IMP-017",
+      "title": "ESPN Retro Color Palette Design",
       "acceptanceCriteria": [
-        "backend/.env.example documents YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET, YAHOO_REDIRECT_URI, FRONTEND_URL, CORS_ORIGINS",
-        "frontend/.env.example documents VITE_API_URL",
-        "CORS origins in main.py read from CORS_ORIGINS env var with localhost:5173 default",
-        "README.md updated with environment setup instructions",
+        "ESPN retro theme colors defined: primary red (#CC0000), gold accents (#FFD700), deep black backgrounds",
+        "All CSS variables have values for espn-retro theme in index.css",
+        "Color scheme has sufficient contrast for accessibility (4.5:1 minimum)",
+        "Theme visually evokes early 2000s ESPN/NFL Primetime aesthetic",
         "typecheck passes"
       ],
       "priority": 2,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "IMP-013",
-      "title": "Loading State Improvements",
+      "id": "IMP-018",
+      "title": "Update Core Components for Theming",
       "acceptanceCriteria": [
-        "Seasons page shows skeleton loader while fetching data",
-        "Records page shows skeleton loader while fetching data",
-        "HallOfFame page shows skeleton loader while fetching data",
-        "No white flash on initial page load for any of these pages",
+        "Dashboard.tsx uses CSS variables instead of hardcoded Tailwind colors",
+        "OwnerProfileCard.tsx avatar gradients are theme-aware",
+        "ImportModal.tsx and ImportedLeagues.tsx use theme variables",
+        "LoadingStates.tsx skeleton colors respect current theme",
+        "Navigation and header respect current theme",
         "typecheck passes"
       ],
       "priority": 3,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "IMP-014",
-      "title": "Add React Error Boundary",
+      "id": "IMP-019",
+      "title": "Update Data Visualization for Theming",
       "acceptanceCriteria": [
-        "ErrorBoundary component catches rendering errors in child components",
-        "Error state shows user-friendly message with 'Try Again' button",
-        "App.tsx wraps main content with ErrorBoundary",
-        "Error details logged to console for debugging",
+        "TradeTimeline.tsx chart colors come from theme (not hardcoded hex)",
+        "HallOfFame.tsx trophy SVG gradients are theme-aware",
+        "Records.tsx medal and stat colors use theme variables",
+        "TradeNetwork.tsx visualization respects theme",
+        "All pages render correctly in all 3 themes",
         "typecheck passes"
       ],
       "priority": 4,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "IMP-015",
-      "title": "API Documentation",
+      "id": "IMP-020",
+      "title": "Theme Polish and Typography",
       "acceptanceCriteria": [
-        "ENDPOINTS.md file exists in project root",
-        "All API endpoints documented with method, path, and description",
-        "Endpoints grouped by category (sleeper, yahoo, owners, history, trades, etc.)",
-        "Key endpoints include example request/response",
+        "Smooth transitions when switching themes (300ms)",
+        "ESPN retro theme has bolder typography feel where appropriate",
+        "Theme toggle has visual indicator showing current theme",
+        "No flash of wrong theme on page load",
+        "All 3 themes tested on all major pages",
         "typecheck passes"
       ],
       "priority": 5,
-      "passes": true
-    },
-    {
-      "id": "IMP-021",
-      "title": "Fix Yahoo Import Error Handling",
-      "acceptanceCriteria": [
-        "Add logging for all Yahoo import errors with full stack traces",
-        "Return specific error messages for: auth failures, invalid league key format, API rate limits, parsing errors, database errors",
-        "Frontend displays actionable error message (not generic 'something went wrong')",
-        "Test Yahoo import with valid and invalid league keys",
-        "typecheck passes"
-      ],
-      "priority": 6,
-      "passes": true
+      "passes": false
     },
     {
       "id": "IMP-022",
@@ -88,7 +79,7 @@
         "Owner profile cards show correct championship trophy count",
         "typecheck passes"
       ],
-      "priority": 7,
+      "priority": 6,
       "passes": false
     },
     {
@@ -103,7 +94,7 @@
         "Records page shows Most Runner-Up Finishes and Most Third Place Finishes",
         "typecheck passes"
       ],
-      "priority": 8,
+      "priority": 7,
       "passes": false
     }
   ]
