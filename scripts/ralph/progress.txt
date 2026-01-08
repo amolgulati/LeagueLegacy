@@ -84,3 +84,17 @@ Started: 2026-01-08
   - Using animationDelay on skeleton items creates staggered entrance effect
   - Background colors (slate-700/50, slate-600) match actual content for smoother transition
 
+## 2026-01-08 - IMP-015: API Documentation
+- What was implemented:
+  - Created comprehensive ENDPOINTS.md file (~1000 lines)
+  - Documented all 42+ API endpoints across 9 API groups
+  - Added example request/response JSON for all key endpoints
+  - Included error response documentation
+  - Referenced interactive Swagger/ReDoc documentation
+- Files created:
+  - `ENDPOINTS.md` - Complete API documentation
+- **Learnings:**
+  - FastAPI automatically generates Swagger/ReDoc docs at /docs and /redoc
+  - Grouping endpoints by API prefix keeps documentation organized
+  - Including example JSON payloads helps frontend developers understand expected formats
+  - Documenting error responses helps with error handling implementation

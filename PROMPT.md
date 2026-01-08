@@ -1011,3 +1011,36 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (frontend builds successfully, 204 backend tests passing)
 
 **Tests:** 204 backend tests passing, frontend builds and lint passes successfully
+
+### IMP-015: API Documentation ✅
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Created comprehensive ENDPOINTS.md file documenting all API endpoints
+- Organized endpoints by category: Sleeper, Yahoo, Owners, History, Trades, Records, Hall of Fame, Seasons, Leagues
+- Included example request/response JSON for all key endpoints
+- Added error response documentation
+- Referenced interactive Swagger/ReDoc documentation
+
+**Files Created:**
+- `ENDPOINTS.md` - Complete API documentation (~1000 lines)
+
+**Documented Endpoints:**
+- Sleeper API: 6 endpoints (import, league info, users, rosters, matchups, trades)
+- Yahoo API: 14 endpoints (7 auth + 5 data + 2 import)
+- Owners API: 7 endpoints (list, unmapped, get, stats, create, update, merge, unlink)
+- History API: 4 endpoints (owners list, owner history, seasons, head-to-head)
+- Trades API: 3 endpoints (list, owner trades, stats)
+- Records API: 1 endpoint (all records)
+- Hall of Fame API: 2 endpoints (full data, leaderboard)
+- Seasons API: 2 endpoints (list, detail)
+- Leagues API: 3 endpoints (list, get, delete)
+
+**Acceptance Criteria Met:**
+- ✅ ENDPOINTS.md file exists in project root
+- ✅ All API endpoints documented with method, path, and description
+- ✅ Endpoints grouped by category (sleeper, yahoo, owners, history, trades, etc.)
+- ✅ Key endpoints include example request/response
+- ✅ typecheck passes (frontend builds successfully, 204 backend tests passing)
+
+**Tests:** 204 backend tests passing, frontend builds and lint passes
