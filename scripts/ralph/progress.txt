@@ -83,3 +83,22 @@ Started: 2025-01-07
   - Use path parameters with :path suffix for league keys containing dots
   - In-memory token store works for development, needs proper session management for production
   - All 66 tests pass (14 models + 24 sleeper + 28 yahoo)
+
+## 2025-01-08 - FLH-005
+- What was implemented: Owner mapping system with UI and API for linking Yahoo/Sleeper users
+- Files changed:
+  - Created backend/app/api/owners.py - Owner mapping API endpoints
+  - Created backend/tests/test_owners.py - 19 comprehensive tests
+  - Updated backend/app/main.py - Include owners_router
+  - Updated backend/tests/conftest.py - Fixed StaticPool for in-memory SQLite sharing
+  - Created frontend/src/types/owner.ts - TypeScript types for owners
+  - Created frontend/src/api/owners.ts - API client for owner endpoints
+  - Created frontend/src/components/OwnerMapping.tsx - Main UI component
+  - Updated frontend/src/App.tsx - Added tabbed navigation with Owner Mapping tab
+- **Learnings:**
+  - SQLite in-memory database requires StaticPool for sharing across connections
+  - SQLAlchemy 2.0 uses context manager for engine.execute operations
+  - When merging owners with unique constraints, must clear secondary's IDs before deletion
+  - Pydantic v2 deprecates class-based Config, use ConfigDict instead
+  - React 19 works well with async API calls and state management
+  - All 85 tests pass (14 models + 24 sleeper + 28 yahoo + 19 owners)

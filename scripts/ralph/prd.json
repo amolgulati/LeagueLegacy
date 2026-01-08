@@ -60,7 +60,7 @@
         "Stats aggregate correctly across platforms"
       ],
       "priority": 5,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-006",
