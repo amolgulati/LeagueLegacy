@@ -245,3 +245,38 @@ Otherwise, end normally after completing one story.
 - ✅ League branding/name displayed
 
 **Tests:** Frontend builds successfully, all 118 backend tests passing
+
+
+### FLH-009: Build owner profile cards ✅
+**Completed:** 2025-01-08
+
+**Implementation:**
+- Created OwnerProfileCard component with visually appealing design
+- Gradient avatars generated from owner name (or custom avatar if provided)
+- Card/list view toggle on Owners page
+- Responsive 4-column grid layout
+
+**Files Created:**
+- `frontend/src/components/OwnerProfileCard.tsx` - Profile card component
+
+**Files Modified:**
+- `frontend/src/pages/Owners.tsx` - Added card/list view toggle
+- `frontend/src/types/owner.ts` - Added OwnerWithStats type
+
+**Features:**
+- Gradient avatars with owner initial (8 color combinations)
+- Career record (W-L-T) prominently displayed
+- Championships with trophy icons and "CHAMP" banner ribbon
+- Playoff appearances and seasons played
+- Win percentage display
+- Rank badges (gold/silver/bronze for top 3)
+- Hover effects with scale and shadow transitions
+
+**Acceptance Criteria Met:**
+- ✅ Display owner name and avatar
+- ✅ Show career record (W-L)
+- ✅ Show championships count
+- ✅ Show playoff appearances
+- ✅ Visually appealing card design
+
+**Tests:** Frontend builds successfully, all 118 backend tests passing

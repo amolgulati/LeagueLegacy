@@ -110,7 +110,7 @@
         "Visually appealing card design"
       ],
       "priority": 9,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-010",

@@ -164,3 +164,26 @@ Started: 2025-01-07
   - Mobile-first responsive design with md: breakpoint for desktop navigation
   - React state for dark mode should use lazy initialization with localStorage
   - Fixed bottom navigation needs padding-bottom on main content (pb-20)
+
+## 2025-01-08 - FLH-009
+- What was implemented: Owner profile cards with visually appealing design
+- Files changed:
+  - Created frontend/src/components/OwnerProfileCard.tsx - Profile card component
+  - Updated frontend/src/pages/Owners.tsx - Added card/list view toggle
+  - Updated frontend/src/types/owner.ts - Added OwnerWithStats type
+- **Features:**
+  - Gradient avatars based on owner name (or custom avatar if provided)
+  - Career record (W-L-T) prominently displayed
+  - Championships count with trophy icons
+  - "CHAMP" banner ribbon for champions
+  - Playoff appearances and seasons played
+  - Win percentage display
+  - Rank badges (gold/silver/bronze for top 3)
+  - Card/list view toggle on Owners page
+  - Responsive 4-column grid layout
+  - Hover effects with scale and shadow transitions
+- **Learnings:**
+  - TypeScript with verbatimModuleSyntax requires `import type` for type-only imports
+  - Character code hashing is simple way to generate consistent color gradients per owner
+  - CSS ribbon effects use absolute positioning with transform rotate
+  - Grid gap sizing (gap-6) provides balanced spacing in card layouts
