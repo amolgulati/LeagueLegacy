@@ -34,3 +34,16 @@ Started: 2026-01-07
   - Chain traversal allows finding all historical league IDs from a single current league ID
   - Tests: 28 sleeper tests now passing (was 24, added 4)
 
+## 2025-01-10 - IMP-002
+- What was implemented: Full historical season import functionality for Sleeper leagues
+- Files changed:
+  - `backend/app/services/sleeper_service.py` - Modified import_full_league() and related methods
+  - `backend/tests/test_sleeper.py` - Added 4 new tests for multi-season import and idempotency
+- **Learnings:**
+  - Each Sleeper season has a unique league_id, but they should all link to ONE League record in DB
+  - Added optional `league` parameter to import methods to pass the shared League record through
+  - Idempotency works because existing code checks for duplicate records before creating new ones
+  - import_single_season() helper keeps import_full_league() cleaner
+  - Tests: 31 sleeper tests now passing (was 28, added 4 - but net +3 since one was renamed)
+  - Total backend tests: 153 passing
+

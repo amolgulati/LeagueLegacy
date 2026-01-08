@@ -541,3 +541,25 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (no new errors introduced)
 
 **Tests:** 28 sleeper tests passing (24 + 4 new)
+
+### IMP-002: Import all historical Sleeper seasons ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Modified `import_full_league()` to use `get_league_history_chain()` to find all historical league IDs
+- Added `import_single_season()` helper method for cleaner code organization
+- Added optional `league` parameter to `import_season()`, `import_users_and_rosters()`, `import_matchups()`, `import_trades()` to link all historical seasons to a single League record
+- All historical seasons properly create Season, Team, Matchup, Trade records under the same League
+
+**Files Modified:**
+- `backend/app/services/sleeper_service.py` - Modified import methods with league parameter propagation
+- `backend/tests/test_sleeper.py` - Added 4 new tests for multi-season import and idempotency
+
+**Acceptance Criteria Met:**
+- ✅ import_league fetches and imports all historical seasons (not just current)
+- ✅ Each historical season creates proper Season, Team, Matchup, Trade records
+- ✅ Duplicate import is idempotent (re-running doesn't create duplicate records)
+- ✅ Integration test verifies multiple seasons are imported
+- ✅ typecheck passes
+
+**Tests:** 31 sleeper tests passing, 153 total backend tests passing
