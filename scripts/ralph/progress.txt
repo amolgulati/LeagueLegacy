@@ -2,9 +2,26 @@
 Started: 2025-01-07
 
 ## Codebase Patterns
-(Ralph will add patterns here as it learns)
+- Backend: FastAPI with uvicorn at http://localhost:8000
+- Frontend: React + Vite + TypeScript with Tailwind CSS at http://localhost:5173
+- CORS configured to allow frontend dev server
 
 ## Key Files
-(Ralph will document important files here)
+- backend/app/main.py - FastAPI application entry point
+- backend/app/api/routes.py - API route definitions
+- frontend/src/App.tsx - Main React component
+- frontend/src/index.css - Tailwind CSS imports
 
 ---
+
+## 2025-01-07 - FLH-001
+- What was implemented: Project structure initialization with FastAPI backend and React/Vite frontend
+- Files changed:
+  - Created backend/ folder with FastAPI app skeleton (main.py, routes.py, requirements.txt)
+  - Created frontend/ folder with React/Vite/TypeScript/Tailwind CSS setup
+  - Added README.md with project description and setup instructions
+  - Added .gitignore files for both backend and frontend
+- **Learnings:**
+  - Tailwind CSS v3 needs explicit content paths in tailwind.config.js
+  - CORS middleware is essential for frontend-backend communication during development
+  - Both apps verified to start without errors (backend on 8000, frontend on 5173)
