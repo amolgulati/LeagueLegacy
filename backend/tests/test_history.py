@@ -113,8 +113,10 @@ class TestListOwnersWithCareerStats:
         league = create_test_league(db_session)
 
         season1 = create_test_season(db_session, league, 2022)
-        create_test_team(db_session, season1, owner, wins=10, losses=4,
-                         points_for=1600.0, made_playoffs=True, final_rank=1)
+        champ_team = create_test_team(db_session, season1, owner, wins=10, losses=4,
+                                       points_for=1600.0, made_playoffs=True, final_rank=1)
+        # Set champion_team_id - this is the authoritative way to track championships
+        season1.champion_team_id = champ_team.id
 
         season2 = create_test_season(db_session, league, 2023)
         create_test_team(db_session, season2, owner, wins=8, losses=6,
@@ -169,6 +171,8 @@ class TestGetOwnerHistory:
         season1 = create_test_season(db_session, league, 2022)
         team1 = create_test_team(db_session, season1, owner, "Team 2022",
                                   wins=10, losses=4, final_rank=1, regular_season_rank=2)
+        # Set champion_team_id to track the championship
+        season1.champion_team_id = team1.id
 
         season2 = create_test_season(db_session, league, 2023)
         team2 = create_test_team(db_session, season2, owner, "Team 2023",

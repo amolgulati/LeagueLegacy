@@ -101,3 +101,24 @@ Otherwise, end normally after completing one story.
 - ✅ LoadingStates.tsx skeleton colors respect current theme
 - ✅ Navigation and header respect current theme
 - ✅ typecheck passes
+
+---
+
+### IMP-022: Fix Owners Tab Championships Display ✅
+**Completed:** 2026-01-08
+
+**Acceptance Criteria Met:**
+- ✅ Championships count on Owners tab matches Hall of Fame tab
+- ✅ Use same data source (Season.champion_team_id) as Hall of Fame for consistency
+- ✅ Owner profile cards show correct championship trophy count
+- ✅ typecheck passes
+
+**Files Changed:**
+- `backend/tests/test_history.py` - Fixed 2 tests to use champion_team_id instead of final_rank
+
+**Notes:**
+- Backend was already correct - both Owners API and Hall of Fame API use `Season.champion_team_id`
+- The tests were outdated and expected championships from `final_rank=1` instead of `champion_team_id`
+- All 204 backend tests now pass
+
+**Next Story:** IMP-023 (Track 2nd and 3rd Place Finishes)

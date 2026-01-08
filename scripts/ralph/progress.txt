@@ -250,3 +250,20 @@ Started: 2026-01-08
   - Duplicating theme logic (JS in HTML + ThemeProvider) is acceptable trade-off for UX
   - Interactive elements need faster transitions than containers for good UX
   - CSS text-transform: uppercase with letter-spacing creates bold ESPN aesthetic
+
+## 2026-01-08 - IMP-022: Fix Owners Tab Championships Display
+- What was implemented:
+  - Verified that backend `calculate_owner_stats()` in history.py already uses `Season.champion_team_id`
+  - Both Owners API (`/api/history/owners`) and Hall of Fame API (`/api/hall-of-fame`) use the same data source
+  - Fixed broken unit tests that expected championships from `final_rank=1` instead of `champion_team_id`
+  - Updated `test_list_owners_with_stats` to properly set `season.champion_team_id = champ_team.id`
+  - Updated `test_get_owner_history` to properly set `season.champion_team_id = team1.id`
+  - All 204 backend tests now pass
+- Files modified:
+  - `backend/tests/test_history.py` - Fixed 2 tests to use champion_team_id instead of final_rank
+- **Learnings:**
+  - The backend was already correct; tests were outdated and asserting wrong behavior
+  - Championships should ALWAYS be tracked via `Season.champion_team_id`, not `Team.final_rank`
+  - `final_rank` is unreliable because not all platforms/imports set it correctly
+  - When investigating "display doesn't match" bugs, check both data sources (API and DB) first
+  - Tests can be a source of truth drift when implementation changes without test updates
