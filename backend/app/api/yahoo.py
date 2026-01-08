@@ -1,0 +1,489 @@
+"""Yahoo Fantasy API routes for OAuth2 authentication and data import."""
+
+from typing import List, Optional, Dict, Any
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from app.db.database import get_db
+from app.services.yahoo_client import YahooClient, YahooToken, YahooAuthError, YahooAPIError
+from app.services.yahoo_service import YahooService
+
+router = APIRouter(prefix="/api/yahoo", tags=["yahoo"])
+
+# Store client instances with tokens (in production, use proper session management)
+# This is a simple in-memory store for demonstration
+_token_store: Dict[str, YahooToken] = {}
+
+
+# ============= Request/Response Models =============
+
+class AuthUrlResponse(BaseModel):
+    """Response containing OAuth2 authorization URL."""
+    authorization_url: str
+    state: Optional[str] = None
+
+
+class TokenExchangeRequest(BaseModel):
+    """Request to exchange authorization code for token."""
+    authorization_code: str
+    state: Optional[str] = None
+
+
+class TokenResponse(BaseModel):
+    """Response containing OAuth2 token info."""
+    access_token: str
+    token_type: str
+    expires_in: int
+    authenticated: bool
+
+
+class SetTokenRequest(BaseModel):
+    """Request to set token directly."""
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int = 3600
+    expires_at: Optional[float] = None
+
+
+class ImportLeagueRequest(BaseModel):
+    """Request model for importing a league."""
+    league_key: str
+    start_week: int = 1
+    end_week: int = 17
+
+
+class ImportLeagueResponse(BaseModel):
+    """Response model for league import."""
+    league_id: int
+    league_name: str
+    season_year: int
+    teams_imported: int
+    matchups_imported: int
+    trades_imported: int
+
+
+class LeagueInfoResponse(BaseModel):
+    """Response model for league info."""
+    league_key: str
+    league_id: str
+    name: str
+    num_teams: int
+    scoring_type: str
+    season: str
+    current_week: int
+    is_finished: bool
+
+
+class TeamStandingResponse(BaseModel):
+    """Response model for team standings."""
+    team_key: str
+    team_id: str
+    name: str
+    manager_name: Optional[str] = None
+    wins: int
+    losses: int
+    ties: int
+    points_for: float
+    points_against: float
+    rank: int
+
+
+class MatchupTeamResponse(BaseModel):
+    """Response model for a team in a matchup."""
+    team_key: str
+    name: str
+    points: float
+
+
+class MatchupResponse(BaseModel):
+    """Response model for a matchup."""
+    week: int
+    is_playoffs: bool
+    is_consolation: bool
+    teams: List[MatchupTeamResponse]
+    winner_team_key: Optional[str] = None
+    is_tied: bool
+
+
+class TradePlayerResponse(BaseModel):
+    """Response model for a player in a trade."""
+    player_key: str
+    name: str
+    source_team_key: str
+    destination_team_key: str
+
+
+class TradeResponse(BaseModel):
+    """Response model for a trade."""
+    transaction_id: str
+    status: str
+    timestamp: int
+    trader_team_key: str
+    tradee_team_key: str
+    players: List[TradePlayerResponse]
+
+
+class UserLeagueResponse(BaseModel):
+    """Response model for user's leagues."""
+    league_key: str
+    name: str
+    season: str
+    num_teams: int
+    scoring_type: str
+    is_finished: bool
+
+
+# ============= Helper Functions =============
+
+def get_authenticated_client(session_id: str = "default") -> YahooClient:
+    """Get an authenticated Yahoo client.
+
+    Args:
+        session_id: Session identifier for token lookup.
+
+    Returns:
+        YahooClient with valid token.
+
+    Raises:
+        HTTPException: If not authenticated.
+    """
+    token = _token_store.get(session_id)
+    if not token:
+        raise HTTPException(
+            status_code=401,
+            detail="Not authenticated. Please complete OAuth flow first."
+        )
+
+    client = YahooClient()
+    client.set_token(token)
+    return client
+
+
+# ============= OAuth2 Authentication Routes =============
+
+@router.get("/auth/url", response_model=AuthUrlResponse)
+async def get_authorization_url(
+    state: Optional[str] = Query(None, description="CSRF protection state parameter")
+):
+    """Get the OAuth2 authorization URL for user consent.
+
+    The user should visit this URL to authorize the application
+    to access their Yahoo Fantasy data.
+    """
+    client = YahooClient()
+    auth_url = client.get_authorization_url(state)
+
+    return AuthUrlResponse(authorization_url=auth_url, state=state)
+
+
+@router.post("/auth/token", response_model=TokenResponse)
+async def exchange_token(
+    request: TokenExchangeRequest,
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Exchange authorization code for access token.
+
+    After the user authorizes at the authorization URL,
+    they receive a code that should be submitted here.
+    """
+    client = YahooClient()
+
+    try:
+        token = await client.exchange_code_for_token(request.authorization_code)
+        _token_store[session_id] = token
+
+        return TokenResponse(
+            access_token=token.access_token[:20] + "...",  # Truncate for security
+            token_type=token.token_type,
+            expires_in=token.expires_in,
+            authenticated=True,
+        )
+    except YahooAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+@router.post("/auth/set-token", response_model=TokenResponse)
+async def set_token(
+    request: SetTokenRequest,
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Set OAuth token directly (for tokens obtained externally).
+
+    This endpoint allows setting a token that was obtained through
+    another method (e.g., existing YFPY configuration).
+    """
+    import time
+
+    expires_at = request.expires_at or (time.time() + request.expires_in)
+
+    token = YahooToken(
+        access_token=request.access_token,
+        refresh_token=request.refresh_token,
+        token_type=request.token_type,
+        expires_in=request.expires_in,
+        expires_at=expires_at,
+    )
+    _token_store[session_id] = token
+
+    return TokenResponse(
+        access_token=token.access_token[:20] + "...",
+        token_type=token.token_type,
+        expires_in=token.expires_in,
+        authenticated=True,
+    )
+
+
+@router.get("/auth/status")
+async def get_auth_status(
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Check authentication status."""
+    token = _token_store.get(session_id)
+
+    if not token:
+        return {"authenticated": False, "message": "No token found"}
+
+    if token.is_expired():
+        return {"authenticated": False, "message": "Token expired"}
+
+    return {
+        "authenticated": True,
+        "token_type": token.token_type,
+        "expires_in": int(token.expires_at - __import__("time").time()),
+    }
+
+
+@router.post("/auth/refresh", response_model=TokenResponse)
+async def refresh_token(
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Refresh the access token."""
+    token = _token_store.get(session_id)
+
+    if not token:
+        raise HTTPException(status_code=401, detail="No token to refresh")
+
+    client = YahooClient()
+    client.set_token(token)
+
+    try:
+        new_token = await client.refresh_access_token()
+        _token_store[session_id] = new_token
+
+        return TokenResponse(
+            access_token=new_token.access_token[:20] + "...",
+            token_type=new_token.token_type,
+            expires_in=new_token.expires_in,
+            authenticated=True,
+        )
+    except YahooAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+@router.delete("/auth/logout")
+async def logout(
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Clear the stored token (logout)."""
+    if session_id in _token_store:
+        del _token_store[session_id]
+
+    return {"message": "Logged out successfully"}
+
+
+# ============= League Data Routes =============
+
+@router.get("/leagues", response_model=List[UserLeagueResponse])
+async def get_user_leagues(
+    game_key: Optional[str] = Query(None, description="Game key for specific season"),
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Get all leagues for the authenticated user."""
+    client = get_authenticated_client(session_id)
+
+    try:
+        leagues = await client.get_user_leagues(game_key)
+
+        return [
+            UserLeagueResponse(
+                league_key=league.get("league_key", ""),
+                name=league.get("name", "Unknown"),
+                season=league.get("season", ""),
+                num_teams=league.get("num_teams", 0),
+                scoring_type=league.get("scoring_type", ""),
+                is_finished=league.get("is_finished", False),
+            )
+            for league in leagues
+        ]
+    except YahooAPIError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except YahooAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+@router.get("/league/{league_key:path}", response_model=LeagueInfoResponse)
+async def get_league_info(
+    league_key: str,
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Fetch league information from Yahoo API (without storing)."""
+    client = get_authenticated_client(session_id)
+
+    try:
+        data = await client.get_league(league_key)
+
+        return LeagueInfoResponse(
+            league_key=data.get("league_key", league_key),
+            league_id=data.get("league_id", ""),
+            name=data.get("name", "Unknown"),
+            num_teams=data.get("num_teams", 0),
+            scoring_type=data.get("scoring_type", ""),
+            season=data.get("season", ""),
+            current_week=data.get("current_week", 1),
+            is_finished=data.get("is_finished", False),
+        )
+    except YahooAPIError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except YahooAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+@router.get("/league/{league_key:path}/standings", response_model=List[TeamStandingResponse])
+async def get_league_standings(
+    league_key: str,
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Fetch standings for a Yahoo league (without storing)."""
+    client = get_authenticated_client(session_id)
+
+    try:
+        standings = await client.get_standings(league_key)
+
+        return [
+            TeamStandingResponse(
+                team_key=team.get("team_key", ""),
+                team_id=team.get("team_id", ""),
+                name=team.get("name", ""),
+                manager_name=team.get("manager", {}).get("nickname"),
+                wins=team.get("wins", 0),
+                losses=team.get("losses", 0),
+                ties=team.get("ties", 0),
+                points_for=team.get("points_for", 0.0),
+                points_against=team.get("points_against", 0.0),
+                rank=team.get("rank", 0),
+            )
+            for team in standings
+        ]
+    except YahooAPIError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except YahooAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+@router.get("/league/{league_key:path}/matchups", response_model=List[MatchupResponse])
+async def get_league_matchups(
+    league_key: str,
+    week: Optional[int] = Query(None, description="Specific week number"),
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Fetch matchups for a Yahoo league (without storing)."""
+    client = get_authenticated_client(session_id)
+
+    try:
+        matchups = await client.get_matchups(league_key, week)
+
+        return [
+            MatchupResponse(
+                week=m.get("week", 0),
+                is_playoffs=m.get("is_playoffs", False),
+                is_consolation=m.get("is_consolation", False),
+                teams=[
+                    MatchupTeamResponse(
+                        team_key=t.get("team_key", ""),
+                        name=t.get("name", ""),
+                        points=t.get("points", 0.0),
+                    )
+                    for t in m.get("teams", [])
+                ],
+                winner_team_key=m.get("winner_team_key"),
+                is_tied=m.get("is_tied", False),
+            )
+            for m in matchups
+        ]
+    except YahooAPIError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except YahooAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+@router.get("/league/{league_key:path}/trades", response_model=List[TradeResponse])
+async def get_league_trades(
+    league_key: str,
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Fetch trades for a Yahoo league (without storing)."""
+    client = get_authenticated_client(session_id)
+
+    try:
+        trades = await client.get_trades(league_key)
+
+        return [
+            TradeResponse(
+                transaction_id=t.get("transaction_id", ""),
+                status=t.get("status", ""),
+                timestamp=t.get("timestamp", 0),
+                trader_team_key=t.get("trader_team_key", ""),
+                tradee_team_key=t.get("tradee_team_key", ""),
+                players=[
+                    TradePlayerResponse(
+                        player_key=p.get("player_key", ""),
+                        name=p.get("name", ""),
+                        source_team_key=p.get("source_team_key", ""),
+                        destination_team_key=p.get("destination_team_key", ""),
+                    )
+                    for p in t.get("players", [])
+                ],
+            )
+            for t in trades
+        ]
+    except YahooAPIError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except YahooAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+
+# ============= Database Import Routes =============
+
+@router.post("/import", response_model=ImportLeagueResponse)
+async def import_league(
+    request: ImportLeagueRequest,
+    db: Session = Depends(get_db),
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Import all data for a Yahoo league into the database.
+
+    This endpoint fetches and stores:
+    - League information
+    - Standings (teams and owners)
+    - All matchups for the season
+    - All trades for the season
+    """
+    client = get_authenticated_client(session_id)
+
+    try:
+        service = YahooService(db, client)
+        result = await service.import_full_league(
+            request.league_key,
+            request.start_week,
+            request.end_week,
+        )
+        return ImportLeagueResponse(**result)
+    except YahooAPIError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except YahooAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
