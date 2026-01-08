@@ -103,6 +103,18 @@ Started: 2026-01-07
   - Total backend tests: 169 passing
 
 
+## 2025-01-10 - IMP-006
+- What was implemented: Store champion/runner-up in Season record during Sleeper import
+- Files changed:
+  - `backend/app/services/sleeper_service.py` - Added detect_and_set_champion() method, integrated into import_single_season()
+  - `backend/tests/test_sleeper.py` - Added 3 new tests for champion detection
+- **Learnings:**
+  - Champion detection uses winners_bracket to map roster_id to team_id
+  - Season model already had champion_team_id and runner_up_team_id fields
+  - API and Hall of Fame page already display champion info
+  - Tests: 50 sleeper tests now passing (47 + 3 new)
+  - Total backend tests: 172 passing
+
 ## 2025-01-10 - IMP-007
 - What was implemented: Yahoo OAuth2 authentication flow with persistent token storage
 - Files changed:
@@ -147,3 +159,19 @@ Started: 2026-01-07
   - Modal prevents close during active import to avoid user confusion
   - LoadingSpinner component from LoadingStates.tsx can be reused across the app
   - Tests: Frontend builds successfully, 194 backend tests passing
+
+## 2025-01-10 - IMP-010
+- What was implemented: Import history display and re-import/delete functionality for leagues
+- Files changed:
+  - `backend/app/api/leagues.py` - New API with GET/DELETE endpoints for league management
+  - `backend/tests/test_leagues.py` - Added 10 comprehensive tests
+  - `frontend/src/components/ImportedLeagues.tsx` - New component for displaying imported leagues
+  - `frontend/src/pages/Dashboard.tsx` - Integrated ImportedLeagues component
+  - `frontend/src/components/ImportModal.tsx` - Added initialLeagueId prop for re-import
+  - `backend/app/main.py` - Include leagues_router
+- **Learnings:**
+  - Cascade delete removes all associated seasons, teams, matchups, and trades
+  - Owners are preserved when deleting leagues (they may be linked to other leagues)
+  - Re-import uses existing idempotent import logic - just pre-fills the league ID in modal
+  - Delete confirmation uses double-click pattern to prevent accidental deletes
+  - Tests: 10 leagues tests, 204 total backend tests passing
