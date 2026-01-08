@@ -139,6 +139,49 @@ def mock_transactions_data():
     ]
 
 
+@pytest.fixture
+def mock_player_data():
+    """Sample Sleeper player database."""
+    return {
+        "player_123": {
+            "player_id": "player_123",
+            "full_name": "Patrick Mahomes",
+            "first_name": "Patrick",
+            "last_name": "Mahomes",
+            "position": "QB",
+            "team": "KC",
+        },
+        "player_456": {
+            "player_id": "player_456",
+            "full_name": "Travis Kelce",
+            "first_name": "Travis",
+            "last_name": "Kelce",
+            "position": "TE",
+            "team": "KC",
+        },
+        "player_789": {
+            "player_id": "player_789",
+            "full_name": "Justin Jefferson",
+            "first_name": "Justin",
+            "last_name": "Jefferson",
+            "position": "WR",
+            "team": "MIN",
+        },
+    }
+
+
+def create_mock_player_cache(mock_client: AsyncMock, player_data: dict) -> PlayerCache:
+    """Create a PlayerCache with pre-loaded player data for testing.
+
+    This avoids API calls and file operations during tests.
+    """
+    cache = PlayerCache(mock_client, cache_dir="/tmp/test_cache", ttl_hours=24)
+    # Pre-populate the in-memory cache and mark as loaded
+    cache._players = player_data
+    cache._loaded = True
+    return cache
+
+
 # ============================================================================
 # SleeperClient Tests
 # ============================================================================
@@ -544,8 +587,9 @@ class TestSleeperService:
         mock_users_data,
         mock_rosters_data,
         mock_transactions_data,
+        mock_player_data,
     ):
-        """Test importing trades."""
+        """Test importing trades with player name resolution."""
         mock_client = AsyncMock(spec=SleeperClient)
         mock_client.get_league.return_value = mock_league_data
         mock_client.get_users.return_value = mock_users_data
@@ -555,7 +599,10 @@ class TestSleeperService:
             t for t in mock_transactions_data if t.get("type") == "trade"
         ]
 
-        service = SleeperService(db_session, mock_client)
+        # Create mock player cache with pre-populated data
+        player_cache = create_mock_player_cache(mock_client, mock_player_data)
+
+        service = SleeperService(db_session, mock_client, player_cache=player_cache)
         trades = await service.import_trades("123456789", total_weeks=1)
 
         assert len(trades) == 1
@@ -564,9 +611,19 @@ class TestSleeperService:
         assert trade.status == "completed"
         assert len(trade.teams) == 2
 
-        # Check assets_exchanged was stored
+        # Check assets_exchanged was stored with player names (not IDs)
         assets = json.loads(trade.assets_exchanged)
         assert "1" in assets or "2" in assets
+
+        # Verify player names are resolved
+        for roster_id, asset_data in assets.items():
+            received = asset_data.get("received", [])
+            sent = asset_data.get("sent", [])
+            # Check that player names are resolved, not raw IDs
+            for player_name in received + sent:
+                # Should not contain raw player IDs like "player_123"
+                # Instead should have "Patrick Mahomes" or "Travis Kelce"
+                assert "Patrick Mahomes" in player_name or "Travis Kelce" in player_name
 
     @pytest.mark.asyncio
     async def test_import_full_league_single_season(
@@ -577,6 +634,7 @@ class TestSleeperService:
         mock_rosters_data,
         mock_matchups_data,
         mock_transactions_data,
+        mock_player_data,
     ):
         """Test full league import with a single season (no history)."""
         mock_client = AsyncMock(spec=SleeperClient)
@@ -590,7 +648,10 @@ class TestSleeperService:
         # Single season - no previous league
         mock_client.get_league_history_chain.return_value = ["123456789"]
 
-        service = SleeperService(db_session, mock_client)
+        # Create mock player cache
+        player_cache = create_mock_player_cache(mock_client, mock_player_data)
+
+        service = SleeperService(db_session, mock_client, player_cache=player_cache)
         result = await service.import_full_league("123456789", total_weeks=1)
 
         assert result["league_name"] == "Test Fantasy League"
@@ -645,7 +706,10 @@ class TestSleeperService:
         mock_client.get_all_matchups_for_season.side_effect = get_matchups_side_effect
         mock_client.get_all_trades_for_season.return_value = []
 
-        service = SleeperService(db_session, mock_client)
+        # Create mock player cache (empty since no trades)
+        player_cache = create_mock_player_cache(mock_client, {})
+
+        service = SleeperService(db_session, mock_client, player_cache=player_cache)
         result = await service.import_full_league("league_2023", total_weeks=1)
 
         # Verify all seasons were imported
@@ -691,7 +755,10 @@ class TestSleeperService:
         mock_client.get_all_matchups_for_season.return_value = {1: matchups}
         mock_client.get_all_trades_for_season.return_value = []
 
-        service = SleeperService(db_session, mock_client)
+        # Create mock player cache (empty since no trades)
+        player_cache = create_mock_player_cache(mock_client, {})
+
+        service = SleeperService(db_session, mock_client, player_cache=player_cache)
 
         # First import
         result1 = await service.import_full_league("league_2023", total_weeks=1)
@@ -760,7 +827,10 @@ class TestSleeperService:
         mock_client.get_all_matchups_for_season.side_effect = get_matchups_side_effect
         mock_client.get_all_trades_for_season.return_value = []
 
-        service = SleeperService(db_session, mock_client)
+        # Create mock player cache (empty since no trades)
+        player_cache = create_mock_player_cache(mock_client, {})
+
+        service = SleeperService(db_session, mock_client, player_cache=player_cache)
 
         # First import
         await service.import_full_league("league_2023", total_weeks=1)

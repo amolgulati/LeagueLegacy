@@ -19,6 +19,13 @@ interface Team {
   };
 }
 
+interface TeamTradeDetails {
+  team_id: number;
+  owner_name: string;
+  received: string[];
+  sent: string[];
+}
+
 interface Trade {
   id: number;
   week: number | null;
@@ -28,6 +35,8 @@ interface Trade {
   league_id: number;
   league_name: string;
   assets_exchanged: string | null;
+  trade_details: TeamTradeDetails[] | null;
+  trade_summary: string | null;
   status: string;
   teams: Team[];
 }
@@ -228,12 +237,28 @@ export function TradeTimeline({ trades, tradesBySeasonData, loading }: TradeTime
                       </div>
                     </div>
 
-                    {/* Assets Exchanged */}
-                    {trade.assets_exchanged && (
-                      <p className="text-slate-400 text-sm mt-2 line-clamp-2">
-                        {trade.assets_exchanged}
+                    {/* Trade Details - Player Names */}
+                    {trade.trade_details && trade.trade_details.length > 0 ? (
+                      <div className="mt-3 space-y-2">
+                        {trade.trade_details.map((detail) => (
+                          <div key={detail.team_id} className="text-sm">
+                            <span className="text-slate-300 font-medium">{detail.owner_name}</span>
+                            {detail.received.length > 0 && (
+                              <span className="text-slate-400">
+                                {' '}receives{' '}
+                                <span className="text-green-400">
+                                  {detail.received.join(', ')}
+                                </span>
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : trade.trade_summary ? (
+                      <p className="text-slate-400 text-sm mt-2">
+                        {trade.trade_summary}
                       </p>
-                    )}
+                    ) : null}
 
                     {/* League Name */}
                     <p className="text-slate-500 text-xs mt-2">

@@ -14,20 +14,45 @@ from sqlalchemy.orm import Session
 
 from app.db.models import League, Season, Team, Owner, Matchup, Trade, Platform
 from app.services.sleeper_client import SleeperClient
+from app.services.player_cache import PlayerCache
 
 
 class SleeperService:
     """Service for importing Sleeper fantasy football data into the database."""
 
-    def __init__(self, db: Session, client: Optional[SleeperClient] = None):
+    def __init__(
+        self,
+        db: Session,
+        client: Optional[SleeperClient] = None,
+        player_cache: Optional[PlayerCache] = None,
+    ):
         """Initialize the Sleeper service.
 
         Args:
             db: SQLAlchemy database session.
             client: Optional SleeperClient instance (creates new one if not provided).
+            player_cache: Optional PlayerCache for resolving player IDs to names.
         """
         self.db = db
         self.client = client or SleeperClient()
+        # Create player cache if not provided (will use same client)
+        self._player_cache = player_cache or PlayerCache(self.client)
+
+    async def _ensure_player_cache(self) -> None:
+        """Ensure player cache is loaded before resolving player names."""
+        if not self._player_cache.is_loaded():
+            await self._player_cache.fetch_players()
+
+    def _resolve_player_id(self, player_id: str) -> str:
+        """Resolve a player ID to player name.
+
+        Args:
+            player_id: The Sleeper player ID.
+
+        Returns:
+            Player name if found, otherwise the original ID.
+        """
+        return self._player_cache.get_player_name(player_id)
 
     async def import_league(self, league_id: str) -> League:
         """Import or update a league from Sleeper.
@@ -357,6 +382,9 @@ class SleeperService:
         # Fetch all trades
         trades_data = await self.client.get_all_trades_for_season(league_id, total_weeks)
 
+        # Load player cache for resolving player names
+        await self._ensure_player_cache()
+
         trades = []
 
         for trade_data in trades_data:
@@ -384,8 +412,8 @@ class SleeperService:
                 self.db.add(trade)
                 self.db.flush()
 
-            # Build assets exchanged data
-            assets = {}
+            # Build assets exchanged data with resolved player names
+            assets: dict[str, dict[str, list[str]]] = {}
             adds = trade_data.get("adds") or {}
             drops = trade_data.get("drops") or {}
             draft_picks = trade_data.get("draft_picks") or []
@@ -394,13 +422,17 @@ class SleeperService:
                 roster_key = str(roster_id)
                 if roster_key not in assets:
                     assets[roster_key] = {"received": [], "sent": []}
-                assets[roster_key]["received"].append(player_id)
+                # Resolve player ID to name
+                player_name = self._resolve_player_id(str(player_id))
+                assets[roster_key]["received"].append(player_name)
 
             for player_id, roster_id in drops.items():
                 roster_key = str(roster_id)
                 if roster_key not in assets:
                     assets[roster_key] = {"received": [], "sent": []}
-                assets[roster_key]["sent"].append(player_id)
+                # Resolve player ID to name
+                player_name = self._resolve_player_id(str(player_id))
+                assets[roster_key]["sent"].append(player_name)
 
             # Handle draft picks
             for pick in draft_picks:

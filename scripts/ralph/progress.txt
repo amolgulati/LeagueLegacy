@@ -63,3 +63,21 @@ Started: 2026-01-07
   - Tests: 41 sleeper tests now passing (31 + 10 new)
   - Total backend tests: 163 passing
 
+## 2025-01-10 - IMP-004
+- What was implemented: Display player names in trades instead of raw player IDs
+- Files changed:
+  - `backend/app/services/sleeper_service.py` - Integrated PlayerCache for player name resolution during trade import
+  - `backend/app/services/player_cache.py` - Added _loaded flag for explicit loading state (testing support)
+  - `backend/app/api/trades.py` - Added TeamTradeDetails model, trade_summary, parse_trade_details helper
+  - `frontend/src/components/TradeTimeline.tsx` - Display trade_details with player names and color highlighting
+  - `frontend/src/pages/Trades.tsx` - Added TeamTradeDetails interface
+  - `backend/tests/test_sleeper.py` - Added mock_player_data fixture and create_mock_player_cache helper
+- **Learnings:**
+  - PlayerCache needs _loaded flag because empty dict is falsy, causing is_loaded() to fail for tests with no players
+  - import_trades() now calls _ensure_player_cache() before processing trades
+  - API returns both raw assets_exchanged JSON and parsed trade_details for flexibility
+  - trade_summary provides human-readable format: "Owner A receives Player X, Player Y"
+  - Frontend uses green color highlighting for received players
+  - Tests: Still 41 sleeper tests (updated existing tests to use mock player cache)
+  - Total backend tests: 163 passing, frontend builds successfully
+

@@ -24,6 +24,13 @@ interface Team {
   };
 }
 
+interface TeamTradeDetails {
+  team_id: number;
+  owner_name: string;
+  received: string[];
+  sent: string[];
+}
+
 interface Trade {
   id: number;
   week: number | null;
@@ -33,6 +40,8 @@ interface Trade {
   league_id: number;
   league_name: string;
   assets_exchanged: string | null;
+  trade_details: TeamTradeDetails[] | null;
+  trade_summary: string | null;
   status: string;
   teams: Team[];
 }

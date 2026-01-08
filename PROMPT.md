@@ -590,3 +590,35 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (all tests pass)
 
 **Tests:** 41 sleeper tests passing, 163 total backend tests passing
+
+### IMP-004: Display player names in trades ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Modified SleeperService.import_trades() to use PlayerCache for resolving player IDs to names
+- Player names are now stored in assets_exchanged JSON instead of raw player IDs
+- Updated trades API to parse assets_exchanged and return structured trade_details with player names
+- Added trade_summary field for human-readable trade description
+- Frontend TradeTimeline component now displays player names with color highlighting
+
+**Files Modified:**
+- `backend/app/services/sleeper_service.py` - Added player cache integration, helper methods for player resolution
+- `backend/app/services/player_cache.py` - Added `_loaded` flag for explicit loading state
+- `backend/app/api/trades.py` - Added TeamTradeDetails model, trade_summary field, parse_trade_details helper
+- `frontend/src/components/TradeTimeline.tsx` - Updated to display trade_details with player names
+- `frontend/src/pages/Trades.tsx` - Added TeamTradeDetails interface
+- `backend/tests/test_sleeper.py` - Added mock_player_data fixture and updated tests
+
+**API Changes:**
+- TradeResponse now includes:
+  - `trade_details`: List of TeamTradeDetails with received/sent player names per team
+  - `trade_summary`: Human-readable summary like "Owner A receives Player X, Player Y"
+
+**Acceptance Criteria Met:**
+- ✅ Trade records store resolved player names (not just IDs)
+- ✅ API returns player names in trade responses
+- ✅ Frontend displays player names in trade timeline and details
+- ✅ Existing trades can be updated with player names via re-import
+- ✅ typecheck passes (163 tests passing)
+
+**Tests:** 41 sleeper tests passing, 163 total backend tests passing

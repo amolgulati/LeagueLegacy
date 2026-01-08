@@ -9,6 +9,7 @@ This module provides endpoints for:
 - Overall trade statistics
 """
 
+import json
 from typing import List, Optional
 from collections import defaultdict
 
@@ -44,6 +45,14 @@ class TeamBrief(BaseModel):
     owner: OwnerBrief
 
 
+class TeamTradeDetails(BaseModel):
+    """Trade details for a single team."""
+    team_id: int
+    owner_name: str
+    received: List[str]
+    sent: List[str]
+
+
 class TradeResponse(BaseModel):
     """Trade info with participating teams."""
     id: int
@@ -54,6 +63,8 @@ class TradeResponse(BaseModel):
     league_id: int
     league_name: str
     assets_exchanged: Optional[str] = None
+    trade_details: Optional[List[TeamTradeDetails]] = None
+    trade_summary: Optional[str] = None
     status: str
     teams: List[TeamBrief]
 
@@ -124,6 +135,56 @@ class OverallTradeStats(BaseModel):
 
 # ============= Helper Functions =============
 
+def parse_trade_details(trade: Trade) -> tuple[List[TeamTradeDetails], str]:
+    """Parse assets_exchanged JSON and build trade details and summary.
+
+    Args:
+        trade: The Trade model with teams loaded.
+
+    Returns:
+        Tuple of (trade_details list, trade_summary string).
+    """
+    trade_details: List[TeamTradeDetails] = []
+    summary_parts: List[str] = []
+
+    if not trade.assets_exchanged:
+        return trade_details, ""
+
+    try:
+        assets = json.loads(trade.assets_exchanged)
+    except json.JSONDecodeError:
+        return trade_details, ""
+
+    # Build a lookup from roster_id (platform_team_id) to team info
+    team_lookup = {team.platform_team_id: team for team in trade.teams}
+
+    for roster_id, asset_data in assets.items():
+        team = team_lookup.get(roster_id)
+        if not team:
+            continue
+
+        received = asset_data.get("received", [])
+        sent = asset_data.get("sent", [])
+
+        owner_name = team.owner.display_name or team.owner.name
+
+        trade_details.append(TeamTradeDetails(
+            team_id=team.id,
+            owner_name=owner_name,
+            received=received,
+            sent=sent,
+        ))
+
+        # Build summary part for this team
+        if received:
+            received_str = ", ".join(received)
+            summary_parts.append(f"{owner_name} receives {received_str}")
+
+    trade_summary = " | ".join(summary_parts) if summary_parts else ""
+
+    return trade_details, trade_summary
+
+
 def trade_to_response(trade: Trade) -> TradeResponse:
     """Convert a Trade model to TradeResponse."""
     season = trade.season
@@ -142,6 +203,9 @@ def trade_to_response(trade: Trade) -> TradeResponse:
             )
         ))
 
+    # Parse trade details and generate summary
+    trade_details, trade_summary = parse_trade_details(trade)
+
     return TradeResponse(
         id=trade.id,
         week=trade.week,
@@ -151,6 +215,8 @@ def trade_to_response(trade: Trade) -> TradeResponse:
         league_id=league.id,
         league_name=league.name,
         assets_exchanged=trade.assets_exchanged,
+        trade_details=trade_details if trade_details else None,
+        trade_summary=trade_summary if trade_summary else None,
         status=trade.status,
         teams=teams,
     )

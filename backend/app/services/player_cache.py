@@ -54,6 +54,8 @@ class PlayerCache:
 
         # In-memory cache of player data
         self._players: dict[str, Any] = {}
+        # Flag to track if cache has been explicitly loaded (for testing)
+        self._loaded: bool = False
 
     def _ensure_cache_dir(self) -> None:
         """Create cache directory if it doesn't exist."""
@@ -120,16 +122,21 @@ class PlayerCache:
             Dictionary mapping player_id to player data.
         """
         # Return in-memory cache if available and not forcing refresh
+        if self._loaded and not force_refresh:
+            return self._players
+
         if self._players and not force_refresh:
             return self._players
 
         # Try to load from file cache if not forcing refresh
         if not force_refresh and self._is_cache_valid():
             self._players = self._load_from_cache()
+            self._loaded = True
             return self._players
 
         # Fetch from API
         self._players = await self.client.get_players()
+        self._loaded = True
 
         # Save to cache file
         self._save_to_cache(self._players)
@@ -182,9 +189,9 @@ class PlayerCache:
         """Check if player data is loaded in memory.
 
         Returns:
-            True if player data is available.
+            True if player data is available or has been explicitly marked loaded.
         """
-        return bool(self._players)
+        return self._loaded or bool(self._players)
 
     def player_count(self) -> int:
         """Get the number of players in the cache.
