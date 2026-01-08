@@ -184,7 +184,7 @@
         "Consistent color scheme throughout"
       ],
       "priority": 15,
-      "passes": false
+      "passes": true
     }
   ]
 }

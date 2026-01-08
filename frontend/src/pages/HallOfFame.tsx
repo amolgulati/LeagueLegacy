@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Confetti } from '../components/Confetti';
+import { HeroSkeleton, CardSkeleton } from '../components/LoadingStates';
 
 // ==================== Types ====================
 
@@ -179,14 +181,15 @@ const ChampionAvatar = ({ name, avatarUrl, size = "md" }: { name: string; avatar
 };
 
 // Championship Year Card
-const ChampionCard = ({ champion, isFirst }: { champion: ChampionSeason; isFirst: boolean }) => {
+const ChampionCard = ({ champion, isFirst, index }: { champion: ChampionSeason; isFirst: boolean; index: number }) => {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl ${
+      className={`relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover-lift animate-card-entrance ${
         isFirst
           ? 'bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-orange-500/20 ring-2 ring-yellow-500/50'
           : 'bg-slate-800/80'
       }`}
+      style={{ animationDelay: `${index * 0.1}s` }}
     >
       {/* Decorative corner */}
       <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
@@ -326,6 +329,7 @@ export function HallOfFame() {
   const [data, setData] = useState<HallOfFameData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showInitialConfetti, setShowInitialConfetti] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -334,6 +338,14 @@ export function HallOfFame() {
         if (!response.ok) throw new Error('Failed to fetch Hall of Fame data');
         const result = await response.json();
         setData(result);
+
+        // Trigger confetti celebration if there are champions
+        if (result.total_seasons > 0) {
+          // Small delay for dramatic effect
+          setTimeout(() => {
+            setShowInitialConfetti(true);
+          }, 500);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -346,9 +358,14 @@ export function HallOfFame() {
 
   if (loading) {
     return (
-      <div className="p-4 sm:p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-400"></div>
+      <div className="p-4 sm:p-6 space-y-8">
+        <HeroSkeleton />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} style={{ animationDelay: `${i * 0.1}s` }}>
+              <CardSkeleton />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -368,12 +385,22 @@ export function HallOfFame() {
 
   return (
     <div className="p-4 sm:p-6 space-y-8">
+      {/* Confetti celebration */}
+      {showInitialConfetti && (
+        <Confetti
+          active={showInitialConfetti}
+          duration={4000}
+          pieceCount={100}
+          onComplete={() => setShowInitialConfetti(false)}
+        />
+      )}
+
       {/* Hero Section */}
-      <div className="text-center py-8">
+      <div className="text-center py-8 animate-fade-in">
         <div className="relative inline-block mb-6">
           {/* Glow effect */}
-          <div className="absolute inset-0 blur-2xl bg-yellow-500/30 rounded-full" />
-          <LargeTrophyIcon className="relative w-32 h-32 sm:w-40 sm:h-40 drop-shadow-2xl animate-pulse" />
+          <div className="absolute inset-0 blur-2xl bg-yellow-500/30 rounded-full animate-pulse" />
+          <LargeTrophyIcon className="relative w-32 h-32 sm:w-40 sm:h-40 drop-shadow-2xl animate-trophy-glow" />
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 mb-3">
           Hall of Fame
@@ -461,6 +488,7 @@ export function HallOfFame() {
                   key={`${champion.year}-${champion.league_id}`}
                   champion={champion}
                   isFirst={index === 0}
+                  index={index}
                 />
               ))}
             </div>

@@ -128,25 +128,35 @@ function App() {
     setDarkMode(!darkMode);
   };
 
+  // Render content with page transition animation
   const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <Dashboard apiStatus={apiStatus} leagueName={leagueName} />;
-      case 'owners':
-        return <Owners />;
-      case 'seasons':
-        return <Seasons />;
-      case 'trades':
-        return <Trades />;
-      case 'rivalries':
-        return <HeadToHead />;
-      case 'records':
-        return <Records />;
-      case 'halloffame':
-        return <HallOfFame />;
-      default:
-        return <Dashboard apiStatus={apiStatus} leagueName={leagueName} />;
-    }
+    const content = (() => {
+      switch (activeTab) {
+        case 'dashboard':
+          return <Dashboard apiStatus={apiStatus} leagueName={leagueName} />;
+        case 'owners':
+          return <Owners />;
+        case 'seasons':
+          return <Seasons />;
+        case 'trades':
+          return <Trades />;
+        case 'rivalries':
+          return <HeadToHead />;
+        case 'records':
+          return <Records />;
+        case 'halloffame':
+          return <HallOfFame />;
+        default:
+          return <Dashboard apiStatus={apiStatus} leagueName={leagueName} />;
+      }
+    })();
+
+    // Wrap content in a transition container with unique key to trigger re-animation
+    return (
+      <div key={activeTab} className="animate-fade-in">
+        {content}
+      </div>
+    );
   };
 
   return (
