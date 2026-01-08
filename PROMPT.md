@@ -846,3 +846,29 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (frontend builds successfully)
 
 **Tests:** 10 leagues tests passing, 204 total backend tests passing
+
+---
+
+## Final Cleanup
+
+### Fix Frontend Lint Errors ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Resolved all ESLint errors to pass lint check
+- Fixed impure `Math.random()` call in ChartSkeleton (replaced with pre-computed values)
+- Fixed unused `err` variable in ImportModal catch block
+- Refactored synchronous setState calls in useEffect hooks
+- Extracted useConfetti hook to separate file for React fast refresh compatibility
+- Used lazy initialization for leagueName state in App.tsx
+
+**Files Modified:**
+- `frontend/src/App.tsx` - Lazy initialization for leagueName state
+- `frontend/src/components/Confetti.tsx` - Refactored to avoid sync setState in effects
+- `frontend/src/components/ImportModal.tsx` - Removed unused err variable
+- `frontend/src/components/LoadingStates.tsx` - Pre-computed chart bar heights
+
+**Files Created:**
+- `frontend/src/hooks/useConfetti.ts` - Extracted hook for fast refresh compatibility
+
+**Status:** All lint passes, all tests passing (204 backend, frontend builds successfully)
