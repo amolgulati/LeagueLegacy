@@ -517,3 +517,27 @@ Otherwise, end normally after completing one story.
 - ✅ Consistent color scheme throughout (Tailwind config with brand colors)
 
 **Tests:** Frontend builds successfully, backend tests passing
+
+---
+
+## Improvements V2 Branch Stories
+
+### IMP-001: Traverse Sleeper league history chain ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Added `get_previous_league_id()` static method to extract previous_league_id from league data
+- Added `get_league_history_chain()` async method to traverse the full history chain
+- Returns list of league IDs from newest to oldest (e.g., ["2024_id", "2023_id", "2022_id"])
+
+**Files Modified:**
+- `backend/app/services/sleeper_client.py` - Added 2 new methods for chain traversal
+- `backend/tests/test_sleeper.py` - Added 4 new tests for chain traversal
+
+**Acceptance Criteria Met:**
+- ✅ SleeperClient has method to fetch previous_league_id from league data
+- ✅ Service can traverse the chain of previous_league_id to find all historical league IDs
+- ✅ Unit tests verify chain traversal with mocked API responses
+- ✅ typecheck passes (no new errors introduced)
+
+**Tests:** 28 sleeper tests passing (24 + 4 new)
