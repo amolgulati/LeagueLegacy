@@ -872,3 +872,43 @@ Otherwise, end normally after completing one story.
 - `frontend/src/hooks/useConfetti.ts` - Extracted hook for fast refresh compatibility
 
 **Status:** All lint passes, all tests passing (204 backend, frontend builds successfully)
+
+---
+
+## Improvements V3 Branch Stories
+
+### IMP-011: Enable Yahoo League Import Frontend ✅
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Created YahooAuthModal component for OAuth2 login flow with popup window
+- Created YahooImportModal component with league selection list and manual key entry
+- Updated Dashboard to enable Yahoo import button (replacing "Coming soon" placeholder)
+- Updated ImportedLeagues to use platform-specific colors for re-import button
+- Fixed pre-existing test failure (test_import_league mock return format mismatch)
+
+**Files Created:**
+- `frontend/src/components/YahooAuthModal.tsx` - OAuth2 auth flow modal with popup support
+- `frontend/src/components/YahooImportModal.tsx` - League import modal with auto-fetch
+
+**Files Modified:**
+- `frontend/src/pages/Dashboard.tsx` - Yahoo auth/import state, handlers, and UI
+- `frontend/src/components/ImportedLeagues.tsx` - Platform-specific button styling
+- `backend/tests/test_sleeper.py` - Fixed mock return format for API response model
+
+**Features:**
+- OAuth popup window with automatic status polling
+- League list auto-fetched after authentication
+- Manual league key entry option for direct import
+- "Connected" badge shows Yahoo auth status on Dashboard
+- Platform-appropriate colors (purple for Yahoo, blue for Sleeper)
+- Error states with troubleshooting tips
+
+**Acceptance Criteria Met:**
+- ✅ YahooAuthModal component handles OAuth login flow with Yahoo redirect
+- ✅ YahooImportModal component allows entering league key and triggering import
+- ✅ Dashboard 'Import from Yahoo' button opens auth/import flow instead of 'Coming soon'
+- ✅ Imported Yahoo leagues appear in ImportedLeagues list with re-import/delete support
+- ✅ typecheck passes (frontend builds successfully)
+
+**Tests:** 204 backend tests passing, frontend builds and lint passes

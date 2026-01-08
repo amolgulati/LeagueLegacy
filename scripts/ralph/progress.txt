@@ -31,3 +31,22 @@ Started: 2026-01-08
 
 ---
 
+## 2026-01-08 - IMP-011: Enable Yahoo League Import Frontend
+- What was implemented:
+  - Created YahooAuthModal component for OAuth2 login flow with popup window support
+  - Created YahooImportModal component with league selection list and manual key entry
+  - Updated Dashboard to enable Yahoo import button (replacing "Coming soon")
+  - Updated ImportedLeagues to use platform-specific colors for re-import button
+  - Fixed pre-existing test failure (test_import_league mock format mismatch)
+- Files created:
+  - `frontend/src/components/YahooAuthModal.tsx` - OAuth2 auth flow modal
+  - `frontend/src/components/YahooImportModal.tsx` - League import modal
+- Files modified:
+  - `frontend/src/pages/Dashboard.tsx` - Added Yahoo auth/import state and handlers
+  - `frontend/src/components/ImportedLeagues.tsx` - Platform-specific button colors
+  - `backend/tests/test_sleeper.py` - Fixed mock return format
+- **Learnings:**
+  - Yahoo OAuth uses popup window pattern with polling for auth status
+  - Existing ImportedLeagues component already supports both platforms via onReimport callback
+  - Pre-existing test failures can be discovered when running full test suite
+
