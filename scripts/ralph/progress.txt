@@ -257,3 +257,30 @@ Started: 2025-01-07
   - Trade counting per owner/season uses nested defaultdict for efficient aggregation
   - Pydantic Optional fields default to None, simplifying empty database handling
   - All 127 tests passing (118 previous + 9 new records tests)
+
+## 2025-01-09 - FLH-013
+- What was implemented: Hall of Fame section with champions by year, leaderboard, and dynasty tracking
+- Files changed:
+  - Created backend/app/api/hall_of_fame.py - Hall of Fame API with 2 endpoints
+  - Created backend/tests/test_hall_of_fame.py - 11 comprehensive tests
+  - Updated backend/app/main.py - Include hall_of_fame_router
+  - Created frontend/src/pages/HallOfFame.tsx - Eye-catching Hall of Fame page
+  - Updated frontend/src/App.tsx - Added Hall of Fame tab to navigation
+- **API Endpoints:**
+  - GET `/api/hall-of-fame` - Returns all HoF data: champions by year, leaderboard, dynasties, stats
+  - GET `/api/hall-of-fame/leaderboard` - Just the championship count leaderboard
+- **Features:**
+  - Champions by year with trophy corner decoration and runner-up display
+  - Championship count leaderboard with gold/silver/bronze medals
+  - Dynasty tracking for consecutive championships in same league
+  - Large animated trophy hero section with golden gradients
+  - Avatar generation from owner name with gradient fallback
+  - Crown icons for champions, multiple trophy icons for multi-champ owners
+  - Summary stats (total championships, unique champions)
+  - Empty state handling with helpful message
+- **Learnings:**
+  - Dynasty detection requires tracking consecutive years within same league
+  - SVG with gradients and defs creates visually appealing trophy graphics
+  - Pydantic Optional fields in nested models need careful handling
+  - Ring utilities in Tailwind create nice highlight effects for avatars
+  - All 138 tests passing (127 previous + 11 new hall of fame tests)

@@ -16,6 +16,7 @@ from app.api.owners import router as owners_router
 from app.api.history import router as history_router
 from app.api.trades import router as trades_router
 from app.api.records import router as records_router
+from app.api.hall_of_fame import router as hall_of_fame_router
 
 
 @asynccontextmanager
@@ -67,3 +68,4 @@ app.include_router(owners_router)
 app.include_router(history_router)
 app.include_router(trades_router)
 app.include_router(records_router)
+app.include_router(hall_of_fame_router)
