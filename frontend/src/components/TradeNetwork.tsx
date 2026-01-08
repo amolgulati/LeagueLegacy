@@ -5,8 +5,9 @@
  * Shows who trades with whom and how frequently.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useTheme } from '../hooks/useTheme';
 
 interface Team {
   id: number;
@@ -57,26 +58,54 @@ interface TradePartnership {
   count: number;
 }
 
-// Colors for the network visualization
-const COLORS = [
-  '#3b82f6', // blue
-  '#8b5cf6', // purple
-  '#06b6d4', // cyan
-  '#10b981', // emerald
-  '#f59e0b', // amber
-  '#ef4444', // red
-  '#ec4899', // pink
-  '#6366f1', // indigo
-  '#14b8a6', // teal
-  '#f97316', // orange
-];
+// Get theme-aware colors from CSS variables
+const getThemeColors = (): string[] => {
+  const computedStyle = getComputedStyle(document.documentElement);
+  return [
+    computedStyle.getPropertyValue('--chart-1').trim() || '#3b82f6',
+    computedStyle.getPropertyValue('--chart-2').trim() || '#8b5cf6',
+    computedStyle.getPropertyValue('--chart-3').trim() || '#22c55e',
+    computedStyle.getPropertyValue('--chart-4').trim() || '#f97316',
+    computedStyle.getPropertyValue('--accent-primary').trim() || '#3b82f6',
+    computedStyle.getPropertyValue('--accent-secondary').trim() || '#8b5cf6',
+    computedStyle.getPropertyValue('--success').trim() || '#22c55e',
+    computedStyle.getPropertyValue('--warning').trim() || '#eab308',
+    computedStyle.getPropertyValue('--error').trim() || '#ef4444',
+    computedStyle.getPropertyValue('--trophy-gold').trim() || '#fbbf24',
+  ];
+};
 
-// Generate gradient color based on owner name
-const getOwnerColor = (_name: string, index: number) => {
-  return COLORS[index % COLORS.length];
+// Get theme-aware axis/tooltip colors
+const getChartThemeStyles = () => {
+  const computedStyle = getComputedStyle(document.documentElement);
+  return {
+    tickFill: computedStyle.getPropertyValue('--text-secondary').trim() || '#94a3b8',
+    axisStroke: computedStyle.getPropertyValue('--border-secondary').trim() || '#475569',
+    tooltipBg: computedStyle.getPropertyValue('--bg-secondary').trim() || '#1e293b',
+    tooltipBorder: computedStyle.getPropertyValue('--border-secondary').trim() || '#475569',
+    tooltipText: computedStyle.getPropertyValue('--text-primary').trim() || '#f8fafc',
+  };
 };
 
 export function TradeNetwork({ trades, mostActiveTraders, avgTradesPerSeason, loading }: TradeNetworkProps) {
+  const { theme } = useTheme();
+  const [chartColors, setChartColors] = useState<string[]>(getThemeColors());
+  const [chartStyles, setChartStyles] = useState(getChartThemeStyles());
+
+  // Update colors when theme changes
+  useEffect(() => {
+    // Small delay to ensure CSS variables are applied
+    const timer = setTimeout(() => {
+      setChartColors(getThemeColors());
+      setChartStyles(getChartThemeStyles());
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [theme]);
+
+  // Get color for owner avatar based on index
+  const getOwnerColor = (index: number) => {
+    return chartColors[index % chartColors.length];
+  };
   // Calculate trade partnerships (who trades with whom)
   const partnerships = useMemo(() => {
     const partnershipMap = new Map<string, TradePartnership>();
@@ -192,31 +221,31 @@ export function TradeNetwork({ trades, mostActiveTraders, avgTradesPerSeason, lo
               >
                 <XAxis
                   type="number"
-                  tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  axisLine={{ stroke: '#475569' }}
-                  tickLine={{ stroke: '#475569' }}
+                  tick={{ fill: chartStyles.tickFill, fontSize: 12 }}
+                  axisLine={{ stroke: chartStyles.axisStroke }}
+                  tickLine={{ stroke: chartStyles.axisStroke }}
                   allowDecimals={false}
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
-                  tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  axisLine={{ stroke: '#475569' }}
-                  tickLine={{ stroke: '#475569' }}
+                  tick={{ fill: chartStyles.tickFill, fontSize: 12 }}
+                  axisLine={{ stroke: chartStyles.axisStroke }}
+                  tickLine={{ stroke: chartStyles.axisStroke }}
                   width={80}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: chartStyles.tooltipBg,
+                    border: `1px solid ${chartStyles.tooltipBorder}`,
                     borderRadius: '8px',
-                    color: '#f8fafc',
+                    color: chartStyles.tooltipText,
                   }}
                   formatter={(value) => [`${value} trades`, 'Total']}
                 />
                 <Bar dataKey="trades" radius={[0, 4, 4, 0]}>
                   {traderChartData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
                   ))}
                 </Bar>
               </BarChart>
@@ -248,34 +277,34 @@ export function TradeNetwork({ trades, mostActiveTraders, avgTradesPerSeason, lo
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                        style={{ backgroundColor: getOwnerColor(partnership.owner1Name, index) }}
+                        style={{ backgroundColor: getOwnerColor(index) }}
                       >
                         {partnership.owner1Name.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-white font-medium truncate">
+                      <span className="font-medium truncate" style={{ color: 'var(--text-primary)' }}>
                         {partnership.owner1Name}
                       </span>
                     </div>
 
                     {/* Connection Line */}
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <div className="w-8 h-0.5 bg-gradient-to-r from-slate-500 to-slate-400"></div>
-                      <div className="w-6 h-6 rounded-full bg-slate-600 flex items-center justify-center">
-                        <svg className="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-8 h-0.5" style={{ backgroundColor: 'var(--border-secondary)' }}></div>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                        <svg className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                         </svg>
                       </div>
-                      <div className="w-8 h-0.5 bg-gradient-to-r from-slate-400 to-slate-500"></div>
+                      <div className="w-8 h-0.5" style={{ backgroundColor: 'var(--border-secondary)' }}></div>
                     </div>
 
                     {/* Owner 2 */}
                     <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-                      <span className="text-white font-medium truncate text-right">
+                      <span className="font-medium truncate text-right" style={{ color: 'var(--text-primary)' }}>
                         {partnership.owner2Name}
                       </span>
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
-                        style={{ backgroundColor: getOwnerColor(partnership.owner2Name, index + 5) }}
+                        style={{ backgroundColor: getOwnerColor(index + 5) }}
                       >
                         {partnership.owner2Name.charAt(0).toUpperCase()}
                       </div>

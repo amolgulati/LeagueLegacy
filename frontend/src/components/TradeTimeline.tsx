@@ -5,8 +5,9 @@
  * Shows trade details, participants, and date in an engaging visual format.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useTheme } from '../hooks/useTheme';
 
 interface Team {
   id: number;
@@ -54,10 +55,47 @@ interface TradeTimelineProps {
   loading?: boolean;
 }
 
-// Color palette for the chart bars
-const COLORS = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#6366f1'];
+// Get theme-aware colors from CSS variables
+const getThemeColors = (): string[] => {
+  const computedStyle = getComputedStyle(document.documentElement);
+  return [
+    computedStyle.getPropertyValue('--chart-1').trim() || '#3b82f6',
+    computedStyle.getPropertyValue('--chart-2').trim() || '#8b5cf6',
+    computedStyle.getPropertyValue('--chart-3').trim() || '#22c55e',
+    computedStyle.getPropertyValue('--chart-4').trim() || '#f97316',
+    computedStyle.getPropertyValue('--accent-primary').trim() || '#3b82f6',
+    computedStyle.getPropertyValue('--accent-secondary').trim() || '#8b5cf6',
+    computedStyle.getPropertyValue('--success').trim() || '#22c55e',
+    computedStyle.getPropertyValue('--warning').trim() || '#eab308',
+  ];
+};
+
+// Get theme-aware axis/tooltip colors
+const getChartThemeStyles = () => {
+  const computedStyle = getComputedStyle(document.documentElement);
+  return {
+    tickFill: computedStyle.getPropertyValue('--text-secondary').trim() || '#94a3b8',
+    axisStroke: computedStyle.getPropertyValue('--border-secondary').trim() || '#475569',
+    tooltipBg: computedStyle.getPropertyValue('--bg-secondary').trim() || '#1e293b',
+    tooltipBorder: computedStyle.getPropertyValue('--border-secondary').trim() || '#475569',
+    tooltipText: computedStyle.getPropertyValue('--text-primary').trim() || '#f8fafc',
+  };
+};
 
 export function TradeTimeline({ trades, tradesBySeasonData, loading }: TradeTimelineProps) {
+  const { theme } = useTheme();
+  const [chartColors, setChartColors] = useState<string[]>(['#3b82f6', '#8b5cf6', '#22c55e', '#f97316', '#3b82f6', '#8b5cf6', '#22c55e', '#eab308']);
+  const [chartStyles, setChartStyles] = useState(getChartThemeStyles());
+
+  // Update colors when theme changes
+  useEffect(() => {
+    // Small delay to ensure CSS variables are applied
+    const timer = setTimeout(() => {
+      setChartColors(getThemeColors());
+      setChartStyles(getChartThemeStyles());
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [theme]);
   // Group trades by season year for the timeline
   const groupedTrades = useMemo(() => {
     const groups: { [key: string]: Trade[] } = {};
@@ -138,29 +176,29 @@ export function TradeTimeline({ trades, tradesBySeasonData, loading }: TradeTime
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <XAxis
                   dataKey="year"
-                  tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  axisLine={{ stroke: '#475569' }}
-                  tickLine={{ stroke: '#475569' }}
+                  tick={{ fill: chartStyles.tickFill, fontSize: 12 }}
+                  axisLine={{ stroke: chartStyles.axisStroke }}
+                  tickLine={{ stroke: chartStyles.axisStroke }}
                 />
                 <YAxis
-                  tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  axisLine={{ stroke: '#475569' }}
-                  tickLine={{ stroke: '#475569' }}
+                  tick={{ fill: chartStyles.tickFill, fontSize: 12 }}
+                  axisLine={{ stroke: chartStyles.axisStroke }}
+                  tickLine={{ stroke: chartStyles.axisStroke }}
                   allowDecimals={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1e293b',
-                    border: '1px solid #475569',
+                    backgroundColor: chartStyles.tooltipBg,
+                    border: `1px solid ${chartStyles.tooltipBorder}`,
                     borderRadius: '8px',
-                    color: '#f8fafc'
+                    color: chartStyles.tooltipText
                   }}
                   formatter={(value) => [`${value} trades`, 'Count']}
                   labelFormatter={(label) => `Season ${label}`}
                 />
                 <Bar dataKey="trades" radius={[4, 4, 0, 0]}>
                   {chartData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
                   ))}
                 </Bar>
               </BarChart>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RecordsPageSkeleton } from '../components/LoadingStates';
+import { useTheme } from '../hooks/useTheme';
 
 interface WeeklyScoreRecord {
   score: number;
@@ -44,31 +45,85 @@ interface AllRecords {
   top_win_streaks: WinStreakRecord[];
 }
 
-// Trophy icon SVG
-const TrophyIcon = ({ className = "w-6 h-6" }: { className?: string }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+// Get theme-aware colors from CSS variables
+const getRecordColors = () => {
+  const computedStyle = getComputedStyle(document.documentElement);
+  const trophyGold = computedStyle.getPropertyValue('--trophy-gold').trim() || '#fbbf24';
+  return {
+    gold: trophyGold,
+    goldDark: adjustColor(trophyGold, -30),
+    silver: computedStyle.getPropertyValue('--trophy-silver').trim() || '#9ca3af',
+    bronze: computedStyle.getPropertyValue('--trophy-bronze').trim() || '#f97316',
+    chart1: computedStyle.getPropertyValue('--chart-1').trim() || '#3b82f6',
+    chart2: computedStyle.getPropertyValue('--chart-2').trim() || '#8b5cf6',
+    chart3: computedStyle.getPropertyValue('--chart-3').trim() || '#22c55e',
+    chart4: computedStyle.getPropertyValue('--chart-4').trim() || '#f97316',
+  };
+};
+
+// Simple function to adjust a hex color brightness
+const adjustColor = (hex: string, amount: number): string => {
+  const clamp = (val: number) => Math.min(255, Math.max(0, val));
+  let color = hex.replace('#', '');
+  if (color.length === 3) {
+    color = color.split('').map(c => c + c).join('');
+  }
+  const r = clamp(parseInt(color.substring(0, 2), 16) + amount);
+  const g = clamp(parseInt(color.substring(2, 4), 16) + amount);
+  const b = clamp(parseInt(color.substring(4, 6), 16) + amount);
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+};
+
+// Trophy icon SVG - theme-aware
+const TrophyIcon = ({ className = "w-6 h-6", style }: { className?: string; style?: React.CSSProperties }) => (
+  <svg className={className} style={style} fill="currentColor" viewBox="0 0 20 20">
     <path fillRule="evenodd" d="M5 2a2 2 0 00-2 2v1a2 2 0 002 2h1v1H5a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3v-6a3 3 0 00-3-3h-1V7h1a2 2 0 002-2V4a2 2 0 00-2-2H5zm0 2h10v1H5V4zm3 4h4v1H8V8z" clipRule="evenodd" />
   </svg>
 );
 
-// Medal component for rankings
-const RankMedal = ({ rank }: { rank: number }) => {
-  const colors: Record<number, string> = {
-    1: 'bg-yellow-500 text-yellow-900',
-    2: 'bg-gray-300 text-gray-700',
-    3: 'bg-amber-600 text-amber-100',
+// Medal component for rankings - theme-aware
+const RankMedal = ({ rank, colors }: { rank: number; colors: ReturnType<typeof getRecordColors> }) => {
+  const getMedalStyle = () => {
+    switch (rank) {
+      case 1:
+        return {
+          background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.goldDark} 100%)`,
+          color: '#1a1a1a',
+        };
+      case 2:
+        return {
+          background: `linear-gradient(135deg, ${colors.silver} 0%, ${adjustColor(colors.silver, -30)} 100%)`,
+          color: '#1a1a1a',
+        };
+      case 3:
+        return {
+          background: `linear-gradient(135deg, ${colors.bronze} 0%, ${adjustColor(colors.bronze, -30)} 100%)`,
+          color: '#fff',
+        };
+      default:
+        return {
+          background: 'var(--bg-tertiary)',
+          color: 'var(--text-primary)',
+        };
+    }
   };
 
-  const bgColor = colors[rank] || 'bg-slate-600 text-slate-200';
+  const style = getMedalStyle();
 
   return (
-    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${bgColor} font-bold text-sm`}>
+    <span
+      className="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm"
+      style={{
+        background: style.background,
+        color: style.color,
+      }}
+    >
       {rank}
     </span>
   );
 };
 
-// Record Card Component for individual record display
+// Record Card Component for individual record display - theme-aware
 const RecordCard = ({
   title,
   icon,
@@ -76,7 +131,7 @@ const RecordCard = ({
   ownerName,
   year,
   subtitle,
-  color = 'blue',
+  color,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -84,43 +139,37 @@ const RecordCard = ({
   ownerName: string;
   year: number;
   subtitle?: string;
-  color?: 'blue' | 'green' | 'orange' | 'purple';
+  color: string; // Now accepts actual color value
 }) => {
-  const colorClasses = {
-    blue: 'from-blue-500 to-blue-600',
-    green: 'from-green-500 to-green-600',
-    orange: 'from-orange-500 to-orange-600',
-    purple: 'from-purple-500 to-purple-600',
-  };
-
   return (
-    <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-      <div className={`bg-gradient-to-r ${colorClasses[color]} p-4`}>
+    <div className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+      <div className="p-4" style={{ background: `linear-gradient(to right, ${color}, ${adjustColor(color, -20)})` }}>
         <div className="flex items-center gap-3">
-          <div className="bg-white/20 rounded-lg p-2">
+          <div className="rounded-lg p-2" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
             {icon}
           </div>
           <h3 className="text-white font-bold text-lg">{title}</h3>
         </div>
       </div>
       <div className="p-5">
-        <div className="text-4xl font-bold text-white mb-2">{value}</div>
-        <div className="text-xl font-semibold text-slate-200">{ownerName}</div>
+        <div className="text-4xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{value}</div>
+        <div className="text-xl font-semibold" style={{ color: 'var(--text-secondary)' }}>{ownerName}</div>
         <div className="flex items-center gap-2 mt-2">
-          <span className="text-slate-400">{year}</span>
-          {subtitle && <span className="text-slate-500">• {subtitle}</span>}
+          <span style={{ color: 'var(--text-secondary)' }}>{year}</span>
+          {subtitle && <span style={{ color: 'var(--text-muted)' }}>• {subtitle}</span>}
         </div>
       </div>
     </div>
   );
 };
 
-// Leaderboard Table Component
+// Leaderboard Table Component - theme-aware
 const LeaderboardTable = ({
   title,
   icon,
   data,
   columns,
+  colors,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -130,20 +179,21 @@ const LeaderboardTable = ({
     label: string;
     render?: (value: unknown, row: Record<string, unknown>) => React.ReactNode;
   }>;
+  colors: ReturnType<typeof getRecordColors>;
 }) => {
   return (
-    <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg">
-      <div className="bg-slate-700 p-4 flex items-center gap-3">
-        <div className="text-blue-400">{icon}</div>
-        <h3 className="text-white font-bold text-lg">{title}</h3>
+    <div className="rounded-xl overflow-hidden shadow-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+      <div className="p-4 flex items-center gap-3" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+        <div style={{ color: colors.chart1 }}>{icon}</div>
+        <h3 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>{title}</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-700">
-              <th className="px-4 py-3 text-left text-slate-400 text-sm font-medium">Rank</th>
+            <tr style={{ borderBottomWidth: '1px', borderColor: 'var(--border-primary)' }}>
+              <th className="px-4 py-3 text-left text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Rank</th>
               {columns.map((col) => (
-                <th key={col.key} className="px-4 py-3 text-left text-slate-400 text-sm font-medium">
+                <th key={col.key} className="px-4 py-3 text-left text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                   {col.label}
                 </th>
               ))}
@@ -153,13 +203,18 @@ const LeaderboardTable = ({
             {data.map((row, index) => (
               <tr
                 key={index}
-                className={`border-b border-slate-700/50 ${index < 3 ? 'bg-slate-700/30' : ''} hover:bg-slate-700/50 transition-colors`}
+                className="transition-colors"
+                style={{
+                  borderBottomWidth: '1px',
+                  borderColor: 'var(--border-primary)',
+                  backgroundColor: index < 3 ? 'var(--bg-tertiary)' : 'transparent',
+                }}
               >
                 <td className="px-4 py-3">
-                  <RankMedal rank={index + 1} />
+                  <RankMedal rank={index + 1} colors={colors} />
                 </td>
                 {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-3 text-white">
+                  <td key={col.key} className="px-4 py-3" style={{ color: 'var(--text-primary)' }}>
                     {col.render ? col.render(row[col.key], row) : String(row[col.key] ?? '')}
                   </td>
                 ))}
@@ -173,9 +228,19 @@ const LeaderboardTable = ({
 };
 
 export function Records() {
+  const { theme } = useTheme();
   const [records, setRecords] = useState<AllRecords | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [recordColors, setRecordColors] = useState(getRecordColors());
+
+  // Update colors when theme changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRecordColors(getRecordColors());
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [theme]);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -223,16 +288,19 @@ export function Records() {
     <div className="p-4 sm:p-6 space-y-8">
       {/* Page Header */}
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 mb-4 shadow-lg">
-          <TrophyIcon className="w-8 h-8 text-white" />
+        <div
+          className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 shadow-lg"
+          style={{ background: `linear-gradient(135deg, ${recordColors.gold} 0%, ${recordColors.bronze} 100%)` }}
+        >
+          <TrophyIcon className="w-8 h-8" style={{ color: 'white' }} />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">League Records</h1>
-        <p className="text-slate-400">The greatest achievements in league history</p>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>League Records</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>The greatest achievements in league history</p>
       </div>
 
       {!hasRecords ? (
-        <div className="bg-slate-800/50 rounded-xl p-8 text-center">
-          <p className="text-slate-400 text-lg">No records yet. Import your league data to see the records!</p>
+        <div className="rounded-xl p-8 text-center" style={{ backgroundColor: 'var(--bg-secondary)', opacity: 0.8 }}>
+          <p className="text-lg" style={{ color: 'var(--text-secondary)' }}>No records yet. Import your league data to see the records!</p>
         </div>
       ) : (
         <>
@@ -250,7 +318,7 @@ export function Records() {
                 ownerName={records.highest_single_week_score.owner_name}
                 year={records.highest_single_week_score.year}
                 subtitle={`Week ${records.highest_single_week_score.week}`}
-                color="blue"
+                color={recordColors.chart1}
               />
             )}
 
@@ -265,7 +333,7 @@ export function Records() {
                 value={records.most_points_in_season.points.toFixed(1)}
                 ownerName={records.most_points_in_season.owner_name}
                 year={records.most_points_in_season.year}
-                color="green"
+                color={recordColors.chart3}
               />
             )}
 
@@ -281,7 +349,7 @@ export function Records() {
                 value={`${records.longest_win_streak.streak} Games`}
                 ownerName={records.longest_win_streak.owner_name}
                 year={records.longest_win_streak.year}
-                color="orange"
+                color={recordColors.chart4}
               />
             )}
 
@@ -296,7 +364,7 @@ export function Records() {
                 value={`${records.most_trades_in_season.trade_count} Trades`}
                 ownerName={records.most_trades_in_season.owner_name}
                 year={records.most_trades_in_season.year}
-                color="purple"
+                color={recordColors.chart2}
               />
             )}
           </div>
@@ -319,19 +387,20 @@ export function Records() {
                     key: 'score',
                     label: 'Score',
                     render: (value) => (
-                      <span className="font-bold text-blue-400">{(value as number).toFixed(1)}</span>
+                      <span className="font-bold" style={{ color: recordColors.chart1 }}>{(value as number).toFixed(1)}</span>
                     ),
                   },
                   {
                     key: 'year',
                     label: 'Year/Week',
                     render: (value, row) => (
-                      <span className="text-slate-300">
+                      <span style={{ color: 'var(--text-secondary)' }}>
                         {value as number} • Wk {row.week as number}
                       </span>
                     ),
                   },
                 ]}
+                colors={recordColors}
               />
             )}
 
@@ -351,15 +420,16 @@ export function Records() {
                     key: 'points',
                     label: 'Points',
                     render: (value) => (
-                      <span className="font-bold text-green-400">{(value as number).toFixed(1)}</span>
+                      <span className="font-bold" style={{ color: recordColors.chart3 }}>{(value as number).toFixed(1)}</span>
                     ),
                   },
                   {
                     key: 'year',
                     label: 'Year',
-                    render: (value) => <span className="text-slate-300">{value as number}</span>,
+                    render: (value) => <span style={{ color: 'var(--text-secondary)' }}>{value as number}</span>,
                   },
                 ]}
+                colors={recordColors}
               />
             )}
 
@@ -380,15 +450,16 @@ export function Records() {
                     key: 'streak',
                     label: 'Streak',
                     render: (value) => (
-                      <span className="font-bold text-orange-400">{value as number} wins</span>
+                      <span className="font-bold" style={{ color: recordColors.chart4 }}>{value as number} wins</span>
                     ),
                   },
                   {
                     key: 'year',
                     label: 'Year',
-                    render: (value) => <span className="text-slate-300">{value as number}</span>,
+                    render: (value) => <span style={{ color: 'var(--text-secondary)' }}>{value as number}</span>,
                   },
                 ]}
+                colors={recordColors}
               />
             )}
           </div>

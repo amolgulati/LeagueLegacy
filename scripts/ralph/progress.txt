@@ -185,3 +185,39 @@ Started: 2026-01-08
   - The skeleton shimmer animation can use CSS variables directly: `linear-gradient(90deg, var(--bg-tertiary) 25%, var(--border-secondary) 50%, var(--bg-tertiary) 75%)`
   - Platform-specific colors (Sleeper blue, Yahoo purple) work well with rgba() for transparent backgrounds
   - Removing unused functions (like getPlatformColor) prevents lint errors after refactoring
+
+## 2026-01-08 - IMP-019: Update Data Visualization for Theming
+- What was implemented:
+  - Updated TradeTimeline.tsx with theme-aware chart colors and tooltip styles
+    - Added getThemeColors() and getChartThemeStyles() functions to read CSS variables
+    - Chart bars, axis lines, ticks, and tooltips now use theme colors
+    - useEffect hook updates colors when theme changes
+  - Updated TradeNetwork.tsx with theme-aware visualization
+    - Charts use theme colors for bars, axes, and tooltips
+    - Owner avatars use theme-aware color palette
+    - Connection lines and icons use CSS variables
+  - Updated HallOfFame.tsx with theme-aware trophy SVG gradients
+    - Created getTrophyColors() to read --trophy-gold, --trophy-silver, --trophy-bronze
+    - Added adjustColor() utility for gradient stops
+    - LargeTrophyIcon uses dynamic gradients with useId() for unique IDs
+    - RankMedal component now uses inline styles with theme colors
+    - LeaderboardRow and DynastyBadge components are fully theme-aware
+    - CrownIcon and TrophyIcon accept style prop for theme colors
+  - Updated Records.tsx with theme-aware medals and stat colors
+    - getRecordColors() reads chart and trophy colors from CSS variables
+    - RankMedal uses gradient backgrounds matching trophy colors
+    - RecordCard accepts color prop (actual hex) for header gradients
+    - LeaderboardTable uses theme colors for headers, rows, and text
+    - All stat values use chart colors for consistent theming
+- Files modified:
+  - `frontend/src/components/TradeTimeline.tsx` - Theme-aware charts
+  - `frontend/src/components/TradeNetwork.tsx` - Theme-aware visualization
+  - `frontend/src/pages/HallOfFame.tsx` - Theme-aware trophies and medals
+  - `frontend/src/pages/Records.tsx` - Theme-aware records display
+- **Learnings:**
+  - useId() hook is the React-idiomatic way to generate unique IDs (not Math.random())
+  - Charts in Recharts accept inline styles for tick/axis colors via props
+  - Reading CSS variables with getComputedStyle requires a small delay after theme change
+  - Passing color objects as props to components avoids redundant getComputedStyle calls
+  - Separating UI colors (gradients, backgrounds) from text colors maintains accessibility
+  - Using 'var(--text-primary)' in inline styles works for simple theming, but computed colors need state
