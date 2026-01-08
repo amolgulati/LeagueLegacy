@@ -622,3 +622,36 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (163 tests passing)
 
 **Tests:** 41 sleeper tests passing, 163 total backend tests passing
+
+### IMP-005: Detect Sleeper playoff bracket winner ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Added `get_winners_bracket()` method to SleeperClient for fetching playoff bracket from Sleeper API
+- Added `get_losers_bracket()` method for fetching consolation bracket
+- Implemented `get_championship_round()` to identify the final round (highest round number)
+- Implemented `get_championship_matchup()` to find the championship game from bracket data
+- Implemented `get_champion_roster_id()` to extract the winner's roster_id
+- Implemented `get_runner_up_roster_id()` to extract the loser's roster_id
+
+**Files Modified:**
+- `backend/app/services/sleeper_client.py` - Added 6 new methods for playoff bracket functionality
+- `backend/tests/test_sleeper.py` - Added 6 new tests for bracket scenarios
+
+**API Endpoints Used:**
+- `GET /league/{id}/winners_bracket` - Returns playoff bracket matchups
+- `GET /league/{id}/losers_bracket` - Returns consolation bracket matchups
+
+**Key Features:**
+- Supports 4-team (2 rounds), 6-team (3 rounds), and 8-team (3 rounds) playoffs
+- Handles 3rd place games in same round as championship (picks lowest match ID)
+- Returns None for champion/runner-up if championship game not yet completed
+
+**Acceptance Criteria Met:**
+- ✅ SleeperClient fetches playoff bracket or championship matchups
+- ✅ Service identifies championship game and determines winner
+- ✅ Championship week/round is correctly identified from bracket or matchups
+- ✅ Unit tests verify champion detection with mocked playoff data
+- ✅ typecheck passes
+
+**Tests:** 47 sleeper tests passing, 169 total backend tests passing

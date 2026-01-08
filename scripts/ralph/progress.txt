@@ -81,3 +81,24 @@ Started: 2026-01-07
   - Tests: Still 41 sleeper tests (updated existing tests to use mock player cache)
   - Total backend tests: 163 passing, frontend builds successfully
 
+## 2025-01-10 - IMP-005
+- What was implemented: Sleeper playoff bracket fetching and champion detection
+- Files changed:
+  - `backend/app/services/sleeper_client.py` - Added 6 new methods for playoff bracket functionality:
+    - `get_winners_bracket()` - Fetch winners/championship bracket from API
+    - `get_losers_bracket()` - Fetch consolation bracket from API
+    - `get_championship_round()` - Determine which round is the finals (highest round number)
+    - `get_championship_matchup()` - Find the championship game from bracket data
+    - `get_champion_roster_id()` - Extract winner's roster_id from championship
+    - `get_runner_up_roster_id()` - Extract loser's roster_id from championship
+  - `backend/tests/test_sleeper.py` - Added 6 new tests covering all bracket scenarios
+- **Learnings:**
+  - Sleeper API has `/league/{id}/winners_bracket` and `/league/{id}/losers_bracket` endpoints
+  - Bracket matchups have: r (round), m (match id), t1/t2 (roster IDs), w/l (winner/loser roster IDs)
+  - Championship is the matchup in the highest round number (r)
+  - When multiple matchups in final round (e.g., 3rd place game), championship has lowest match ID
+  - Winner/loser fields are None until matchup is completed
+  - Supports 4-team (2 rounds), 6-team (3 rounds), and 8-team (3 rounds) playoffs
+  - Tests: 47 sleeper tests now passing (41 + 6 new)
+  - Total backend tests: 169 passing
+

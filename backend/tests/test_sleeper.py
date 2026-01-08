@@ -370,6 +370,123 @@ class TestSleeperClient:
             expected = [f"league_{year}" for year in range(2024, 2019, -1)]
             assert chain == expected
 
+    @pytest.mark.asyncio
+    async def test_get_winners_bracket(self):
+        """Test fetching the winners bracket."""
+        client = SleeperClient()
+
+        mock_bracket = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 6, "w": 1, "l": 6},
+            {"r": 1, "m": 2, "t1": 2, "t2": 5, "w": 2, "l": 5},
+            {"r": 2, "m": 3, "t1": 3, "t2": None, "w": 3, "l": 1, "t2_from": {"w": 1}},
+            {"r": 2, "m": 4, "t1": 4, "t2": None, "w": 4, "l": 2, "t2_from": {"w": 2}},
+            {"r": 3, "m": 5, "t1": None, "t2": None, "w": 3, "l": 4, "t1_from": {"w": 3}, "t2_from": {"w": 4}},
+        ]
+
+        with patch.object(client, "_get", new_callable=AsyncMock) as mock_get:
+            mock_get.return_value = mock_bracket
+            result = await client.get_winners_bracket("123456789")
+
+            mock_get.assert_called_once_with("/league/123456789/winners_bracket")
+            assert len(result) == 5
+            assert result[0]["r"] == 1  # First round
+
+    def test_get_championship_round(self):
+        """Test determining the championship round number."""
+        # 6-team playoffs (3 rounds)
+        bracket_6team = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 6},
+            {"r": 1, "m": 2, "t1": 2, "t2": 5},
+            {"r": 2, "m": 3, "t1": 3, "t2": None},
+            {"r": 2, "m": 4, "t1": 4, "t2": None},
+            {"r": 3, "m": 5, "t1": None, "t2": None},  # Championship
+        ]
+        assert SleeperClient.get_championship_round(bracket_6team) == 3
+
+        # 4-team playoffs (2 rounds)
+        bracket_4team = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 4},
+            {"r": 1, "m": 2, "t1": 2, "t2": 3},
+            {"r": 2, "m": 3, "t1": None, "t2": None},  # Championship
+        ]
+        assert SleeperClient.get_championship_round(bracket_4team) == 2
+
+        # Empty bracket
+        assert SleeperClient.get_championship_round([]) == 0
+
+    def test_get_championship_matchup(self):
+        """Test finding the championship matchup."""
+        bracket = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 6, "w": 1, "l": 6},
+            {"r": 1, "m": 2, "t1": 2, "t2": 5, "w": 5, "l": 2},
+            {"r": 2, "m": 3, "t1": 3, "t2": 1, "w": 3, "l": 1},
+            {"r": 2, "m": 4, "t1": 4, "t2": 5, "w": 4, "l": 5},
+            {"r": 3, "m": 5, "t1": 3, "t2": 4, "w": 3, "l": 4},  # Championship
+        ]
+
+        championship = SleeperClient.get_championship_matchup(bracket)
+        assert championship is not None
+        assert championship["r"] == 3
+        assert championship["m"] == 5
+        assert championship["w"] == 3
+
+        # Empty bracket
+        assert SleeperClient.get_championship_matchup([]) is None
+
+    def test_get_championship_matchup_with_3rd_place_game(self):
+        """Test finding championship when 3rd place game is in same round."""
+        # Some leagues have 3rd place game in the same round as championship
+        bracket = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 4, "w": 1, "l": 4},
+            {"r": 1, "m": 2, "t1": 2, "t2": 3, "w": 3, "l": 2},
+            {"r": 2, "m": 3, "t1": 1, "t2": 3, "w": 1, "l": 3},  # Championship (lower match ID)
+            {"r": 2, "m": 4, "t1": 4, "t2": 2, "w": 4, "l": 2},  # 3rd place game (higher match ID)
+        ]
+
+        championship = SleeperClient.get_championship_matchup(bracket)
+        assert championship is not None
+        assert championship["m"] == 3  # Should pick the lower match ID
+        assert championship["w"] == 1
+
+    def test_get_champion_roster_id(self):
+        """Test determining the champion's roster ID."""
+        # Complete bracket - Team 3 wins championship
+        bracket_complete = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 6, "w": 1, "l": 6},
+            {"r": 1, "m": 2, "t1": 2, "t2": 5, "w": 5, "l": 2},
+            {"r": 2, "m": 3, "t1": 3, "t2": 1, "w": 3, "l": 1},
+            {"r": 2, "m": 4, "t1": 4, "t2": 5, "w": 4, "l": 5},
+            {"r": 3, "m": 5, "t1": 3, "t2": 4, "w": 3, "l": 4},
+        ]
+        assert SleeperClient.get_champion_roster_id(bracket_complete) == 3
+
+        # Incomplete bracket - championship not played yet
+        bracket_incomplete = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 6, "w": 1, "l": 6},
+            {"r": 1, "m": 2, "t1": 2, "t2": 5, "w": 5, "l": 2},
+            {"r": 2, "m": 3, "t1": 3, "t2": 1, "w": 3, "l": 1},
+            {"r": 2, "m": 4, "t1": 4, "t2": 5, "w": 4, "l": 5},
+            {"r": 3, "m": 5, "t1": 3, "t2": 4, "w": None, "l": None},  # Not completed
+        ]
+        assert SleeperClient.get_champion_roster_id(bracket_incomplete) is None
+
+        # Empty bracket
+        assert SleeperClient.get_champion_roster_id([]) is None
+
+    def test_get_runner_up_roster_id(self):
+        """Test determining the runner-up's roster ID."""
+        bracket = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 6, "w": 1, "l": 6},
+            {"r": 1, "m": 2, "t1": 2, "t2": 5, "w": 5, "l": 2},
+            {"r": 2, "m": 3, "t1": 3, "t2": 1, "w": 3, "l": 1},
+            {"r": 2, "m": 4, "t1": 4, "t2": 5, "w": 4, "l": 5},
+            {"r": 3, "m": 5, "t1": 3, "t2": 4, "w": 3, "l": 4},  # Team 4 is runner-up
+        ]
+        assert SleeperClient.get_runner_up_roster_id(bracket) == 4
+
+        # Empty bracket
+        assert SleeperClient.get_runner_up_roster_id([]) is None
+
 
 # ============================================================================
 # Multi-Season Historical Import Fixtures

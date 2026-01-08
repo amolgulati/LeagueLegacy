@@ -290,3 +290,130 @@ class SleeperClient:
             - And many other fields...
         """
         return await self._get(f"/players/{sport}")
+
+    async def get_winners_bracket(self, league_id: str) -> list[dict[str, Any]]:
+        """Fetch the winners bracket (playoff bracket) for a league.
+
+        Args:
+            league_id: The Sleeper league ID.
+
+        Returns:
+            List of bracket matchup dictionaries containing:
+            - r: int (round number, 1 = first round, 2 = semifinals, 3 = finals typically)
+            - m: int (match id within the bracket)
+            - t1: int (roster_id of team 1, or None if from bracket advancement)
+            - t2: int (roster_id of team 2, or None if from bracket advancement)
+            - w: int (roster_id of winner, None if match not completed)
+            - l: int (roster_id of loser, None if match not completed)
+            - t1_from: dict (where team 1 came from, e.g., {"w": 1} = winner of match 1)
+            - t2_from: dict (where team 2 came from)
+        """
+        return await self._get(f"/league/{league_id}/winners_bracket")
+
+    async def get_losers_bracket(self, league_id: str) -> list[dict[str, Any]]:
+        """Fetch the losers bracket (consolation bracket) for a league.
+
+        Args:
+            league_id: The Sleeper league ID.
+
+        Returns:
+            List of bracket matchup dictionaries (same format as winners_bracket).
+        """
+        return await self._get(f"/league/{league_id}/losers_bracket")
+
+    @staticmethod
+    def get_championship_round(bracket: list[dict[str, Any]]) -> int:
+        """Determine the championship round number from a bracket.
+
+        The championship is the highest round number in the bracket.
+
+        Args:
+            bracket: Winners bracket data from get_winners_bracket().
+
+        Returns:
+            The round number of the championship game.
+        """
+        if not bracket:
+            return 0
+        return max(matchup.get("r", 0) for matchup in bracket)
+
+    @staticmethod
+    def get_championship_matchup(
+        bracket: list[dict[str, Any]]
+    ) -> Optional[dict[str, Any]]:
+        """Find the championship game matchup from a bracket.
+
+        The championship is the final round in the winners bracket.
+        In most cases, this is round 3 for 6-team playoffs or round 2 for 4-team playoffs.
+
+        Args:
+            bracket: Winners bracket data from get_winners_bracket().
+
+        Returns:
+            The championship matchup dictionary, or None if not found.
+        """
+        if not bracket:
+            return None
+
+        # Find the highest round (championship round)
+        championship_round = SleeperClient.get_championship_round(bracket)
+        if championship_round == 0:
+            return None
+
+        # Find the matchup in the championship round
+        # There should only be one matchup in the final round
+        championship_matchups = [
+            m for m in bracket if m.get("r") == championship_round
+        ]
+
+        if len(championship_matchups) == 1:
+            return championship_matchups[0]
+
+        # If multiple matchups in final round, find the one with lowest match ID
+        # (sometimes there can be 3rd place games in the same round)
+        if championship_matchups:
+            return min(championship_matchups, key=lambda m: m.get("m", 999))
+
+        return None
+
+    @staticmethod
+    def get_champion_roster_id(bracket: list[dict[str, Any]]) -> Optional[int]:
+        """Determine the championship winner's roster_id from a bracket.
+
+        Args:
+            bracket: Winners bracket data from get_winners_bracket().
+
+        Returns:
+            The roster_id of the champion, or None if championship not complete.
+        """
+        championship = SleeperClient.get_championship_matchup(bracket)
+        if not championship:
+            return None
+
+        # The winner field 'w' contains the roster_id of the winner
+        winner = championship.get("w")
+        if winner is not None:
+            return int(winner)
+
+        return None
+
+    @staticmethod
+    def get_runner_up_roster_id(bracket: list[dict[str, Any]]) -> Optional[int]:
+        """Determine the runner-up's roster_id from a bracket.
+
+        Args:
+            bracket: Winners bracket data from get_winners_bracket().
+
+        Returns:
+            The roster_id of the runner-up, or None if championship not complete.
+        """
+        championship = SleeperClient.get_championship_matchup(bracket)
+        if not championship:
+            return None
+
+        # The loser field 'l' contains the roster_id of the loser (runner-up)
+        loser = championship.get("l")
+        if loser is not None:
+            return int(loser)
+
+        return None
