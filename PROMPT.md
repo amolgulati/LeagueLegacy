@@ -47,3 +47,57 @@ Otherwise, end normally after completing one story.
 - **HISTORY.md** - All completed stories (FLH-002 through IMP-015)
 - **CLAUDE.md** - Project structure, commands, and common gotchas
 - **ENDPOINTS.md** - API documentation
+
+---
+
+## Completed Stories This Session
+
+### IMP-019: Update Data Visualization for Theming ✅
+**Completed:** 2026-01-08
+
+**Acceptance Criteria Met:**
+- ✅ TradeTimeline.tsx chart colors come from theme (not hardcoded hex)
+- ✅ HallOfFame.tsx trophy SVG gradients are theme-aware
+- ✅ Records.tsx medal and stat colors use theme variables
+- ✅ TradeNetwork.tsx visualization respects theme
+- ✅ All pages render correctly in all 3 themes
+- ✅ typecheck passes
+
+**Files Changed:**
+- `frontend/src/components/TradeTimeline.tsx` - Theme-aware chart colors (getThemeColors, getChartThemeStyles)
+- `frontend/src/components/TradeNetwork.tsx` - Theme-aware charts and owner avatars
+- `frontend/src/pages/HallOfFame.tsx` - Theme-aware trophy gradients (useId for unique IDs), medals, leaderboards
+- `frontend/src/pages/Records.tsx` - Theme-aware medals and record cards
+
+**Next Story:** IMP-022 (Fix Owners Tab Championships Display)
+
+---
+
+### IMP-020: Theme Polish and Typography ✅
+**Completed:** 2026-01-08
+
+**Acceptance Criteria Met:**
+- ✅ Smooth transitions when switching themes (300ms)
+- ✅ ESPN retro theme has bolder typography feel where appropriate
+- ✅ Theme toggle has visual indicator showing current theme
+- ✅ No flash of wrong theme on page load
+- ✅ All 3 themes tested on all major pages
+- ✅ typecheck passes
+
+**Files Changed:**
+- `frontend/src/index.css` - Theme transitions (300ms), ESPN retro typography (uppercase, bold, letter-spacing)
+- `frontend/src/App.tsx` - Enhanced theme toggle with visual indicator label
+- `frontend/index.html` - Blocking theme script to prevent flash, initial background colors
+
+---
+
+### IMP-018: Update Core Components for Theming ✅
+**Completed:** 2026-01-08 (Previous iteration)
+
+**Acceptance Criteria Met:**
+- ✅ Dashboard.tsx uses CSS variables instead of hardcoded Tailwind colors
+- ✅ OwnerProfileCard.tsx avatar gradients are theme-aware
+- ✅ ImportModal.tsx and ImportedLeagues.tsx use theme variables
+- ✅ LoadingStates.tsx skeleton colors respect current theme
+- ✅ Navigation and header respect current theme
+- ✅ typecheck passes
