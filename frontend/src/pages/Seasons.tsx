@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { SeasonDetail } from './SeasonDetail';
+import { SeasonsGridSkeleton } from '../components/LoadingStates';
 
 interface Season {
   id: number;
@@ -75,9 +76,7 @@ export function Seasons() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400"></div>
-        </div>
+        <SeasonsGridSkeleton count={6} />
       ) : error ? (
         <div className="bg-red-900/30 border border-red-600 rounded-lg p-4">
           <p className="text-red-400">{error}</p>

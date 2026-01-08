@@ -199,6 +199,136 @@ export function HeroSkeleton() {
   );
 }
 
+// Skeleton for season cards on Seasons page
+export function SeasonCardSkeleton() {
+  return (
+    <div className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden animate-card-entrance">
+      <div className="p-4">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+          <Skeleton className="h-4 w-16" />
+        </div>
+        {/* Champion section */}
+        <div className="mt-4 p-3 bg-slate-700/50 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Skeleton className="w-5 h-5 rounded" />
+            <div className="space-y-1.5 flex-1">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          </div>
+        </div>
+        {/* Footer hint */}
+        <div className="mt-3 text-center">
+          <Skeleton className="h-3 w-40 mx-auto" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Skeleton grid for Seasons page
+export function SeasonsGridSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <div className="space-y-8">
+      {/* Year header skeleton */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Skeleton className="w-10 h-10 rounded-lg" />
+          <Skeleton className="h-6 w-32" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: count }).map((_, i) => (
+            <div key={i} style={{ animationDelay: `${i * 0.05}s` }}>
+              <SeasonCardSkeleton />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Skeleton for record cards on Records page
+export function RecordCardSkeleton() {
+  return (
+    <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg animate-card-entrance">
+      {/* Colored header */}
+      <div className="bg-gradient-to-r from-slate-600 to-slate-700 p-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-10 h-10 rounded-lg" />
+          <Skeleton className="h-5 w-32" />
+        </div>
+      </div>
+      {/* Content */}
+      <div className="p-5 space-y-2">
+        <Skeleton className="h-10 w-24" />
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-4 w-20" />
+      </div>
+    </div>
+  );
+}
+
+// Skeleton for Records page leaderboard table
+export function LeaderboardSkeleton({ rows = 5 }: { rows?: number }) {
+  return (
+    <div className="bg-slate-800 rounded-xl overflow-hidden shadow-lg animate-card-entrance">
+      {/* Header */}
+      <div className="bg-slate-700 p-4 flex items-center gap-3">
+        <Skeleton className="w-6 h-6 rounded" />
+        <Skeleton className="h-5 w-40" />
+      </div>
+      {/* Table rows */}
+      <div className="p-2">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-4 p-3"
+            style={{ animationDelay: `${i * 0.05}s` }}
+          >
+            <Skeleton className="w-8 h-8 rounded-full" />
+            <Skeleton className="h-4 flex-1" />
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Full Records page skeleton
+export function RecordsPageSkeleton() {
+  return (
+    <div className="space-y-8">
+      {/* Hero header */}
+      <div className="text-center">
+        <Skeleton className="w-16 h-16 rounded-full mx-auto mb-4" />
+        <Skeleton className="h-10 w-48 mx-auto mb-2" />
+        <Skeleton className="h-5 w-64 mx-auto" />
+      </div>
+      {/* Record cards grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} style={{ animationDelay: `${i * 0.1}s` }}>
+            <RecordCardSkeleton />
+          </div>
+        ))}
+      </div>
+      {/* Leaderboard tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <LeaderboardSkeleton rows={5} />
+        <LeaderboardSkeleton rows={5} />
+      </div>
+    </div>
+  );
+}
+
 export default {
   Skeleton,
   LoadingSpinner,
@@ -208,5 +338,10 @@ export default {
   ChartSkeleton,
   PageLoadingState,
   CardsGridSkeleton,
-  HeroSkeleton
+  HeroSkeleton,
+  SeasonCardSkeleton,
+  SeasonsGridSkeleton,
+  RecordCardSkeleton,
+  LeaderboardSkeleton,
+  RecordsPageSkeleton
 };
