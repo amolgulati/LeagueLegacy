@@ -766,3 +766,39 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (194 tests passing)
 
 **Tests:** 50 yahoo tests passing (40 + 10 new), 194 total backend tests passing
+
+### IMP-009: Add import modal loading states and error handling ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Created ImportModal component with comprehensive loading states and error handling
+- Loading spinner with animated progress bar during import
+- Step-by-step progress indicators (League, Seasons, Matchups, Trades)
+- Clear error messages with troubleshooting tips when import fails
+- User can dismiss error and retry import with "Try Again" button
+- Success message with detailed import summary showing counts of seasons, teams, matchups, trades
+
+**Files Created:**
+- `frontend/src/components/ImportModal.tsx` - Full-featured import modal with loading states
+
+**Files Modified:**
+- `frontend/src/pages/Dashboard.tsx` - Integrated new ImportModal component, removed old inline modal code
+
+**Features:**
+- Animated loading spinner during import
+- Progress bar with percentage indicator
+- Step indicators with icons (📡 League, 📅 Seasons, 🏈 Matchups, 🔄 Trades)
+- Error state with retry functionality and troubleshooting tips
+- Success state with import summary (seasons, teams, matchups, trades, champion)
+- Modal cannot be closed during active import
+- Prevents duplicate imports during in-progress state
+
+**Acceptance Criteria Met:**
+- ✅ Import modal shows loading spinner during import
+- ✅ Progress indicator shows import steps (fetching league, importing seasons, etc.)
+- ✅ Error messages are displayed clearly when import fails
+- ✅ User can dismiss error and retry import
+- ✅ Success message confirms what was imported
+- ✅ typecheck passes (frontend builds successfully)
+
+**Tests:** Frontend builds successfully, 194 backend tests passing

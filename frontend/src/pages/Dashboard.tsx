@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { ImportModal } from '../components/ImportModal';
 
 interface ApiStatus {
   name: string;
@@ -28,12 +29,9 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
     totalTrades: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Import modal state
   const [showImportModal, setShowImportModal] = useState(false);
-  const [leagueId, setLeagueId] = useState('');
-  const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState<{success: boolean; message: string} | null>(null);
 
   const loadStats = async () => {
     try {
@@ -57,44 +55,6 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
   useEffect(() => {
     loadStats();
   }, []);
-
-  const handleImport = async () => {
-    if (!leagueId.trim()) return;
-    
-    setImporting(true);
-    setImportResult(null);
-    
-    try {
-      const response = await fetch('http://localhost:8000/api/sleeper/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ league_id: leagueId.trim() }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setImportResult({
-          success: true,
-          message: `Imported "${data.league_name}" (${data.season_year}): ${data.teams_imported} teams, ${data.matchups_imported} matchups, ${data.trades_imported} trades`
-        });
-        // Refresh stats
-        loadStats();
-      } else {
-        const error = await response.json();
-        setImportResult({
-          success: false,
-          message: error.detail || 'Failed to import league'
-        });
-      }
-    } catch (err) {
-      setImportResult({
-        success: false,
-        message: 'Network error - is the backend running?'
-      });
-    } finally {
-      setImporting(false);
-    }
-  };
 
   return (
     <div className="p-6">
@@ -254,55 +214,11 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
       )}
 
       {/* Import Modal */}
-      {showImportModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md mx-4 border border-slate-700">
-            <h3 className="text-xl font-bold text-white mb-4">Import Sleeper League</h3>
-            
-            <div className="mb-4">
-              <label className="block text-slate-400 text-sm mb-2">
-                Sleeper League ID
-              </label>
-              <input
-                type="text"
-                value={leagueId}
-                onChange={(e) => setLeagueId(e.target.value)}
-                placeholder="e.g. 123456789012345678"
-                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
-              />
-              <p className="text-slate-500 text-xs mt-2">
-                Find this in your Sleeper app URL: sleeper.app/leagues/[LEAGUE_ID]
-              </p>
-            </div>
-
-            {importResult && (
-              <div className={`p-3 rounded-lg mb-4 ${importResult.success ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'}`}>
-                {importResult.message}
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowImportModal(false);
-                  setLeagueId('');
-                  setImportResult(null);
-                }}
-                className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleImport}
-                disabled={importing || !leagueId.trim()}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {importing ? 'Importing...' : 'Import'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={loadStats}
+      />
     </div>
   );
 }

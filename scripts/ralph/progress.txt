@@ -133,3 +133,17 @@ Started: 2026-01-07
   - Champion detection looks at the end_week matchups to find the championship game winner
   - Tests: 50 yahoo tests now passing (40 + 10 new)
   - Total backend tests: 194 passing
+
+## 2025-01-10 - IMP-009
+- What was implemented: Import modal with loading states, progress indicators, and error handling
+- Files changed:
+  - `frontend/src/components/ImportModal.tsx` - New component with comprehensive loading and error states
+  - `frontend/src/pages/Dashboard.tsx` - Integrated ImportModal, removed old inline modal code
+- **Learnings:**
+  - Progress simulation runs independently of actual API call to show visual feedback
+  - Step indicators provide clear UX showing what's happening (League, Seasons, Matchups, Trades)
+  - Error state includes troubleshooting tips to help users diagnose issues
+  - Success state shows detailed import summary with counts
+  - Modal prevents close during active import to avoid user confusion
+  - LoadingSpinner component from LoadingStates.tsx can be reused across the app
+  - Tests: Frontend builds successfully, 194 backend tests passing
