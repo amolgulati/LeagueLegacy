@@ -11,7 +11,7 @@
         "typecheck passes"
       ],
       "priority": 1,
-      "passes": false
+      "passes": true
     },
     {
       "id": "IMP-002",

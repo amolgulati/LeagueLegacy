@@ -24,3 +24,13 @@ Started: 2026-01-07
 
 ---
 
+## 2025-01-10 - IMP-001
+- What was implemented: Added methods to traverse Sleeper league history chain via previous_league_id
+- Files changed:
+  - `backend/app/services/sleeper_client.py` - Added get_previous_league_id() and get_league_history_chain() methods
+  - `backend/tests/test_sleeper.py` - Added 4 new tests for chain traversal
+- **Learnings:**
+  - Sleeper API returns previous_league_id in league data which links to the same league from prior seasons
+  - Chain traversal allows finding all historical league IDs from a single current league ID
+  - Tests: 28 sleeper tests now passing (was 24, added 4)
+
