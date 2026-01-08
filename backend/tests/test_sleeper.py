@@ -764,6 +764,10 @@ class TestSleeperService:
         ]
         # Single season - no previous league
         mock_client.get_league_history_chain.return_value = ["123456789"]
+        # Mock winners bracket with completed championship (roster 1 wins)
+        mock_client.get_winners_bracket.return_value = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 2, "w": 1, "l": 2}
+        ]
 
         # Create mock player cache
         player_cache = create_mock_player_cache(mock_client, mock_player_data)
@@ -777,6 +781,9 @@ class TestSleeperService:
         assert result["teams_imported"] == 2
         assert result["matchups_imported"] == 1
         assert result["trades_imported"] == 1
+        # Verify champion was detected
+        assert result["seasons"][0]["champion_team_id"] is not None
+        assert result["seasons"][0]["runner_up_team_id"] is not None
 
     @pytest.mark.asyncio
     async def test_import_full_league_multiple_seasons(
@@ -822,6 +829,10 @@ class TestSleeperService:
 
         mock_client.get_all_matchups_for_season.side_effect = get_matchups_side_effect
         mock_client.get_all_trades_for_season.return_value = []
+        # Mock winners bracket with completed championship (roster 1 wins)
+        mock_client.get_winners_bracket.return_value = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 2, "w": 1, "l": 2}
+        ]
 
         # Create mock player cache (empty since no trades)
         player_cache = create_mock_player_cache(mock_client, {})
@@ -852,6 +863,11 @@ class TestSleeperService:
         assert len(leagues) == 1
         assert leagues[0].name == "Test Fantasy League"
 
+        # Verify all seasons have champions set
+        for season in seasons:
+            assert season.champion_team_id is not None
+            assert season.runner_up_team_id is not None
+
     @pytest.mark.asyncio
     async def test_import_full_league_idempotent(
         self,
@@ -871,6 +887,10 @@ class TestSleeperService:
         mock_client.get_rosters.return_value = rosters
         mock_client.get_all_matchups_for_season.return_value = {1: matchups}
         mock_client.get_all_trades_for_season.return_value = []
+        # Mock winners bracket with completed championship (roster 1 wins)
+        mock_client.get_winners_bracket.return_value = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 2, "w": 1, "l": 2}
+        ]
 
         # Create mock player cache (empty since no trades)
         player_cache = create_mock_player_cache(mock_client, {})
@@ -943,6 +963,10 @@ class TestSleeperService:
 
         mock_client.get_all_matchups_for_season.side_effect = get_matchups_side_effect
         mock_client.get_all_trades_for_season.return_value = []
+        # Mock winners bracket with completed championship (roster 1 wins)
+        mock_client.get_winners_bracket.return_value = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 2, "w": 1, "l": 2}
+        ]
 
         # Create mock player cache (empty since no trades)
         player_cache = create_mock_player_cache(mock_client, {})
@@ -971,6 +995,118 @@ class TestSleeperService:
         assert seasons_count_1 == seasons_count_2 == 2  # 2 seasons
         assert teams_count_1 == teams_count_2 == 4  # 2 teams x 2 seasons
         assert owners_count_1 == owners_count_2 == 2  # Only 2 unique owners
+
+    @pytest.mark.asyncio
+    async def test_detect_and_set_champion(
+        self,
+        db_session: Session,
+        mock_league_data,
+        mock_users_data,
+        mock_rosters_data,
+    ):
+        """Test champion detection sets champion_team_id and runner_up_team_id on Season."""
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_league.return_value = mock_league_data
+        mock_client.get_users.return_value = mock_users_data
+        mock_client.get_rosters.return_value = mock_rosters_data
+        # Championship: roster 2 beats roster 1 (uses only rosters 1 and 2 from mock data)
+        mock_client.get_winners_bracket.return_value = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 2, "w": 2, "l": 1},  # Championship: roster 2 wins
+        ]
+
+        service = SleeperService(db_session, mock_client)
+
+        # Import season and teams first
+        season = await service.import_season("123456789")
+        teams = await service.import_users_and_rosters("123456789")
+
+        # Detect and set champion
+        champion_team_id, runner_up_team_id = await service.detect_and_set_champion(
+            "123456789", season, teams
+        )
+
+        # Verify champion was set (roster 2 won)
+        assert champion_team_id is not None
+        assert runner_up_team_id is not None
+
+        # Verify season was updated
+        db_session.refresh(season)
+        assert season.champion_team_id == champion_team_id
+        assert season.runner_up_team_id == runner_up_team_id
+
+        # Verify correct teams were identified
+        team_lookup = {t.platform_team_id: t for t in teams}
+        assert champion_team_id == team_lookup["2"].id  # Roster 2 won
+        assert runner_up_team_id == team_lookup["1"].id  # Roster 1 lost championship
+
+    @pytest.mark.asyncio
+    async def test_detect_champion_incomplete_season(
+        self,
+        db_session: Session,
+        mock_league_data,
+        mock_users_data,
+        mock_rosters_data,
+    ):
+        """Test that incomplete seasons don't set champion."""
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_league.return_value = mock_league_data
+        mock_client.get_users.return_value = mock_users_data
+        mock_client.get_rosters.return_value = mock_rosters_data
+        # Championship not yet completed (no winner/loser)
+        mock_client.get_winners_bracket.return_value = [
+            {"r": 1, "m": 1, "t1": 1, "t2": 2},  # No winner yet
+        ]
+
+        service = SleeperService(db_session, mock_client)
+
+        # Import season and teams first
+        season = await service.import_season("123456789")
+        teams = await service.import_users_and_rosters("123456789")
+
+        # Detect and set champion
+        champion_team_id, runner_up_team_id = await service.detect_and_set_champion(
+            "123456789", season, teams
+        )
+
+        # Verify no champion was set
+        assert champion_team_id is None
+        assert runner_up_team_id is None
+
+        # Verify season was not updated
+        db_session.refresh(season)
+        assert season.champion_team_id is None
+        assert season.runner_up_team_id is None
+
+    @pytest.mark.asyncio
+    async def test_detect_champion_empty_bracket(
+        self,
+        db_session: Session,
+        mock_league_data,
+        mock_users_data,
+        mock_rosters_data,
+    ):
+        """Test handling of empty bracket (no playoff data)."""
+        mock_client = AsyncMock(spec=SleeperClient)
+        mock_client.get_league.return_value = mock_league_data
+        mock_client.get_users.return_value = mock_users_data
+        mock_client.get_rosters.return_value = mock_rosters_data
+        # Empty bracket (season hasn't started playoffs yet)
+        mock_client.get_winners_bracket.return_value = []
+
+        service = SleeperService(db_session, mock_client)
+
+        # Import season and teams first
+        season = await service.import_season("123456789")
+        teams = await service.import_users_and_rosters("123456789")
+
+        # Detect and set champion
+        champion_team_id, runner_up_team_id = await service.detect_and_set_champion(
+            "123456789", season, teams
+        )
+
+        # Verify no champion was set
+        assert champion_team_id is None
+        assert runner_up_team_id is None
 
 
 # ============================================================================

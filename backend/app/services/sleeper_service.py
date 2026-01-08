@@ -472,6 +472,61 @@ class SleeperService:
 
         return trades
 
+    async def detect_and_set_champion(
+        self, league_id: str, season: Season, teams: list[Team]
+    ) -> tuple[Optional[int], Optional[int]]:
+        """Detect the playoff champion and runner-up and set them on the season.
+
+        Fetches the winners bracket from Sleeper API, identifies the championship
+        game, and updates the Season record with champion_team_id and runner_up_team_id.
+
+        Args:
+            league_id: The Sleeper league ID (for this specific season).
+            season: The Season model to update.
+            teams: List of Team models for this season (for roster_id to team_id mapping).
+
+        Returns:
+            Tuple of (champion_team_id, runner_up_team_id), either may be None if
+            the championship has not been completed yet.
+        """
+        # Fetch the winners bracket
+        bracket = await self.client.get_winners_bracket(league_id)
+
+        if not bracket:
+            return (None, None)
+
+        # Get champion and runner-up roster IDs from bracket
+        champion_roster_id = SleeperClient.get_champion_roster_id(bracket)
+        runner_up_roster_id = SleeperClient.get_runner_up_roster_id(bracket)
+
+        # Build team lookup by roster_id (platform_team_id)
+        team_lookup = {t.platform_team_id: t for t in teams}
+
+        # Map roster IDs to team IDs
+        champion_team_id = None
+        runner_up_team_id = None
+
+        if champion_roster_id is not None:
+            champion_team = team_lookup.get(str(champion_roster_id))
+            if champion_team:
+                champion_team_id = champion_team.id
+
+        if runner_up_roster_id is not None:
+            runner_up_team = team_lookup.get(str(runner_up_roster_id))
+            if runner_up_team:
+                runner_up_team_id = runner_up_team.id
+
+        # Update the season with champion/runner-up
+        if champion_team_id is not None:
+            season.champion_team_id = champion_team_id
+        if runner_up_team_id is not None:
+            season.runner_up_team_id = runner_up_team_id
+
+        self.db.commit()
+        self.db.refresh(season)
+
+        return (champion_team_id, runner_up_team_id)
+
     async def import_single_season(
         self, league_id: str, total_weeks: int = 18, league: Optional[League] = None
     ) -> dict:
@@ -491,11 +546,18 @@ class SleeperService:
         matchups = await self.import_matchups(league_id, total_weeks, league=league)
         trades = await self.import_trades(league_id, total_weeks, league=league)
 
+        # Detect and set champion/runner-up from playoff bracket
+        champion_team_id, runner_up_team_id = await self.detect_and_set_champion(
+            league_id, season, teams
+        )
+
         return {
             "season_year": season.year,
             "teams_imported": len(teams),
             "matchups_imported": len(matchups),
             "trades_imported": len(trades),
+            "champion_team_id": champion_team_id,
+            "runner_up_team_id": runner_up_team_id,
         }
 
     async def import_full_league(
