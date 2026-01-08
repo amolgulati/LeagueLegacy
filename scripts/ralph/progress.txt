@@ -43,3 +43,22 @@ Started: 2025-01-07
   - Trade-Team is a many-to-many relationship using association table
   - FastAPI lifespan context manager is preferred over on_event decorators
   - All 14 tests pass, including cross-platform owner aggregation test
+
+## 2025-01-07 - FLH-003
+- What was implemented: Sleeper API integration for fetching and storing fantasy football data
+- Files changed:
+  - Created backend/app/services/__init__.py - Services module exports
+  - Created backend/app/services/sleeper_client.py - HTTP client for Sleeper API
+  - Created backend/app/services/sleeper_service.py - Service for importing Sleeper data to DB
+  - Created backend/app/api/sleeper.py - FastAPI routes for Sleeper endpoints
+  - Updated backend/app/main.py - Include sleeper_router
+  - Updated backend/tests/conftest.py - Added test_client fixture
+  - Created backend/tests/test_sleeper.py - 24 comprehensive tests
+- **Learnings:**
+  - Sleeper API is public, no authentication required
+  - Points stored as integers (fpts) with decimal part separate (fpts_decimal)
+  - Matchups share same matchup_id for teams playing each other
+  - Transactions include trades, waivers, and free agent pickups - filter by type
+  - Python 3.9 requires `Optional[str]` instead of `str | None` for type hints
+  - Use `app.services.sleeper_client.SleeperClient` path when patching in tests
+  - All 38 tests pass (14 models + 24 sleeper)
