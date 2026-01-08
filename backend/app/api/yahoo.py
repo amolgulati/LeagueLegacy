@@ -1,20 +1,65 @@
 """Yahoo Fantasy API routes for OAuth2 authentication and data import."""
 
+import os
+import time
 from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.services.yahoo_client import YahooClient, YahooToken, YahooAuthError, YahooAPIError
 from app.services.yahoo_service import YahooService
+from app.services.yahoo_token_cache import get_token_cache, YahooTokenCache
 
 router = APIRouter(prefix="/api/yahoo", tags=["yahoo"])
 
-# Store client instances with tokens (in production, use proper session management)
-# This is a simple in-memory store for demonstration
+# In-memory fallback store (used when file cache fails or for testing)
 _token_store: Dict[str, YahooToken] = {}
+
+# Get the token cache instance
+def _get_token_cache() -> YahooTokenCache:
+    """Get the token cache instance for persistent storage."""
+    return get_token_cache()
+
+
+def _get_token(session_id: str) -> Optional[YahooToken]:
+    """Get token from cache or in-memory store.
+
+    First checks file-based cache, then falls back to in-memory store.
+    """
+    # Try file cache first
+    cache = _get_token_cache()
+    token = cache.get_token(session_id)
+    if token:
+        return token
+
+    # Fall back to in-memory store
+    return _token_store.get(session_id)
+
+
+def _set_token(token: YahooToken, session_id: str) -> None:
+    """Store token in both file cache and in-memory store."""
+    # Store in file cache
+    cache = _get_token_cache()
+    cache.set_token(token, session_id)
+
+    # Also store in memory for fast access
+    _token_store[session_id] = token
+
+
+def _delete_token(session_id: str) -> bool:
+    """Delete token from both file cache and in-memory store."""
+    cache = _get_token_cache()
+    deleted_from_cache = cache.delete_token(session_id)
+
+    deleted_from_memory = session_id in _token_store
+    if deleted_from_memory:
+        del _token_store[session_id]
+
+    return deleted_from_cache or deleted_from_memory
 
 
 # ============= Request/Response Models =============
@@ -150,7 +195,7 @@ def get_authenticated_client(session_id: str = "default") -> YahooClient:
     Raises:
         HTTPException: If not authenticated.
     """
-    token = _token_store.get(session_id)
+    token = _get_token(session_id)
     if not token:
         raise HTTPException(
             status_code=401,
@@ -162,38 +207,92 @@ def get_authenticated_client(session_id: str = "default") -> YahooClient:
     return client
 
 
+def get_redirect_uri() -> str:
+    """Get the OAuth2 redirect URI from environment or use default.
+
+    Returns:
+        Redirect URI string.
+    """
+    return os.environ.get(
+        "YAHOO_REDIRECT_URI",
+        "http://localhost:8000/api/yahoo/auth/callback"
+    )
+
+
 # ============= OAuth2 Authentication Routes =============
 
 @router.get("/auth/url", response_model=AuthUrlResponse)
 async def get_authorization_url(
-    state: Optional[str] = Query(None, description="CSRF protection state parameter")
+    state: Optional[str] = Query(None, description="CSRF protection state parameter"),
+    redirect_uri: Optional[str] = Query(None, description="Custom redirect URI")
 ):
     """Get the OAuth2 authorization URL for user consent.
 
     The user should visit this URL to authorize the application
     to access their Yahoo Fantasy data.
+
+    If redirect_uri is not provided, uses YAHOO_REDIRECT_URI env var
+    or defaults to http://localhost:8000/api/yahoo/auth/callback
     """
-    client = YahooClient()
+    uri = redirect_uri or get_redirect_uri()
+    client = YahooClient(redirect_uri=uri)
     auth_url = client.get_authorization_url(state)
 
     return AuthUrlResponse(authorization_url=auth_url, state=state)
 
 
+@router.get("/auth/callback")
+async def oauth_callback(
+    code: str = Query(..., description="Authorization code from Yahoo"),
+    state: Optional[str] = Query(None, description="State parameter for CSRF validation"),
+    session_id: str = Query("default", description="Session identifier")
+):
+    """OAuth2 callback endpoint for browser redirect flow.
+
+    This endpoint is called by Yahoo after user authorization.
+    It exchanges the code for tokens and stores them.
+
+    After successful authentication, redirects to the frontend.
+    """
+    redirect_uri = get_redirect_uri()
+    client = YahooClient(redirect_uri=redirect_uri)
+
+    try:
+        token = await client.exchange_code_for_token(code)
+        _set_token(token, session_id)
+
+        # Redirect to frontend with success indicator
+        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+        return RedirectResponse(
+            url=f"{frontend_url}?yahoo_auth=success&session_id={session_id}",
+            status_code=302
+        )
+    except YahooAuthError as e:
+        # Redirect to frontend with error
+        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+        return RedirectResponse(
+            url=f"{frontend_url}?yahoo_auth=error&message={str(e)}",
+            status_code=302
+        )
+
+
 @router.post("/auth/token", response_model=TokenResponse)
 async def exchange_token(
     request: TokenExchangeRequest,
-    session_id: str = Query("default", description="Session identifier")
+    session_id: str = Query("default", description="Session identifier"),
+    redirect_uri: Optional[str] = Query(None, description="Redirect URI used in auth flow")
 ):
     """Exchange authorization code for access token.
 
     After the user authorizes at the authorization URL,
     they receive a code that should be submitted here.
     """
-    client = YahooClient()
+    uri = redirect_uri or get_redirect_uri()
+    client = YahooClient(redirect_uri=uri)
 
     try:
         token = await client.exchange_code_for_token(request.authorization_code)
-        _token_store[session_id] = token
+        _set_token(token, session_id)
 
         return TokenResponse(
             access_token=token.access_token[:20] + "...",  # Truncate for security
@@ -215,8 +314,6 @@ async def set_token(
     This endpoint allows setting a token that was obtained through
     another method (e.g., existing YFPY configuration).
     """
-    import time
-
     expires_at = request.expires_at or (time.time() + request.expires_in)
 
     token = YahooToken(
@@ -226,7 +323,7 @@ async def set_token(
         expires_in=request.expires_in,
         expires_at=expires_at,
     )
-    _token_store[session_id] = token
+    _set_token(token, session_id)
 
     return TokenResponse(
         access_token=token.access_token[:20] + "...",
@@ -241,7 +338,7 @@ async def get_auth_status(
     session_id: str = Query("default", description="Session identifier")
 ):
     """Check authentication status."""
-    token = _token_store.get(session_id)
+    token = _get_token(session_id)
 
     if not token:
         return {"authenticated": False, "message": "No token found"}
@@ -252,7 +349,7 @@ async def get_auth_status(
     return {
         "authenticated": True,
         "token_type": token.token_type,
-        "expires_in": int(token.expires_at - __import__("time").time()),
+        "expires_in": int(token.expires_at - time.time()),
     }
 
 
@@ -261,7 +358,7 @@ async def refresh_token(
     session_id: str = Query("default", description="Session identifier")
 ):
     """Refresh the access token."""
-    token = _token_store.get(session_id)
+    token = _get_token(session_id)
 
     if not token:
         raise HTTPException(status_code=401, detail="No token to refresh")
@@ -271,7 +368,7 @@ async def refresh_token(
 
     try:
         new_token = await client.refresh_access_token()
-        _token_store[session_id] = new_token
+        _set_token(new_token, session_id)
 
         return TokenResponse(
             access_token=new_token.access_token[:20] + "...",
@@ -288,9 +385,7 @@ async def logout(
     session_id: str = Query("default", description="Session identifier")
 ):
     """Clear the stored token (logout)."""
-    if session_id in _token_store:
-        del _token_store[session_id]
-
+    _delete_token(session_id)
     return {"message": "Logged out successfully"}
 
 

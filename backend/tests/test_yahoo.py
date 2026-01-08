@@ -622,7 +622,10 @@ class TestYahooAPIEndpoints:
 
     def test_auth_status_not_authenticated(self, test_client):
         """Test auth status when not authenticated."""
-        response = test_client.get("/api/yahoo/auth/status?session_id=test_session")
+        # Use a unique session ID that won't have a token
+        import uuid
+        unique_session = f"unauth_status_{uuid.uuid4().hex}"
+        response = test_client.get(f"/api/yahoo/auth/status?session_id={unique_session}")
 
         assert response.status_code == 200
         data = response.json()
@@ -687,3 +690,173 @@ class TestYahooAPIEndpoints:
         )
 
         assert response.status_code == 401
+
+    def test_get_auth_url_with_custom_redirect(self, test_client):
+        """Test getting OAuth2 authorization URL with custom redirect URI."""
+        response = test_client.get(
+            "/api/yahoo/auth/url?state=test_state&redirect_uri=http://custom.com/callback"
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "authorization_url" in data
+        assert "redirect_uri=http" in data["authorization_url"]
+
+    def test_oauth_callback_success(self, test_client):
+        """Test OAuth callback endpoint with successful token exchange."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "access_token": "callback_access_token",
+            "refresh_token": "callback_refresh_token",
+            "token_type": "bearer",
+            "expires_in": 3600,
+        }
+
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+            mock_post.return_value = mock_response
+
+            response = test_client.get(
+                "/api/yahoo/auth/callback?code=test_auth_code&session_id=callback_session",
+                follow_redirects=False,
+            )
+
+            # Should redirect to frontend
+            assert response.status_code == 302
+            assert "yahoo_auth=success" in response.headers["location"]
+
+    def test_oauth_callback_failure(self, test_client):
+        """Test OAuth callback endpoint with failed token exchange."""
+        mock_response = MagicMock()
+        mock_response.status_code = 401
+        mock_response.text = "Invalid authorization code"
+
+        with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+            mock_post.return_value = mock_response
+
+            response = test_client.get(
+                "/api/yahoo/auth/callback?code=invalid_code&session_id=fail_session",
+                follow_redirects=False,
+            )
+
+            # Should redirect to frontend with error
+            assert response.status_code == 302
+            assert "yahoo_auth=error" in response.headers["location"]
+
+    def test_auth_status_after_set_token(self, test_client):
+        """Test auth status returns correct info after setting token."""
+        token_data = {
+            "access_token": "status_test_token",
+            "refresh_token": "status_test_refresh",
+            "token_type": "bearer",
+            "expires_in": 3600,
+        }
+
+        # Set token
+        test_client.post(
+            "/api/yahoo/auth/set-token?session_id=status_test_session",
+            json=token_data,
+        )
+
+        # Check status
+        response = test_client.get(
+            "/api/yahoo/auth/status?session_id=status_test_session"
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["authenticated"] is True
+        assert data["token_type"] == "bearer"
+        assert "expires_in" in data
+        assert data["expires_in"] > 0
+
+
+# ============= YahooTokenCache Tests =============
+
+class TestYahooTokenCache:
+    """Tests for YahooTokenCache persistent storage."""
+
+    @pytest.fixture
+    def temp_cache_dir(self, tmp_path):
+        """Create a temporary directory for cache files."""
+        return tmp_path / "yahoo_cache"
+
+    @pytest.fixture
+    def token_cache(self, temp_cache_dir):
+        """Create a YahooTokenCache instance with temp directory."""
+        from app.services.yahoo_token_cache import YahooTokenCache
+        return YahooTokenCache(cache_dir=temp_cache_dir)
+
+    def test_cache_set_and_get_token(self, token_cache, mock_token):
+        """Test storing and retrieving a token."""
+        token_cache.set_token(mock_token, "test_session")
+
+        retrieved = token_cache.get_token("test_session")
+        assert retrieved is not None
+        assert retrieved.access_token == mock_token.access_token
+        assert retrieved.refresh_token == mock_token.refresh_token
+
+    def test_cache_get_nonexistent_token(self, token_cache):
+        """Test retrieving a token that doesn't exist."""
+        retrieved = token_cache.get_token("nonexistent_session")
+        assert retrieved is None
+
+    def test_cache_delete_token(self, token_cache, mock_token):
+        """Test deleting a stored token."""
+        token_cache.set_token(mock_token, "delete_session")
+        assert token_cache.has_token("delete_session")
+
+        deleted = token_cache.delete_token("delete_session")
+        assert deleted is True
+        assert not token_cache.has_token("delete_session")
+
+    def test_cache_delete_nonexistent_token(self, token_cache):
+        """Test deleting a token that doesn't exist."""
+        deleted = token_cache.delete_token("nonexistent_session")
+        assert deleted is False
+
+    def test_cache_persistence(self, temp_cache_dir, mock_token):
+        """Test that tokens persist across cache instances."""
+        from app.services.yahoo_token_cache import YahooTokenCache
+
+        # Create first cache instance and store token
+        cache1 = YahooTokenCache(cache_dir=temp_cache_dir)
+        cache1.set_token(mock_token, "persist_session")
+
+        # Create new cache instance (simulating server restart)
+        cache2 = YahooTokenCache(cache_dir=temp_cache_dir)
+        retrieved = cache2.get_token("persist_session")
+
+        assert retrieved is not None
+        assert retrieved.access_token == mock_token.access_token
+
+    def test_cache_multiple_sessions(self, token_cache, mock_token, expired_token):
+        """Test storing tokens for multiple sessions."""
+        token_cache.set_token(mock_token, "session_1")
+        token_cache.set_token(expired_token, "session_2")
+
+        assert token_cache.has_token("session_1")
+        assert token_cache.has_token("session_2")
+
+        sessions = token_cache.get_all_sessions()
+        assert "session_1" in sessions
+        assert "session_2" in sessions
+
+    def test_cache_clear_all(self, token_cache, mock_token):
+        """Test clearing all tokens from cache."""
+        token_cache.set_token(mock_token, "session_1")
+        token_cache.set_token(mock_token, "session_2")
+
+        token_cache.clear_all()
+
+        assert not token_cache.has_token("session_1")
+        assert not token_cache.has_token("session_2")
+        assert token_cache.get_all_sessions() == []
+
+    def test_cache_is_loaded(self, token_cache):
+        """Test is_loaded flag."""
+        assert not token_cache.is_loaded()
+
+        # Loading should happen on first access
+        token_cache.get_token("any_session")
+        assert token_cache.is_loaded()

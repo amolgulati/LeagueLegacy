@@ -102,3 +102,19 @@ Started: 2026-01-07
   - Tests: 47 sleeper tests now passing (41 + 6 new)
   - Total backend tests: 169 passing
 
+
+## 2025-01-10 - IMP-007
+- What was implemented: Yahoo OAuth2 authentication flow with persistent token storage
+- Files changed:
+  - `backend/app/services/yahoo_token_cache.py` - New file for file-based token persistence
+  - `backend/app/services/__init__.py` - Export YahooTokenCache
+  - `backend/app/api/yahoo.py` - Updated OAuth routes to use file-based cache, added callback endpoint
+  - `backend/tests/test_yahoo.py` - Added 12 new tests for token cache and OAuth callback
+- **Learnings:**
+  - Yahoo OAuth2 tokens need to persist across server restarts for good UX
+  - File-based cache at ~/.fantasy-league-history/yahoo_tokens.json works well
+  - OAuth callback endpoint redirects to frontend after successful auth
+  - Environment variables: YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET, YAHOO_REDIRECT_URI, FRONTEND_URL
+  - Tests need unique session IDs to avoid cross-test pollution from file cache
+  - Tests: 40 yahoo tests now passing (28 + 12 new)
+  - Total backend tests: 184 passing

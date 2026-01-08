@@ -687,3 +687,45 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (172 tests passing)
 
 **Tests:** 50 sleeper tests passing (47 + 3 new), 172 total backend tests passing
+
+### IMP-007: Implement Yahoo OAuth2 authentication flow ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Created YahooTokenCache class for file-based token persistence
+- Added OAuth callback endpoint for browser redirect flow
+- Updated all OAuth routes to use file-based token storage
+- Environment variables for configuration: YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET, YAHOO_REDIRECT_URI, FRONTEND_URL
+
+**Files Created:**
+- `backend/app/services/yahoo_token_cache.py` - File-based token cache at ~/.fantasy-league-history/yahoo_tokens.json
+
+**Files Modified:**
+- `backend/app/services/__init__.py` - Export YahooTokenCache, get_token_cache
+- `backend/app/api/yahoo.py` - Added callback endpoint, updated routes to use file cache
+- `backend/tests/test_yahoo.py` - Added 12 new tests for token cache and OAuth callback
+
+**API Endpoints:**
+- GET `/api/yahoo/auth/url` - Get OAuth2 authorization URL (supports custom redirect_uri)
+- GET `/api/yahoo/auth/callback` - OAuth2 callback for browser redirect (exchanges code, stores token, redirects to frontend)
+- POST `/api/yahoo/auth/token` - Exchange code for token (manual flow)
+- POST `/api/yahoo/auth/set-token` - Set token directly
+- GET `/api/yahoo/auth/status` - Check authentication status
+- POST `/api/yahoo/auth/refresh` - Refresh access token
+- DELETE `/api/yahoo/auth/logout` - Clear stored token
+
+**Key Features:**
+- Tokens persist across server restarts via file-based cache
+- OAuth callback redirects to frontend with success/error status
+- Multiple sessions supported with unique session IDs
+- Automatic token refresh when expired
+
+**Acceptance Criteria Met:**
+- ✅ Yahoo OAuth2 credentials can be configured via environment variables
+- ✅ Auth endpoint initiates OAuth2 flow and redirects to Yahoo
+- ✅ Callback endpoint exchanges code for access/refresh tokens
+- ✅ Tokens are stored securely and can be refreshed
+- ✅ User can verify authentication status via API
+- ✅ typecheck passes (184 tests passing)
+
+**Tests:** 40 yahoo tests passing (28 + 12 new), 184 total backend tests passing

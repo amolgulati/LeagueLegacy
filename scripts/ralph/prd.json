@@ -90,7 +90,7 @@
         "typecheck passes"
       ],
       "priority": 7,
-      "passes": false
+      "passes": true
     },
     {
       "id": "IMP-008",
