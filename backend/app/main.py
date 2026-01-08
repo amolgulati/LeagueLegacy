@@ -13,6 +13,7 @@ from app.db import init_db
 from app.api.sleeper import router as sleeper_router
 from app.api.yahoo import router as yahoo_router
 from app.api.owners import router as owners_router
+from app.api.history import router as history_router
 
 
 @asynccontextmanager
@@ -61,3 +62,4 @@ async def health():
 app.include_router(sleeper_router)
 app.include_router(yahoo_router)
 app.include_router(owners_router)
+app.include_router(history_router)
