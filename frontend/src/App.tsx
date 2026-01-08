@@ -4,6 +4,7 @@ import { Owners } from './pages/Owners';
 import { Seasons } from './pages/Seasons';
 import { Trades } from './pages/Trades';
 import { HeadToHead } from './pages/HeadToHead';
+import { Records } from './pages/Records';
 
 interface ApiStatus {
   name: string;
@@ -11,7 +12,7 @@ interface ApiStatus {
   status: string;
 }
 
-type TabType = 'dashboard' | 'owners' | 'seasons' | 'trades' | 'rivalries';
+type TabType = 'dashboard' | 'owners' | 'seasons' | 'trades' | 'rivalries' | 'records';
 
 interface TabConfig {
   id: TabType;
@@ -62,6 +63,15 @@ const tabs: TabConfig[] = [
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'records',
+    label: 'Records',
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M5 2a2 2 0 00-2 2v1a2 2 0 002 2h1v1H5a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3v-6a3 3 0 00-3-3h-1V7h1a2 2 0 002-2V4a2 2 0 00-2-2H5zm0 2h10v1H5V4zm3 4h4v1H8V8z" clipRule="evenodd" />
       </svg>
     ),
   },
@@ -120,6 +130,8 @@ function App() {
         return <Trades />;
       case 'rivalries':
         return <HeadToHead />;
+      case 'records':
+        return <Records />;
       default:
         return <Dashboard apiStatus={apiStatus} leagueName={leagueName} />;
     }
