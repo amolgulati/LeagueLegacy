@@ -65,6 +65,46 @@
       ],
       "priority": 5,
       "passes": true
+    },
+    {
+      "id": "IMP-021",
+      "title": "Fix Yahoo Import Error Handling",
+      "acceptanceCriteria": [
+        "Add logging for all Yahoo import errors with full stack traces",
+        "Return specific error messages for: auth failures, invalid league key format, API rate limits, parsing errors, database errors",
+        "Frontend displays actionable error message (not generic 'something went wrong')",
+        "Test Yahoo import with valid and invalid league keys",
+        "typecheck passes"
+      ],
+      "priority": 6,
+      "passes": true
+    },
+    {
+      "id": "IMP-022",
+      "title": "Fix Owners Tab Championships Display",
+      "acceptanceCriteria": [
+        "Championships count on Owners tab matches Hall of Fame tab",
+        "Use same data source (Season.champion_team_id) as Hall of Fame for consistency",
+        "Owner profile cards show correct championship trophy count",
+        "typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false
+    },
+    {
+      "id": "IMP-023",
+      "title": "Track 2nd and 3rd Place Finishes",
+      "acceptanceCriteria": [
+        "Season model has third_place_team_id field (runner_up already exists)",
+        "Owner stats include runner_up_finishes and third_place_finishes counts",
+        "Hall of Fame shows runner-up leaderboard (silver medals)",
+        "Hall of Fame shows 3rd place leaderboard (bronze medals)",
+        "Owner profile cards display 2nd/3rd place trophy counts",
+        "Records page shows Most Runner-Up Finishes and Most Third Place Finishes",
+        "typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false
     }
   ]
 }
