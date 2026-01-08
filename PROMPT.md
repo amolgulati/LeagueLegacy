@@ -207,3 +207,41 @@ Otherwise, end normally after completing one story.
 - Most active traders leaderboard
 
 **Tests:** All 118 tests passing (14 models + 24 sleeper + 28 yahoo + 19 owners + 16 history + 17 trades)
+
+
+### FLH-008: Create frontend dashboard layout ✅
+**Completed:** 2025-01-08
+
+**Implementation:**
+- Created 4-tab navigation: Dashboard, Owners, Seasons, Trades
+- Responsive design with mobile bottom navigation and hamburger menu
+- Dark mode toggle with localStorage persistence (default: dark)
+- League branding with trophy icon and configurable league name
+
+**Files Created:**
+- `frontend/src/pages/Dashboard.tsx` - Landing page with quick stats
+- `frontend/src/pages/Owners.tsx` - Owner stats table
+- `frontend/src/pages/Seasons.tsx` - Season list with champions
+- `frontend/src/pages/Trades.tsx` - Trade list with analytics
+
+**Files Modified:**
+- `frontend/src/App.tsx` - New tabbed layout with dark mode
+- `frontend/src/index.css` - Dark/light mode CSS support
+- `frontend/index.html` - Updated page title
+
+**Features:**
+- Desktop horizontal tabs with icons
+- Mobile bottom navigation bar
+- Mobile hamburger menu dropdown
+- Dark mode toggle (sun/moon icons)
+- Sticky header with backdrop blur
+- Dashboard quick stats cards
+- Getting started guide for new users
+
+**Acceptance Criteria Met:**
+- ✅ Navigation with tabs: Dashboard, Owners, Seasons, Trades
+- ✅ Responsive design works on mobile
+- ✅ Dark mode support with persistence
+- ✅ League branding/name displayed
+
+**Tests:** Frontend builds successfully, all 118 backend tests passing

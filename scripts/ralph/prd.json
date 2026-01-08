@@ -97,7 +97,7 @@
         "League branding/name displayed"
       ],
       "priority": 8,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-009",

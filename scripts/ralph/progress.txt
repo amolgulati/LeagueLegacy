@@ -138,3 +138,29 @@ Started: 2025-01-07
   - Pagination with total count requires separate count query before limit/offset
   - defaultdict simplifies aggregation logic for counting trades per owner/partner
   - All 118 tests pass (14 models + 24 sleeper + 28 yahoo + 19 owners + 16 history + 17 trades)
+
+## 2025-01-08 - FLH-008
+- What was implemented: Frontend dashboard layout with 4 tabs and responsive design
+- Files changed:
+  - Created frontend/src/pages/Dashboard.tsx - Main landing page with stats overview
+  - Created frontend/src/pages/Owners.tsx - Owner stats table with mapping access
+  - Created frontend/src/pages/Seasons.tsx - Season list grouped by year with champions
+  - Created frontend/src/pages/Trades.tsx - Trade list with analytics and pagination
+  - Updated frontend/src/App.tsx - New tabbed layout with dark mode toggle
+  - Updated frontend/src/index.css - Dark/light mode CSS variables and transitions
+  - Updated frontend/index.html - Updated page title
+- **Features:**
+  - Navigation with 4 tabs: Dashboard, Owners, Seasons, Trades
+  - Mobile bottom navigation bar with icons
+  - Mobile hamburger menu for alternative navigation
+  - Dark mode toggle with localStorage persistence (defaults to dark)
+  - League branding with trophy icon and configurable league name
+  - Sticky header with backdrop blur effect
+  - Dashboard shows quick stats cards (owners, seasons, trades, API status)
+  - Getting started guide for new users
+- **Learnings:**
+  - Tailwind CSS with class-based dark mode requires adding classes to HTML element
+  - CSS custom properties (--bg-primary, etc.) can be used with Tailwind's apply directive
+  - Mobile-first responsive design with md: breakpoint for desktop navigation
+  - React state for dark mode should use lazy initialization with localStorage
+  - Fixed bottom navigation needs padding-bottom on main content (pb-20)
