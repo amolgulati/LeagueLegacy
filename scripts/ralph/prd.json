@@ -135,7 +135,7 @@
         "Display trade frequency stats"
       ],
       "priority": 11,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-012",

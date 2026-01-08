@@ -317,3 +317,40 @@ Otherwise, end normally after completing one story.
 - ✅ Highlight playoff matchups
 
 **Tests:** Frontend builds successfully, all 118 backend tests passing
+
+
+### FLH-011: Build trade history visualization ✅
+**Completed:** 2025-01-09
+
+**Implementation:**
+- Created comprehensive trade visualization with timeline view and network graph
+- Added Recharts dependency for interactive charts
+- Filter controls for owner and season selection
+- Trade frequency statistics and partner relationship display
+
+**Files Created:**
+- `frontend/src/components/TradeTimeline.tsx` - Vertical timeline with season grouping and bar chart
+- `frontend/src/components/TradeFilters.tsx` - Owner/season filter dropdowns with clear functionality
+- `frontend/src/components/TradeNetwork.tsx` - Trade partner relationships and frequency stats
+
+**Files Modified:**
+- `frontend/src/pages/Trades.tsx` - Integrated new components with view toggle
+- `frontend/package.json` - Added recharts dependency
+
+**Features:**
+- Timeline view showing trades grouped by season
+- Bar chart visualizing trades per season (using Recharts)
+- Filter by owner or season with clear button and active filter badges
+- Trade partners network showing relationships between owners
+- Most active traders horizontal bar chart
+- Trade frequency stats (total, avg per season, partner count)
+- Toggle between Timeline and Network views
+- Responsive design for mobile and desktop
+
+**Acceptance Criteria Met:**
+- ✅ Timeline view of all trades
+- ✅ Filter by owner or season
+- ✅ Show trade partners network graph
+- ✅ Display trade frequency stats
+
+**Tests:** Frontend builds successfully, all 118 backend tests passing

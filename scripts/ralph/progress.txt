@@ -209,3 +209,27 @@ Started: 2025-01-07
   - Select dropdowns can filter out already-selected options using excludeId prop
   - Color-coded borders and backgrounds help distinguish playoff/championship games
   - Scrollable matchup list (max-h-96) prevents page from being too long
+
+## 2025-01-09 - FLH-011
+- What was implemented: Trade history visualization with timeline view, filters, and network graph
+- Files changed:
+  - Created frontend/src/components/TradeTimeline.tsx - Vertical timeline with season grouping and bar chart
+  - Created frontend/src/components/TradeFilters.tsx - Owner/season filter dropdowns
+  - Created frontend/src/components/TradeNetwork.tsx - Trade partner relationships and frequency stats
+  - Updated frontend/src/pages/Trades.tsx - Integrated new components with view toggle
+  - Updated frontend/package.json - Added recharts dependency
+- **Features:**
+  - Timeline view showing trades grouped by season
+  - Bar chart visualizing trades per season (using Recharts)
+  - Filter by owner or season with clear button and active filter badges
+  - Trade partners network showing relationships between owners
+  - Most active traders horizontal bar chart
+  - Trade frequency stats (total, avg per season, partner count)
+  - Toggle between Timeline and Network views
+  - Responsive design for mobile and desktop
+- **Learnings:**
+  - Recharts is a good choice for simple charts in React with Tailwind
+  - TypeScript formatter callbacks in Recharts need careful typing (use implicit types)
+  - useMemo is essential for filtering and transforming trade data efficiently
+  - Trade partnerships require bidirectional counting (both owners in each trade)
+  - Consistent key generation for partnerships prevents duplicates (use smaller ID first)
