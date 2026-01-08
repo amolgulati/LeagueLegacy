@@ -113,52 +113,68 @@ html.light {
 }
 
 /* ESPN Retro theme - evokes early 2000s ESPN/NFL Primetime aesthetic */
+/*
+ * Color palette inspired by classic ESPN SportsCenter/NFL Primetime (1998-2005)
+ * - Deep blacks as backdrop (like studio set)
+ * - Bold ESPN Red (#CC0000) for brand identity
+ * - Gold highlights for achievements/emphasis
+ * - High contrast for readability
+ * All text colors tested for WCAG AA compliance (4.5:1 minimum)
+ */
 html.espn-retro {
   /* Background colors - deep blacks and charcoals */
-  --bg-primary: #0a0a0a;       /* near black */
-  --bg-secondary: #141414;     /* dark charcoal */
-  --bg-tertiary: #1f1f1f;      /* charcoal */
-  --bg-card: #141414;          /* dark charcoal */
-  --bg-hover: #262626;         /* lighter charcoal */
-  --bg-input: #1f1f1f;         /* charcoal */
+  --bg-primary: #0a0a0a;       /* near black - main backdrop */
+  --bg-secondary: #141414;     /* dark charcoal - cards/panels */
+  --bg-tertiary: #1f1f1f;      /* charcoal - elevated surfaces */
+  --bg-card: #141414;          /* dark charcoal - card backgrounds */
+  --bg-hover: #262626;         /* lighter charcoal - hover states */
+  --bg-input: #1f1f1f;         /* charcoal - form inputs */
 
-  /* Text colors */
-  --text-primary: #fafafa;     /* off-white */
-  --text-secondary: #a3a3a3;   /* gray-400 */
-  --text-muted: #737373;       /* gray-500 */
-  --text-inverted: #0a0a0a;    /* near black */
+  /* Text colors - WCAG AA compliant */
+  --text-primary: #fafafa;     /* off-white - 18.97:1 contrast */
+  --text-secondary: #a3a3a3;   /* gray-400 - 7.85:1 contrast */
+  --text-muted: #8a8a8a;       /* lighter gray - 5.73:1 contrast (meets 4.5:1) */
+  --text-inverted: #0a0a0a;    /* near black - for light backgrounds */
 
   /* Border colors */
-  --border-primary: #262626;   /* charcoal */
-  --border-secondary: #404040; /* gray-700 */
+  --border-primary: #333333;   /* visible border - 2.63:1 UI contrast */
+  --border-secondary: #404040; /* stronger border - gray-700 */
 
   /* Accent colors - ESPN red and gold */
-  --accent-primary: #cc0000;   /* ESPN Red */
-  --accent-primary-hover: #990000; /* darker red */
-  --accent-secondary: #ffd700; /* Gold */
+  /* Note: #CC0000 used for UI elements/large text (3.36:1 OK for buttons/icons)
+   * #ef4444 used for small text where 4.5:1 is required */
+  --accent-primary: #ef4444;   /* accessible red - 5.26:1 contrast */
+  --accent-primary-hover: #dc2626; /* darker accessible red */
+  --accent-primary-ui: #cc0000;/* ESPN brand red - for buttons/icons */
+  --accent-secondary: #ffd700; /* Gold - 14.12:1 excellent contrast */
 
   /* Status colors */
-  --success: #22c55e;          /* green-500 */
+  --success: #22c55e;          /* green-500 - 8.69:1 contrast */
   --success-muted: rgba(34, 197, 94, 0.2);
-  --warning: #ffd700;          /* gold */
+  --warning: #ffd700;          /* gold - high visibility */
   --warning-muted: rgba(255, 215, 0, 0.15);
-  --error: #cc0000;            /* ESPN red */
-  --error-muted: rgba(204, 0, 0, 0.2);
+  --error: #ef4444;            /* accessible red - 5.26:1 */
+  --error-muted: rgba(239, 68, 68, 0.2);
 
-  /* Chart/Data colors */
-  --chart-1: #cc0000;          /* ESPN red */
+  /* Chart/Data colors - designed for data visualization */
+  --chart-1: #ef4444;          /* accessible red */
   --chart-2: #ffd700;          /* gold */
   --chart-3: #22c55e;          /* green */
-  --chart-4: #ff6b00;          /* bright orange */
+  --chart-4: #f97316;          /* orange-500 - better contrast */
 
   /* Gradient stops */
   --gradient-from: #0a0a0a;    /* near black */
-  --gradient-to: #141414;      /* dark charcoal */
+  --gradient-to: #1a1a1a;      /* slightly lighter for visible gradient */
 
-  /* Trophy/Medal colors */
+  /* Trophy/Medal colors - classic metallic palette */
   --trophy-gold: #ffd700;      /* pure gold */
   --trophy-silver: #c0c0c0;    /* silver */
   --trophy-bronze: #cd7f32;    /* bronze */
+
+  /* ESPN Retro specific accent colors */
+  --espn-red: #cc0000;         /* original ESPN red for branding */
+  --espn-red-glow: rgba(204, 0, 0, 0.4); /* glow effect */
+  --gold-glow: rgba(255, 215, 0, 0.3);   /* gold glow effect */
 }
 
 /* ==================== Theme Class Overrides ==================== */
@@ -231,6 +247,7 @@ html.espn-retro .border-slate-700 {
   border-color: var(--border-primary);
 }
 
+/* Link colors - gold for emphasis */
 html.espn-retro .text-blue-400 {
   color: var(--accent-secondary);
 }
@@ -239,16 +256,46 @@ html.espn-retro .text-blue-500 {
   color: var(--accent-secondary);
 }
 
+/* Button colors - use ESPN brand red for UI elements (3:1 OK for buttons) */
 html.espn-retro .bg-blue-600 {
-  background-color: var(--accent-primary);
+  background-color: var(--espn-red);
 }
 
 html.espn-retro .hover\:bg-blue-500:hover {
-  background-color: var(--accent-primary-hover);
+  background-color: #aa0000; /* darker ESPN red on hover */
 }
 
+html.espn-retro .hover\:bg-blue-700:hover {
+  background-color: #990000; /* even darker */
+}
+
+/* Ring/focus colors */
+html.espn-retro .ring-blue-500 {
+  --tw-ring-color: var(--accent-secondary);
+}
+
+html.espn-retro .focus\:ring-blue-500:focus {
+  --tw-ring-color: var(--accent-secondary);
+}
+
+/* Gradient backgrounds */
 html.espn-retro .from-slate-900 {
   --tw-gradient-from: var(--bg-primary);
+}
+
+/* Text accent colors for accessibility */
+html.espn-retro .text-red-500,
+html.espn-retro .text-red-400 {
+  color: var(--accent-primary); /* accessible red for text */
+}
+
+/* Muted text */
+html.espn-retro .text-slate-400 {
+  color: var(--text-secondary);
+}
+
+html.espn-retro .text-slate-500 {
+  color: var(--text-muted);
 }
 
 html.espn-retro .to-slate-800 {

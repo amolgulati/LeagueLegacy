@@ -133,3 +133,28 @@ Started: 2026-01-08
   - CSS variables allow theme switching without runtime class changes
   - Organizing variables by category (bg, text, border, accent, status, chart) makes theming systematic
   - Migration from old settings (fantasy-league-dark-mode) maintains backward compatibility
+
+## 2026-01-08 - IMP-017: ESPN Retro Color Palette Design
+- What was implemented:
+  - Refined ESPN Retro theme with WCAG AA compliant colors
+  - Updated color palette inspired by ESPN SportsCenter/NFL Primetime (1998-2005)
+  - Calculated and documented contrast ratios for all color combinations:
+    - Text Primary (#fafafa): 18.97:1 ✓
+    - Text Secondary (#a3a3a3): 7.85:1 ✓
+    - Text Muted (#8a8a8a): 5.73:1 ✓ (>4.5 min)
+    - Accent Primary (#ef4444): 5.26:1 ✓ (accessible red for text)
+    - Accent Secondary (#ffd700): 14.12:1 ✓ (gold)
+  - Separated UI colors (buttons) from text colors for accessibility:
+    - --espn-red (#cc0000) for buttons/icons (3.36:1 - OK for UI elements)
+    - --accent-primary (#ef4444) for small text (5.26:1 - meets AA)
+  - Added ESPN-specific variables: --espn-red, --espn-red-glow, --gold-glow
+  - Added CSS overrides for proper button, link, and focus ring theming
+  - Extensive comments documenting WCAG contrast ratios for future reference
+- Files modified:
+  - `frontend/src/index.css` - Updated ESPN retro CSS variables and overrides
+- **Learnings:**
+  - WCAG AA requires 4.5:1 for normal text, 3:1 for large text/UI elements
+  - ESPN brand red (#CC0000) is too dark for small text on black backgrounds
+  - Separating "UI red" (buttons/icons) from "text red" allows aesthetic consistency while meeting accessibility
+  - Gold (#FFD700) provides excellent contrast (14.12:1) - use it for emphasis
+  - Node.js getLuminance calculation is reliable for quick contrast ratio checks
