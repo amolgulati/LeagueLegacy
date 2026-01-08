@@ -172,7 +172,7 @@
         "Show notable trades that season"
       ],
       "priority": 14,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-015",

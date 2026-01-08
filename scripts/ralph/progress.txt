@@ -284,3 +284,30 @@ Started: 2025-01-07
   - Pydantic Optional fields in nested models need careful handling
   - Ring utilities in Tailwind create nice highlight effects for avatars
   - All 138 tests passing (127 previous + 11 new hall of fame tests)
+
+## 2025-01-09 - FLH-014
+- What was implemented: Season-by-season breakdown with detailed season view
+- Files changed:
+  - Created backend/app/api/seasons.py - Seasons API with list and detail endpoints
+  - Created backend/tests/test_seasons.py - 8 comprehensive tests
+  - Updated backend/app/main.py - Include seasons_router
+  - Updated frontend/src/pages/Seasons.tsx - Click-to-view-detail functionality
+  - Created frontend/src/pages/SeasonDetail.tsx - Detailed season view page
+- **API Endpoints:**
+  - GET `/api/seasons` - List all seasons with basic info and champion
+  - GET `/api/seasons/{id}` - Detailed season view with standings, playoffs, trades
+- **Features:**
+  - Season header with champion info, runner-up, and season configuration
+  - Final standings table sorted by final_rank with wins/losses/points
+  - Playoff bracket visualization grouped by week
+  - Championship and consolation games highlighted distinctly
+  - Trades view showing all trades with participating teams
+  - Toggle between Standings, Playoffs, and Trades views
+  - Click on any season card to open detailed view
+  - Back navigation to return to seasons list
+- **Learnings:**
+  - Separate seasons API endpoint provides cleaner interface than history API
+  - Grouping playoff matchups by week makes bracket visualization easier
+  - View toggle (standings/playoffs/trades) provides focused browsing experience
+  - Button component for season cards enables proper hover effects vs div
+  - All 146 tests passing (138 previous + 8 new seasons tests)

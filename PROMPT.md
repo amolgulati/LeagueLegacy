@@ -438,3 +438,44 @@ Otherwise, end normally after completing one story.
 - ✅ Eye-catching design worthy of bragging
 
 **Tests:** Frontend builds successfully, all 138 backend tests passing (127 previous + 11 new)
+
+
+### FLH-014: Add season-by-season breakdown ✅
+**Completed:** 2025-01-09
+
+**Implementation:**
+- Created seasons API with list and detail endpoints
+- Season detail page with standings, playoff bracket, and trades
+- Click-to-view-detail functionality on season cards
+- View toggle for focused browsing (Standings/Playoffs/Trades)
+
+**Files Created:**
+- `backend/app/api/seasons.py` - Seasons API with list and detail endpoints
+- `backend/tests/test_seasons.py` - 8 comprehensive tests
+- `frontend/src/pages/SeasonDetail.tsx` - Detailed season view page
+
+**Files Modified:**
+- `backend/app/main.py` - Include seasons_router
+- `frontend/src/pages/Seasons.tsx` - Click-to-view-detail functionality
+
+**API Endpoints:**
+- GET `/api/seasons` - List all seasons with basic info and champion
+- GET `/api/seasons/{id}` - Detailed season view with standings, playoffs, trades
+
+**Features:**
+- Season header with champion info, runner-up, and configuration
+- Final standings table sorted by final_rank with wins/losses/points
+- Playoff bracket visualization grouped by week
+- Championship and consolation games highlighted distinctly
+- Trades view showing all trades with participating teams
+- Toggle between Standings, Playoffs, and Trades views
+- Click on any season card to open detailed view
+- Back navigation to return to seasons list
+
+**Acceptance Criteria Met:**
+- ✅ Select any season to view
+- ✅ Show final standings
+- ✅ Show playoff bracket
+- ✅ Show notable trades that season
+
+**Tests:** Frontend builds successfully, all 146 backend tests passing (138 previous + 8 new)
