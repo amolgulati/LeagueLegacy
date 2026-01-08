@@ -120,6 +120,7 @@ class Season(Base):
     # Season results
     champion_team_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("teams.id"))
     runner_up_team_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("teams.id"))
+    third_place_team_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("teams.id"))
     regular_season_winner_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("teams.id"))
 
     # Season configuration

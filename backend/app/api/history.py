@@ -47,6 +47,8 @@ class OwnerWithStats(BaseModel):
     seasons_played: int
     playoff_appearances: int
     championships: int
+    runner_up_finishes: int
+    third_place_finishes: int
     win_percentage: float
 
     class Config:
@@ -77,6 +79,8 @@ class CareerStats(BaseModel):
     seasons_played: int
     playoff_appearances: int
     championships: int
+    runner_up_finishes: int
+    third_place_finishes: int
     win_percentage: float
     matchups_won: int
     matchups_lost: int
@@ -144,6 +148,7 @@ def calculate_owner_stats(teams: List[Team]) -> dict:
 
     Championships are counted by checking if team.id matches the
     Season.champion_team_id, which is more reliable than final_rank.
+    Runner-up and third place finishes are counted similarly.
     """
     total_wins = sum(team.wins for team in teams)
     total_losses = sum(team.losses for team in teams)
@@ -158,6 +163,18 @@ def calculate_owner_stats(teams: List[Team]) -> dict:
         if team.season and team.season.champion_team_id == team.id
     )
 
+    # Count runner-up finishes by checking Season.runner_up_team_id
+    runner_up_finishes = sum(
+        1 for team in teams
+        if team.season and team.season.runner_up_team_id == team.id
+    )
+
+    # Count third place finishes by checking Season.third_place_team_id
+    third_place_finishes = sum(
+        1 for team in teams
+        if team.season and team.season.third_place_team_id == team.id
+    )
+
     total_games = total_wins + total_losses + total_ties
     win_percentage = (total_wins / total_games * 100) if total_games > 0 else 0.0
 
@@ -169,6 +186,8 @@ def calculate_owner_stats(teams: List[Team]) -> dict:
         "seasons_played": seasons_played,
         "playoff_appearances": playoff_appearances,
         "championships": championships,
+        "runner_up_finishes": runner_up_finishes,
+        "third_place_finishes": third_place_finishes,
         "win_percentage": round(win_percentage, 2),
     }
 

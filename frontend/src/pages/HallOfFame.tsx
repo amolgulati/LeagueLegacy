@@ -31,6 +31,13 @@ interface ChampionshipCount {
   leagues: string[];
 }
 
+interface PlacementCount {
+  owner: ChampionOwner;
+  count: number;
+  years: number[];
+  leagues: string[];
+}
+
 interface DynastyStreak {
   owner: ChampionOwner;
   streak: number;
@@ -42,6 +49,8 @@ interface DynastyStreak {
 interface HallOfFameData {
   champions_by_year: ChampionSeason[];
   championship_leaderboard: ChampionshipCount[];
+  runner_up_leaderboard: PlacementCount[];
+  third_place_leaderboard: PlacementCount[];
   dynasties: DynastyStreak[];
   total_seasons: number;
   unique_champions: number;
@@ -362,6 +371,49 @@ const LeaderboardRow = ({ entry, rank, colors }: { entry: ChampionshipCount; ran
   );
 };
 
+// Placement Leaderboard Row for runner-up and third place - theme-aware
+const PlacementLeaderboardRow = ({ entry, rank, colors, trophyColor }: { entry: PlacementCount; rank: number; colors: ReturnType<typeof getTrophyColors>; trophyColor: string }) => {
+  return (
+    <div
+      className="flex items-center gap-4 p-4 rounded-xl transition-all duration-300"
+      style={{
+        backgroundColor: rank <= 3 ? 'var(--bg-tertiary)' : 'transparent',
+      }}
+    >
+      <RankMedal rank={rank} colors={colors} />
+
+      <ChampionAvatar
+        name={entry.owner.display_name || entry.owner.name}
+        avatarUrl={entry.owner.avatar_url}
+        size="md"
+      />
+
+      <div className="flex-1">
+        <div className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
+          {entry.owner.display_name || entry.owner.name}
+        </div>
+        <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          {entry.years.join(', ')}
+        </div>
+      </div>
+
+      <div className="text-right">
+        <div className="flex items-center gap-1">
+          {[...Array(Math.min(entry.count, 5))].map((_, i) => (
+            <TrophyIcon key={i} className="w-5 h-5" color="" style={{ color: trophyColor }} />
+          ))}
+          {entry.count > 5 && (
+            <span className="font-bold" style={{ color: trophyColor }}>+{entry.count - 5}</span>
+          )}
+        </div>
+        <div className="text-2xl font-bold" style={{ color: trophyColor }}>
+          {entry.count}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Dynasty Badge - theme-aware
 const DynastyBadge = ({ dynasty, colors }: { dynasty: DynastyStreak; colors: ReturnType<typeof getTrophyColors> }) => {
   return (
@@ -544,6 +596,65 @@ export function HallOfFame() {
                 </div>
               </div>
             </section>
+          )}
+
+          {/* Runner-Up and Third Place Leaderboards - Side by Side */}
+          {(data.runner_up_leaderboard.length > 0 || data.third_place_leaderboard.length > 0) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Runner-Up Leaderboard */}
+              {data.runner_up_leaderboard.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 rounded-lg" style={{ backgroundColor: `${trophyColors.silver}30` }}>
+                      <TrophyIcon className="w-6 h-6" color="" style={{ color: trophyColors.silver }} />
+                    </div>
+                    <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Runner-Up Finishes</h2>
+                    <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Silver Medals</span>
+                  </div>
+
+                  <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', opacity: 0.8 }}>
+                    <div style={{ borderColor: 'var(--border-primary)' }}>
+                      {data.runner_up_leaderboard.map((entry, index) => (
+                        <PlacementLeaderboardRow
+                          key={entry.owner.id}
+                          entry={entry}
+                          rank={index + 1}
+                          colors={trophyColors}
+                          trophyColor={trophyColors.silver}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Third Place Leaderboard */}
+              {data.third_place_leaderboard.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 rounded-lg" style={{ backgroundColor: `${trophyColors.bronze}30` }}>
+                      <TrophyIcon className="w-6 h-6" color="" style={{ color: trophyColors.bronze }} />
+                    </div>
+                    <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Third Place Finishes</h2>
+                    <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Bronze Medals</span>
+                  </div>
+
+                  <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', opacity: 0.8 }}>
+                    <div style={{ borderColor: 'var(--border-primary)' }}>
+                      {data.third_place_leaderboard.map((entry, index) => (
+                        <PlacementLeaderboardRow
+                          key={entry.owner.id}
+                          entry={entry}
+                          rank={index + 1}
+                          colors={trophyColors}
+                          trophyColor={trophyColors.bronze}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
+            </div>
           )}
 
           {/* Dynasties Section */}

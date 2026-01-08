@@ -121,4 +121,41 @@ Otherwise, end normally after completing one story.
 - The tests were outdated and expected championships from `final_rank=1` instead of `champion_team_id`
 - All 204 backend tests now pass
 
-**Next Story:** IMP-023 (Track 2nd and 3rd Place Finishes)
+---
+
+### IMP-023: Track 2nd and 3rd Place Finishes ✅
+**Completed:** 2026-01-08
+
+**Acceptance Criteria Met:**
+- ✅ Season model has third_place_team_id field (runner_up already exists)
+- ✅ Owner stats include runner_up_finishes and third_place_finishes counts
+- ✅ Hall of Fame shows runner-up leaderboard (silver medals)
+- ✅ Hall of Fame shows 3rd place leaderboard (bronze medals)
+- ✅ Owner profile cards display 2nd/3rd place trophy counts
+- ✅ Records page shows Most Runner-Up Finishes and Most Third Place Finishes
+- ✅ typecheck passes (build succeeded)
+- ✅ All 207 backend tests pass (3 new tests added)
+
+**Files Changed:**
+- `backend/app/db/models.py` - Added third_place_team_id to Season model
+- `backend/app/api/history.py` - Updated calculate_owner_stats, OwnerWithStats, CareerStats
+- `backend/app/api/hall_of_fame.py` - Added PlacementCount model, runner_up_leaderboard, third_place_leaderboard
+- `backend/app/api/records.py` - Added PlacementRecord model, get_placement_records helper, placement records
+- `backend/tests/test_history.py` - Added TestPodiumFinishes class with 3 tests
+- `frontend/src/types/owner.ts` - Added runner_up_finishes, third_place_finishes to OwnerWithStats
+- `frontend/src/components/OwnerProfileCard.tsx` - Podium stats (1st/2nd/3rd) with trophy icons
+- `frontend/src/pages/HallOfFame.tsx` - PlacementCount type, PlacementLeaderboardRow, runner-up/third-place sections
+- `frontend/src/pages/Records.tsx` - PlacementRecord type, PlacementRecordCard, placement record displays
+
+---
+
+## ALL STORIES COMPLETE ✅
+
+All 7 stories in prd.json have `passes: true`:
+- IMP-016: Theme Infrastructure Setup ✅
+- IMP-017: ESPN Retro Color Palette Design ✅
+- IMP-018: Update Core Components for Theming ✅
+- IMP-019: Update Data Visualization for Theming ✅
+- IMP-020: Theme Polish and Typography ✅
+- IMP-022: Fix Owners Tab Championships Display ✅
+- IMP-023: Track 2nd and 3rd Place Finishes ✅

@@ -51,6 +51,14 @@ class ChampionshipCount(BaseModel):
     leagues: List[str]
 
 
+class PlacementCount(BaseModel):
+    """Placement count for runner-up and third-place leaderboards."""
+    owner: ChampionOwner
+    count: int
+    years: List[int]
+    leagues: List[str]
+
+
 class DynastyStreak(BaseModel):
     """Dynasty/consecutive championship streak."""
     owner: ChampionOwner
@@ -64,6 +72,8 @@ class HallOfFameResponse(BaseModel):
     """Complete Hall of Fame data."""
     champions_by_year: List[ChampionSeason]
     championship_leaderboard: List[ChampionshipCount]
+    runner_up_leaderboard: List[PlacementCount]
+    third_place_leaderboard: List[PlacementCount]
     dynasties: List[DynastyStreak]
     total_seasons: int
     unique_champions: int
@@ -139,6 +149,8 @@ async def get_hall_of_fame(db: Session = Depends(get_db)):
     Returns:
     - Champions by year (sorted by year descending)
     - Championship count leaderboard
+    - Runner-up leaderboard (silver medals)
+    - Third place leaderboard (bronze medals)
     - Dynasty streaks (consecutive championships in same league)
     - Summary statistics
     """
@@ -149,9 +161,16 @@ async def get_hall_of_fame(db: Session = Depends(get_db)):
         Season.champion_team_id.isnot(None)
     ).order_by(Season.year.desc()).all()
 
+    # Also get all seasons for runner-up/third place counting (even if no champion set)
+    all_seasons = db.query(Season).options(
+        joinedload(Season.league),
+    ).all()
+
     champions_by_year = []
     champion_data = []  # For dynasty calculation
     championship_counts = defaultdict(lambda: {"count": 0, "years": [], "leagues": set(), "owner": None})
+    runner_up_counts = defaultdict(lambda: {"count": 0, "years": [], "leagues": set(), "owner": None})
+    third_place_counts = defaultdict(lambda: {"count": 0, "years": [], "leagues": set(), "owner": None})
 
     for season in seasons:
         league = season.league
@@ -219,6 +238,46 @@ async def get_hall_of_fame(db: Session = Depends(get_db)):
         championship_counts[owner_id]["leagues"].add(league.name)
         championship_counts[owner_id]["owner"] = champion_owner
 
+    # Count runner-ups and third place finishes from all seasons
+    for season in all_seasons:
+        league = season.league
+
+        # Track runner-up counts
+        if season.runner_up_team_id:
+            runner_up_team = db.query(Team).options(
+                joinedload(Team.owner)
+            ).filter(Team.id == season.runner_up_team_id).first()
+
+            if runner_up_team and runner_up_team.owner:
+                owner_id = runner_up_team.owner.id
+                runner_up_counts[owner_id]["count"] += 1
+                runner_up_counts[owner_id]["years"].append(season.year)
+                runner_up_counts[owner_id]["leagues"].add(league.name)
+                runner_up_counts[owner_id]["owner"] = ChampionOwner(
+                    id=runner_up_team.owner.id,
+                    name=runner_up_team.owner.name,
+                    display_name=runner_up_team.owner.display_name,
+                    avatar_url=runner_up_team.owner.avatar_url,
+                )
+
+        # Track third place counts
+        if season.third_place_team_id:
+            third_place_team = db.query(Team).options(
+                joinedload(Team.owner)
+            ).filter(Team.id == season.third_place_team_id).first()
+
+            if third_place_team and third_place_team.owner:
+                owner_id = third_place_team.owner.id
+                third_place_counts[owner_id]["count"] += 1
+                third_place_counts[owner_id]["years"].append(season.year)
+                third_place_counts[owner_id]["leagues"].add(league.name)
+                third_place_counts[owner_id]["owner"] = ChampionOwner(
+                    id=third_place_team.owner.id,
+                    name=third_place_team.owner.name,
+                    display_name=third_place_team.owner.display_name,
+                    avatar_url=third_place_team.owner.avatar_url,
+                )
+
     # Build championship leaderboard
     championship_leaderboard = []
     for owner_id, data in championship_counts.items():
@@ -231,6 +290,28 @@ async def get_hall_of_fame(db: Session = Depends(get_db)):
 
     # Sort by championship count descending
     championship_leaderboard.sort(key=lambda x: x.championships, reverse=True)
+
+    # Build runner-up leaderboard
+    runner_up_leaderboard = []
+    for owner_id, data in runner_up_counts.items():
+        runner_up_leaderboard.append(PlacementCount(
+            owner=data["owner"],
+            count=data["count"],
+            years=sorted(data["years"], reverse=True),
+            leagues=list(data["leagues"]),
+        ))
+    runner_up_leaderboard.sort(key=lambda x: x.count, reverse=True)
+
+    # Build third place leaderboard
+    third_place_leaderboard = []
+    for owner_id, data in third_place_counts.items():
+        third_place_leaderboard.append(PlacementCount(
+            owner=data["owner"],
+            count=data["count"],
+            years=sorted(data["years"], reverse=True),
+            leagues=list(data["leagues"]),
+        ))
+    third_place_leaderboard.sort(key=lambda x: x.count, reverse=True)
 
     # Calculate dynasties
     dynasty_data = calculate_dynasties(champion_data)
@@ -251,6 +332,8 @@ async def get_hall_of_fame(db: Session = Depends(get_db)):
     return HallOfFameResponse(
         champions_by_year=champions_by_year,
         championship_leaderboard=championship_leaderboard,
+        runner_up_leaderboard=runner_up_leaderboard,
+        third_place_leaderboard=third_place_leaderboard,
         dynasties=dynasties,
         total_seasons=len(champions_by_year),
         unique_champions=len(unique_champion_ids),

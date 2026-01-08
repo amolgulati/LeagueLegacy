@@ -449,3 +449,117 @@ class TestHeadToHeadCrossSeasons:
         years = [m["year"] for m in data["matchups"]]
         assert 2022 in years
         assert 2023 in years
+
+
+class TestPodiumFinishes:
+    """Test 2nd and 3rd place tracking in career stats."""
+
+    def test_owner_stats_include_runner_up_and_third_place(self, test_client, db_session):
+        """Test that owner stats include runner_up_finishes and third_place_finishes."""
+        owner = create_test_owner(db_session, "Podium Test", sleeper_id="s_podium")
+        league = create_test_league(db_session)
+
+        # Season 1 - owner gets 2nd place (runner-up)
+        season1 = create_test_season(db_session, league, 2021)
+        team1 = create_test_team(db_session, season1, owner, "Team 2021",
+                                  wins=10, losses=4, made_playoffs=True)
+        season1.runner_up_team_id = team1.id
+
+        # Season 2 - owner gets 3rd place
+        season2 = create_test_season(db_session, league, 2022)
+        team2 = create_test_team(db_session, season2, owner, "Team 2022",
+                                  wins=9, losses=5, made_playoffs=True)
+        season2.third_place_team_id = team2.id
+
+        # Season 3 - owner wins championship
+        season3 = create_test_season(db_session, league, 2023)
+        team3 = create_test_team(db_session, season3, owner, "Team 2023",
+                                  wins=12, losses=2, made_playoffs=True)
+        season3.champion_team_id = team3.id
+
+        db_session.commit()
+
+        response = test_client.get("/api/history/owners")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data) == 1
+
+        owner_data = data[0]
+        assert owner_data["name"] == "Podium Test"
+        assert owner_data["championships"] == 1
+        assert owner_data["runner_up_finishes"] == 1
+        assert owner_data["third_place_finishes"] == 1
+        assert owner_data["seasons_played"] == 3
+
+    def test_owner_history_includes_runner_up_and_third_place(self, test_client, db_session):
+        """Test that individual owner history includes 2nd/3rd place finishes."""
+        owner = create_test_owner(db_session, "Career Test", sleeper_id="s_career")
+        league = create_test_league(db_session)
+
+        # Create multiple seasons with various finishes
+        for year, placement in [(2020, "runner_up"), (2021, "third"), (2022, "runner_up"), (2023, "champion")]:
+            season = create_test_season(db_session, league, year)
+            team = create_test_team(db_session, season, owner, f"Team {year}",
+                                     wins=10, losses=4, made_playoffs=True)
+            if placement == "champion":
+                season.champion_team_id = team.id
+            elif placement == "runner_up":
+                season.runner_up_team_id = team.id
+            elif placement == "third":
+                season.third_place_team_id = team.id
+
+        db_session.commit()
+
+        response = test_client.get(f"/api/history/owners/{owner.id}")
+        assert response.status_code == 200
+
+        data = response.json()
+        career_stats = data["career_stats"]
+
+        assert career_stats["championships"] == 1
+        assert career_stats["runner_up_finishes"] == 2
+        assert career_stats["third_place_finishes"] == 1
+
+    def test_multiple_owners_placement_tracking(self, test_client, db_session):
+        """Test tracking placements across multiple owners."""
+        owner1 = create_test_owner(db_session, "Always Second", sleeper_id="s_second")
+        owner2 = create_test_owner(db_session, "Always Third", sleeper_id="s_third")
+        owner3 = create_test_owner(db_session, "Champion", sleeper_id="s_champ")
+        league = create_test_league(db_session)
+
+        # Create 3 seasons with consistent placements
+        for year in [2021, 2022, 2023]:
+            season = create_test_season(db_session, league, year)
+            team1 = create_test_team(db_session, season, owner1, f"Team1 {year}")
+            team2 = create_test_team(db_session, season, owner2, f"Team2 {year}")
+            team3 = create_test_team(db_session, season, owner3, f"Team3 {year}")
+
+            season.champion_team_id = team3.id
+            season.runner_up_team_id = team1.id
+            season.third_place_team_id = team2.id
+
+        db_session.commit()
+
+        response = test_client.get("/api/history/owners")
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data) == 3
+
+        # Find each owner in the response
+        owner1_data = next(o for o in data if o["name"] == "Always Second")
+        owner2_data = next(o for o in data if o["name"] == "Always Third")
+        owner3_data = next(o for o in data if o["name"] == "Champion")
+
+        assert owner1_data["championships"] == 0
+        assert owner1_data["runner_up_finishes"] == 3
+        assert owner1_data["third_place_finishes"] == 0
+
+        assert owner2_data["championships"] == 0
+        assert owner2_data["runner_up_finishes"] == 0
+        assert owner2_data["third_place_finishes"] == 3
+
+        assert owner3_data["championships"] == 3
+        assert owner3_data["runner_up_finishes"] == 0
+        assert owner3_data["third_place_finishes"] == 0

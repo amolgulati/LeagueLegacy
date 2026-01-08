@@ -189,7 +189,7 @@ export function OwnerProfileCard({ owner, rank, onClick }: OwnerProfileCardProps
           </div>
         </div>
 
-        {/* Additional Stats */}
+        {/* Podium Stats (1st, 2nd, 3rd) */}
         <div className="grid grid-cols-3 gap-2">
           {/* Championships */}
           <div className="text-center p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
@@ -204,9 +204,44 @@ export function OwnerProfileCard({ owner, rank, onClick }: OwnerProfileCardProps
               )}
               {owner.championships}
             </div>
-            <div className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>Titles</div>
+            <div className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>1st</div>
           </div>
 
+          {/* Runner-up Finishes */}
+          <div className="text-center p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+            <div
+              className="text-lg font-bold flex items-center justify-center gap-1"
+              style={{ color: owner.runner_up_finishes > 0 ? 'var(--trophy-silver)' : 'var(--text-muted)' }}
+            >
+              {owner.runner_up_finishes > 0 && (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a1 1 0 00-1 1v1H6a1 1 0 00-1 1v3a3 3 0 003 3h.17A5.986 5.986 0 0110 12.17V15H8a1 1 0 000 2h4a1 1 0 000-2h-2v-2.83A5.986 5.986 0 0011.83 11H12a3 3 0 003-3V5a1 1 0 00-1-1h-3V3a1 1 0 00-1-1zM7 5h6v3a1 1 0 01-1 1H8a1 1 0 01-1-1V5z" clipRule="evenodd" />
+                </svg>
+              )}
+              {owner.runner_up_finishes}
+            </div>
+            <div className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>2nd</div>
+          </div>
+
+          {/* Third Place Finishes */}
+          <div className="text-center p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+            <div
+              className="text-lg font-bold flex items-center justify-center gap-1"
+              style={{ color: owner.third_place_finishes > 0 ? 'var(--trophy-bronze)' : 'var(--text-muted)' }}
+            >
+              {owner.third_place_finishes > 0 && (
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a1 1 0 00-1 1v1H6a1 1 0 00-1 1v3a3 3 0 003 3h.17A5.986 5.986 0 0110 12.17V15H8a1 1 0 000 2h4a1 1 0 000-2h-2v-2.83A5.986 5.986 0 0011.83 11H12a3 3 0 003-3V5a1 1 0 00-1-1h-3V3a1 1 0 00-1-1zM7 5h6v3a1 1 0 01-1 1H8a1 1 0 01-1-1V5z" clipRule="evenodd" />
+                </svg>
+              )}
+              {owner.third_place_finishes}
+            </div>
+            <div className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-secondary)' }}>3rd</div>
+          </div>
+        </div>
+
+        {/* Secondary Stats */}
+        <div className="grid grid-cols-2 gap-2 mt-2">
           {/* Playoff Appearances */}
           <div className="text-center p-2 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
             <div

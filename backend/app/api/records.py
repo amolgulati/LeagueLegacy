@@ -62,15 +62,27 @@ class SeasonTradesRecord(BaseModel):
     year: int
 
 
+class PlacementRecord(BaseModel):
+    """Most runner-up or third place finishes record."""
+    count: int
+    owner_id: int
+    owner_name: str
+    years: List[int]
+
+
 class AllRecordsResponse(BaseModel):
     """All league records."""
     highest_single_week_score: Optional[WeeklyScoreRecord] = None
     most_points_in_season: Optional[SeasonPointsRecord] = None
     longest_win_streak: Optional[WinStreakRecord] = None
     most_trades_in_season: Optional[SeasonTradesRecord] = None
+    most_runner_up_finishes: Optional[PlacementRecord] = None
+    most_third_place_finishes: Optional[PlacementRecord] = None
     top_weekly_scores: List[WeeklyScoreRecord] = []
     top_season_points: List[SeasonPointsRecord] = []
     top_win_streaks: List[WinStreakRecord] = []
+    top_runner_up_finishes: List[PlacementRecord] = []
+    top_third_place_finishes: List[PlacementRecord] = []
 
 
 # ============= Helper Functions =============
@@ -207,6 +219,60 @@ def get_most_trades_in_season(db: Session) -> Optional[SeasonTradesRecord]:
     )
 
 
+def get_placement_records(
+    db: Session,
+    placement_field: str,
+    limit: int = 10
+) -> List[PlacementRecord]:
+    """Get the owners with most runner-up or third place finishes.
+
+    Args:
+        db: Database session
+        placement_field: Either 'runner_up_team_id' or 'third_place_team_id'
+        limit: Maximum number of records to return
+    """
+    # Get all seasons with the specified placement
+    seasons = db.query(Season).options(
+        joinedload(Season.league),
+    ).filter(
+        getattr(Season, placement_field).isnot(None)
+    ).all()
+
+    # Count placements per owner
+    owner_counts: dict = defaultdict(lambda: {"count": 0, "years": [], "owner_name": ""})
+
+    for season in seasons:
+        team_id = getattr(season, placement_field)
+        if team_id:
+            team = db.query(Team).options(
+                joinedload(Team.owner)
+            ).filter(Team.id == team_id).first()
+
+            if team and team.owner:
+                owner_id = team.owner.id
+                owner_counts[owner_id]["count"] += 1
+                owner_counts[owner_id]["years"].append(season.year)
+                owner_counts[owner_id]["owner_name"] = team.owner.name
+
+    # Sort by count and return top N
+    sorted_owners = sorted(
+        owner_counts.items(),
+        key=lambda x: x[1]["count"],
+        reverse=True
+    )[:limit]
+
+    return [
+        PlacementRecord(
+            count=data["count"],
+            owner_id=owner_id,
+            owner_name=data["owner_name"],
+            years=sorted(data["years"], reverse=True),
+        )
+        for owner_id, data in sorted_owners
+        if data["count"] > 0
+    ]
+
+
 # ============= API Endpoints =============
 
 @router.get("", response_model=AllRecordsResponse)
@@ -218,7 +284,9 @@ async def get_all_records(db: Session = Depends(get_db)):
     - Most points in a season
     - Longest win streak
     - Most trades in a season by an owner
-    - Top N lists for weekly scores, season points, and win streaks
+    - Most runner-up finishes (2nd place)
+    - Most third place finishes
+    - Top N lists for weekly scores, season points, win streaks, and placements
 
     Each record includes owner name and year.
     """
@@ -237,12 +305,24 @@ async def get_all_records(db: Session = Depends(get_db)):
     # Get most trades in a season
     most_trades = get_most_trades_in_season(db)
 
+    # Get runner-up finishes
+    top_runner_up = get_placement_records(db, "runner_up_team_id", limit=10)
+    most_runner_up = top_runner_up[0] if top_runner_up else None
+
+    # Get third place finishes
+    top_third_place = get_placement_records(db, "third_place_team_id", limit=10)
+    most_third_place = top_third_place[0] if top_third_place else None
+
     return AllRecordsResponse(
         highest_single_week_score=highest_single_week,
         most_points_in_season=most_points_in_season,
         longest_win_streak=longest_win_streak,
         most_trades_in_season=most_trades,
+        most_runner_up_finishes=most_runner_up,
+        most_third_place_finishes=most_third_place,
         top_weekly_scores=top_weekly_scores,
         top_season_points=top_season_points,
         top_win_streaks=top_win_streaks,
+        top_runner_up_finishes=top_runner_up,
+        top_third_place_finishes=top_third_place,
     )

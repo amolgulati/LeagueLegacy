@@ -267,3 +267,42 @@ Started: 2026-01-08
   - `final_rank` is unreliable because not all platforms/imports set it correctly
   - When investigating "display doesn't match" bugs, check both data sources (API and DB) first
   - Tests can be a source of truth drift when implementation changes without test updates
+
+## 2026-01-08 - IMP-023: Track 2nd and 3rd Place Finishes
+- What was implemented:
+  - Backend:
+    - Added `third_place_team_id` field to Season model in `backend/app/db/models.py`
+    - Updated `calculate_owner_stats()` to include `runner_up_finishes` and `third_place_finishes` counts
+    - Updated `OwnerWithStats` and `CareerStats` Pydantic models with new fields
+    - Added `PlacementCount` model and `runner_up_leaderboard`/`third_place_leaderboard` to Hall of Fame API
+    - Added `PlacementRecord` model and placement records to Records API
+    - Added `get_placement_records()` helper function in records.py
+  - Frontend:
+    - Updated `OwnerWithStats` interface with `runner_up_finishes` and `third_place_finishes`
+    - Updated `OwnerProfileCard.tsx` to display podium stats (1st/2nd/3rd) with trophy icons
+    - Updated `HallOfFame.tsx` with `PlacementCount` type and runner-up/third-place leaderboards
+    - Added `PlacementLeaderboardRow` component with silver/bronze trophy colors
+    - Updated `Records.tsx` with `PlacementRecord` type and placement record cards
+    - Added `PlacementRecordCard` component for displaying multi-year finishes
+  - Tests:
+    - Added `TestPodiumFinishes` test class with 3 tests:
+      - `test_owner_stats_include_runner_up_and_third_place` - Verifies API returns new fields
+      - `test_owner_history_includes_runner_up_and_third_place` - Tests individual owner history
+      - `test_multiple_owners_placement_tracking` - Tests tracking across multiple owners
+    - All 207 backend tests pass
+- Files modified:
+  - `backend/app/db/models.py` - Added third_place_team_id to Season
+  - `backend/app/api/history.py` - Updated calculate_owner_stats and Pydantic models
+  - `backend/app/api/hall_of_fame.py` - Added PlacementCount, leaderboards
+  - `backend/app/api/records.py` - Added PlacementRecord, get_placement_records
+  - `backend/tests/test_history.py` - Added TestPodiumFinishes test class
+  - `frontend/src/types/owner.ts` - Added runner_up_finishes, third_place_finishes
+  - `frontend/src/components/OwnerProfileCard.tsx` - Podium stats display
+  - `frontend/src/pages/HallOfFame.tsx` - Runner-up/third-place leaderboards
+  - `frontend/src/pages/Records.tsx` - Placement record cards
+- **Learnings:**
+  - Following the existing pattern for `champion_team_id` and `runner_up_team_id` made adding `third_place_team_id` straightforward
+  - Pydantic models need to be updated in sync with helper functions that generate data
+  - Hall of Fame and Records pages share similar data structures but serve different purposes
+  - Using silver/bronze colors from theme variables maintains visual consistency
+  - Frontend types should mirror backend Pydantic models exactly for type safety

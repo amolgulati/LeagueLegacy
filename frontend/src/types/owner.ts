@@ -59,6 +59,8 @@ export interface OwnerWithStats {
   seasons_played: number;
   playoff_appearances: number;
   championships: number;
+  runner_up_finishes: number;
+  third_place_finishes: number;
   win_percentage: number;
 }
 

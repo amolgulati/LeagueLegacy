@@ -35,14 +35,25 @@ interface SeasonTradesRecord {
   year: number;
 }
 
+interface PlacementRecord {
+  count: number;
+  owner_id: number;
+  owner_name: string;
+  years: number[];
+}
+
 interface AllRecords {
   highest_single_week_score: WeeklyScoreRecord | null;
   most_points_in_season: SeasonPointsRecord | null;
   longest_win_streak: WinStreakRecord | null;
   most_trades_in_season: SeasonTradesRecord | null;
+  most_runner_up_finishes: PlacementRecord | null;
+  most_third_place_finishes: PlacementRecord | null;
   top_weekly_scores: WeeklyScoreRecord[];
   top_season_points: SeasonPointsRecord[];
   top_win_streaks: WinStreakRecord[];
+  top_runner_up_finishes: PlacementRecord[];
+  top_third_place_finishes: PlacementRecord[];
 }
 
 // Get theme-aware colors from CSS variables
@@ -157,6 +168,43 @@ const RecordCard = ({
         <div className="flex items-center gap-2 mt-2">
           <span style={{ color: 'var(--text-secondary)' }}>{year}</span>
           {subtitle && <span style={{ color: 'var(--text-muted)' }}>• {subtitle}</span>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Placement Record Card for runner-up and third place - shows multiple years
+const PlacementRecordCard = ({
+  title,
+  icon,
+  count,
+  ownerName,
+  years,
+  color,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  count: number;
+  ownerName: string;
+  years: number[];
+  color: string;
+}) => {
+  return (
+    <div className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+      <div className="p-4" style={{ background: `linear-gradient(to right, ${color}, ${adjustColor(color, -20)})` }}>
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg p-2" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
+            {icon}
+          </div>
+          <h3 className="text-white font-bold text-lg">{title}</h3>
+        </div>
+      </div>
+      <div className="p-5">
+        <div className="text-4xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{count}x</div>
+        <div className="text-xl font-semibold" style={{ color: 'var(--text-secondary)' }}>{ownerName}</div>
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <span style={{ color: 'var(--text-muted)' }}>Years: {years.slice(0, 5).join(', ')}{years.length > 5 ? '...' : ''}</span>
         </div>
       </div>
     </div>
@@ -281,7 +329,9 @@ export function Records() {
     records.highest_single_week_score ||
     records.most_points_in_season ||
     records.longest_win_streak ||
-    records.most_trades_in_season
+    records.most_trades_in_season ||
+    records.most_runner_up_finishes ||
+    records.most_third_place_finishes
   );
 
   return (
@@ -368,6 +418,33 @@ export function Records() {
               />
             )}
           </div>
+
+          {/* Podium Records (Runner-up and Third Place) */}
+          {(records?.most_runner_up_finishes || records?.most_third_place_finishes) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {records?.most_runner_up_finishes && (
+                <PlacementRecordCard
+                  title="Most Runner-Up Finishes"
+                  icon={<TrophyIcon className="w-6 h-6 text-white" />}
+                  count={records.most_runner_up_finishes.count}
+                  ownerName={records.most_runner_up_finishes.owner_name}
+                  years={records.most_runner_up_finishes.years}
+                  color={recordColors.silver}
+                />
+              )}
+
+              {records?.most_third_place_finishes && (
+                <PlacementRecordCard
+                  title="Most Third Place Finishes"
+                  icon={<TrophyIcon className="w-6 h-6 text-white" />}
+                  count={records.most_third_place_finishes.count}
+                  ownerName={records.most_third_place_finishes.owner_name}
+                  years={records.most_third_place_finishes.years}
+                  color={recordColors.bronze}
+                />
+              )}
+            </div>
+          )}
 
           {/* Leaderboard Tables */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
