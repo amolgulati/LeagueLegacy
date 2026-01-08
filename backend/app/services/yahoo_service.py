@@ -449,3 +449,166 @@ class YahooService:
             List of league data dictionaries.
         """
         return await self.client.get_user_leagues(game_key)
+
+    async def detect_and_set_champion(self, league_key: str, season: Season) -> Optional[int]:
+        """Detect the champion from playoff matchups and set on Season record.
+
+        For Yahoo leagues, the champion is typically the team that won the
+        championship week (usually week 16 or 17 for the finals).
+
+        Args:
+            league_key: The Yahoo league key.
+            season: The Season model to update.
+
+        Returns:
+            The champion_team_id if found, or None.
+        """
+        # Get league info to find the end week (championship week)
+        league_data = await self.client.get_league(league_key)
+        end_week = league_data.get("end_week", 17)
+
+        # Build team lookup
+        teams = self.db.query(Team).filter(Team.season_id == season.id).all()
+        team_lookup = {t.platform_team_id: t for t in teams if t.platform_team_id}
+
+        # Fetch playoff matchups for the final week (championship week)
+        matchups = await self.client.get_matchups(league_key, end_week)
+
+        champion_team_id = None
+        runner_up_team_id = None
+
+        for matchup in matchups:
+            # Look for the championship matchup (playoff but not consolation)
+            if matchup.get("is_playoffs") and not matchup.get("is_consolation"):
+                winner_key = matchup.get("winner_team_key")
+                if winner_key:
+                    winner_team = team_lookup.get(winner_key)
+                    if winner_team:
+                        champion_team_id = winner_team.id
+
+                        # Find the runner-up (loser of championship)
+                        teams_in_match = matchup.get("teams", [])
+                        for team in teams_in_match:
+                            team_key = team.get("team_key")
+                            if team_key and team_key != winner_key:
+                                loser_team = team_lookup.get(team_key)
+                                if loser_team:
+                                    runner_up_team_id = loser_team.id
+                        break
+
+        # Update season record
+        if champion_team_id:
+            season.champion_team_id = champion_team_id
+            season.runner_up_team_id = runner_up_team_id
+            self.db.commit()
+            self.db.refresh(season)
+
+        return champion_team_id
+
+    async def import_full_league_with_champion(
+        self, league_key: str, start_week: int = 1, end_week: int = 17
+    ) -> dict:
+        """Import all data for a Yahoo league, including champion detection.
+
+        This is an enhanced version of import_full_league that also
+        detects and records the champion for completed seasons.
+
+        Args:
+            league_key: The Yahoo league key.
+            start_week: First week of matchups to import.
+            end_week: Last week of matchups to import.
+
+        Returns:
+            Dictionary with counts of imported entities and champion info.
+        """
+        result = await self.import_full_league(league_key, start_week, end_week)
+
+        # Detect champion for completed seasons
+        season = self.db.query(Season).filter(Season.id == result.get("_season_id")).first()
+        if not season:
+            # Fetch season directly if not in result
+            league = self.db.query(League).filter(
+                League.platform == Platform.YAHOO,
+                League.platform_league_id == league_key,
+            ).first()
+            if league:
+                season = self.db.query(Season).filter(
+                    Season.league_id == league.id,
+                    Season.year == result["season_year"]
+                ).first()
+
+        champion_team_id = None
+        champion_name = None
+        if season and season.is_complete:
+            champion_team_id = await self.detect_and_set_champion(league_key, season)
+            if champion_team_id:
+                champion_team = self.db.query(Team).filter(Team.id == champion_team_id).first()
+                if champion_team:
+                    champion_name = champion_team.owner.name if champion_team.owner else champion_team.name
+
+        result["champion_team_id"] = champion_team_id
+        result["champion_name"] = champion_name
+
+        return result
+
+    async def import_historical_leagues(
+        self, game_keys: Optional[List[str]] = None
+    ) -> List[dict]:
+        """Import all historical leagues for the authenticated user.
+
+        This fetches leagues from multiple seasons and imports each one.
+
+        Args:
+            game_keys: List of game keys for different NFL seasons.
+                       Default covers recent seasons (2024-2019).
+
+        Returns:
+            List of import results for each league.
+        """
+        if not game_keys:
+            # Default game keys for recent NFL seasons
+            # Note: These change yearly, adjust as needed
+            game_keys = [
+                "449",  # 2024
+                "423",  # 2023
+                "406",  # 2022
+                "399",  # 2021
+                "390",  # 2020
+                "380",  # 2019
+            ]
+
+        results = []
+        imported_league_keys = set()
+
+        for game_key in game_keys:
+            try:
+                leagues = await self.client.get_user_leagues(game_key)
+
+                for league_data in leagues:
+                    league_key = league_data.get("league_key", "")
+                    if not league_key or league_key in imported_league_keys:
+                        continue
+
+                    imported_league_keys.add(league_key)
+
+                    try:
+                        # Get league details to determine weeks
+                        league_info = await self.client.get_league(league_key)
+                        start_week = league_info.get("start_week", 1)
+                        end_week = league_info.get("end_week", 17)
+
+                        # Import with champion detection
+                        result = await self.import_full_league_with_champion(
+                            league_key, start_week, end_week
+                        )
+                        results.append(result)
+                    except Exception as e:
+                        results.append({
+                            "league_key": league_key,
+                            "error": str(e),
+                        })
+            except Exception:
+                # Skip game keys with no access
+                continue
+
+        return results

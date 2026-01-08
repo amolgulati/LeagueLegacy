@@ -108,6 +108,20 @@ class ImportLeagueResponse(BaseModel):
     teams_imported: int
     matchups_imported: int
     trades_imported: int
+    champion_team_id: Optional[int] = None
+    champion_name: Optional[str] = None
+
+
+class ImportHistoricalRequest(BaseModel):
+    """Request model for importing historical leagues."""
+    game_keys: Optional[List[str]] = None
+
+
+class ImportHistoricalResponse(BaseModel):
+    """Response model for historical league import."""
+    leagues_imported: int
+    seasons_imported: int
+    results: List[dict]
 
 
 class LeagueInfoResponse(BaseModel):
@@ -565,17 +579,60 @@ async def import_league(
     - Standings (teams and owners)
     - All matchups for the season
     - All trades for the season
+    - Champion detection for completed seasons
     """
     client = get_authenticated_client(session_id)
 
     try:
         service = YahooService(db, client)
-        result = await service.import_full_league(
+        result = await service.import_full_league_with_champion(
             request.league_key,
             request.start_week,
             request.end_week,
         )
         return ImportLeagueResponse(**result)
+    except YahooAPIError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except YahooAuthError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/import/all", response_model=ImportHistoricalResponse)
+async def import_all_leagues(
+    request: Optional[ImportHistoricalRequest] = None,
+    db: Session = Depends(get_db),
+    session_id: str = Query("default", description="Session identifier")
+):
+    """Import all leagues from the user's Yahoo Fantasy history.
+
+    This endpoint fetches leagues from multiple NFL seasons and imports:
+    - All leagues the user has access to
+    - Standings (teams and owners) for each league
+    - All matchups for each season
+    - All trades for each season
+    - Champion detection for completed seasons
+
+    By default, imports leagues from the past 6 seasons (2024-2019).
+    Pass custom game_keys to import from specific seasons.
+    """
+    client = get_authenticated_client(session_id)
+
+    try:
+        service = YahooService(db, client)
+        game_keys = request.game_keys if request else None
+        results = await service.import_historical_leagues(game_keys)
+
+        # Count successful imports
+        leagues_imported = sum(1 for r in results if "league_id" in r)
+        seasons_imported = leagues_imported  # Each league is one season in Yahoo
+
+        return ImportHistoricalResponse(
+            leagues_imported=leagues_imported,
+            seasons_imported=seasons_imported,
+            results=results,
+        )
     except YahooAPIError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except YahooAuthError as e:
