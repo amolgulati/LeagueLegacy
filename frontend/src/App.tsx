@@ -6,6 +6,7 @@ import { Trades } from './pages/Trades';
 import { HeadToHead } from './pages/HeadToHead';
 import { Records } from './pages/Records';
 import { HallOfFame } from './pages/HallOfFame';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 interface ApiStatus {
   name: string;
@@ -308,7 +309,9 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto pb-20 md:pb-8">
-        {renderContent()}
+        <ErrorBoundary>
+          {renderContent()}
+        </ErrorBoundary>
       </main>
     </div>
   );

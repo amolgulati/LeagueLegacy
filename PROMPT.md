@@ -976,3 +976,38 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes (frontend builds successfully, 204 backend tests passing)
 
 **Tests:** 204 backend tests passing, frontend builds and lint passes
+
+### IMP-014: Add React Error Boundary ✅
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Created ErrorBoundary class component to catch rendering errors in child components
+- Error state displays user-friendly message with error icon and "Try Again" button
+- Collapsible error details section shows error message and component stack for debugging
+- All errors logged to console via componentDidCatch
+- App.tsx wraps main content area with ErrorBoundary
+
+**Files Created:**
+- `frontend/src/components/ErrorBoundary.tsx` - React error boundary class component
+
+**Files Modified:**
+- `frontend/src/App.tsx` - Import ErrorBoundary, wrap main content with ErrorBoundary
+
+**Features:**
+- Catches JavaScript errors anywhere in child component tree
+- Shows user-friendly error message with warning icon
+- "Try Again" button resets error state and attempts re-render
+- Collapsible "Show error details" section for debugging
+- Error message and component stack trace displayed in details
+- Help text with link to report issues
+- Logs errors to console for developer debugging
+- Supports custom fallback prop for advanced use cases
+
+**Acceptance Criteria Met:**
+- ✅ ErrorBoundary component catches rendering errors in child components
+- ✅ Error state shows user-friendly message with 'Try Again' button
+- ✅ App.tsx wraps main content with ErrorBoundary
+- ✅ Error details logged to console for debugging
+- ✅ typecheck passes (frontend builds successfully, 204 backend tests passing)
+
+**Tests:** 204 backend tests passing, frontend builds and lint passes successfully
