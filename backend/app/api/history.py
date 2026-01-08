@@ -140,14 +140,23 @@ class HeadToHeadResponse(BaseModel):
 # ============= Helper Functions =============
 
 def calculate_owner_stats(teams: List[Team]) -> dict:
-    """Calculate aggregated statistics from a list of teams."""
+    """Calculate aggregated statistics from a list of teams.
+
+    Championships are counted by checking if team.id matches the
+    Season.champion_team_id, which is more reliable than final_rank.
+    """
     total_wins = sum(team.wins for team in teams)
     total_losses = sum(team.losses for team in teams)
     total_ties = sum(team.ties for team in teams)
     total_points = sum(team.points_for for team in teams)
     seasons_played = len(teams)
     playoff_appearances = sum(1 for team in teams if team.made_playoffs)
-    championships = sum(1 for team in teams if team.final_rank == 1)
+
+    # Count championships by checking Season.champion_team_id (more reliable than final_rank)
+    championships = sum(
+        1 for team in teams
+        if team.season and team.season.champion_team_id == team.id
+    )
 
     total_games = total_wins + total_losses + total_ties
     win_percentage = (total_wins / total_games * 100) if total_games > 0 else 0.0
@@ -215,7 +224,10 @@ async def list_owners_with_stats(db: Session = Depends(get_db)):
     Returns owners sorted by total wins (descending).
     Includes career stats aggregated across all seasons and platforms.
     """
-    owners = db.query(Owner).options(joinedload(Owner.teams)).all()
+    # Eagerly load teams AND their seasons to check champion_team_id
+    owners = db.query(Owner).options(
+        joinedload(Owner.teams).joinedload(Team.season)
+    ).all()
 
     result = []
     for owner in owners:

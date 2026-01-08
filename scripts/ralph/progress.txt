@@ -16,57 +16,26 @@ Started: 2026-01-08
 - frontend/src/index.css - Tailwind CSS imports
 
 ## Stories for v3
-1. IMP-011: Enable Yahoo League Import Frontend (backend complete, needs frontend UI)
-2. IMP-012: Environment Configuration Setup (foundation for Yahoo setup)
-3. IMP-013: Loading State Improvements (UX polish)
-4. IMP-014: Add React Error Boundary (error resilience)
-5. IMP-015: API Documentation
+1. IMP-011: Enable Yahoo League Import Frontend (backend complete, needs frontend UI) ✓
+2. IMP-012: Environment Configuration Setup (foundation for Yahoo setup) ✓
+3. IMP-013: Loading State Improvements (UX polish) ✓
+4. IMP-014: Add React Error Boundary (error resilience) ✓
+5. IMP-015: API Documentation ✓
+6. IMP-021: Fix Yahoo Import Error Handling (bug fix - fails immediately) ✓
+7. IMP-022: Fix Owners Tab Championships Display (bug fix - not showing titles)
+8. IMP-023: Track 2nd and 3rd Place Finishes (enhancement)
 
 ## Execution Order
-1. IMP-012 (Env Config) - Needed for Yahoo OAuth credentials
-2. IMP-011 (Yahoo Import) - Main feature
-3. IMP-013 (Loading States) - Quick UX win
-4. IMP-014 (Error Boundary) - Safety net
-5. IMP-015 (API Docs) - Documentation polish
+1. IMP-012 (Env Config) - Needed for Yahoo OAuth credentials ✓
+2. IMP-011 (Yahoo Import) - Main feature ✓
+3. IMP-013 (Loading States) - Quick UX win ✓
+4. IMP-014 (Error Boundary) - Safety net ✓
+5. IMP-015 (API Docs) - Documentation polish ✓
+6. IMP-021 (Yahoo Import Fix) - Bug fix, blocking issue ✓
+7. IMP-022 (Owners Championships Fix) - Quick fix
+8. IMP-023 (2nd/3rd Place Tracking) - Enhancement
 
 ---
-
-## 2026-01-08 - IMP-011: Enable Yahoo League Import Frontend
-- What was implemented:
-  - Created YahooAuthModal component for OAuth2 login flow with popup window support
-  - Created YahooImportModal component with league selection list and manual key entry
-  - Updated Dashboard to enable Yahoo import button (replacing "Coming soon")
-  - Updated ImportedLeagues to use platform-specific colors for re-import button
-  - Fixed pre-existing test failure (test_import_league mock format mismatch)
-- Files created:
-  - `frontend/src/components/YahooAuthModal.tsx` - OAuth2 auth flow modal
-  - `frontend/src/components/YahooImportModal.tsx` - League import modal
-- Files modified:
-  - `frontend/src/pages/Dashboard.tsx` - Added Yahoo auth/import state and handlers
-  - `frontend/src/components/ImportedLeagues.tsx` - Platform-specific button colors
-  - `backend/tests/test_sleeper.py` - Fixed mock return format
-- **Learnings:**
-  - Yahoo OAuth uses popup window pattern with polling for auth status
-  - Existing ImportedLeagues component already supports both platforms via onReimport callback
-  - Pre-existing test failures can be discovered when running full test suite
-
-## 2026-01-08 - IMP-012: Environment Configuration Setup
-- What was implemented:
-  - Created backend/.env.example with all required environment variables
-  - Created frontend/.env.example with VITE_API_URL
-  - Updated main.py to read CORS_ORIGINS from environment variable
-  - Updated README.md with comprehensive environment setup instructions
-- Files created:
-  - `backend/.env.example` - Documents YAHOO_CLIENT_ID, YAHOO_CLIENT_SECRET, YAHOO_REDIRECT_URI, FRONTEND_URL, CORS_ORIGINS
-  - `frontend/.env.example` - Documents VITE_API_URL
-- Files modified:
-  - `backend/app/main.py` - Added get_cors_origins() function, reads CORS_ORIGINS env var
-  - `README.md` - Added Environment Variables section with tables and Yahoo setup guide
-- **Learnings:**
-  - CORS origins can be comma-separated for multiple allowed origins
-  - Using get_cors_origins() function keeps CORS configuration clean
-  - README tables provide clear documentation for environment variables
-  - Yahoo Developer Console requires specific redirect URI configuration
 
 ## 2026-01-08 - IMP-013: Loading State Improvements
 - What was implemented:
@@ -115,3 +84,24 @@ Started: 2026-01-08
   - Grouping endpoints by API prefix keeps documentation organized
   - Including example JSON payloads helps frontend developers understand expected formats
   - Documenting error responses helps with error handling implementation
+
+## 2026-01-08 - IMP-021: Fix Yahoo Import Error Handling
+- What was implemented:
+  - Added Python logging throughout Yahoo API routes
+  - Added `validate_league_key()` function to check league key format (e.g., "449.l.123456")
+  - Updated `/api/yahoo/import` endpoint with specific error handling for:
+    - Invalid league key format (400)
+    - YahooAPIError with context about league access (400)
+    - YahooAuthError with suggestion to re-login (401)
+    - SQLAlchemyError with database rollback (500)
+    - Generic exceptions with stack trace logging (500)
+  - Updated `/api/yahoo/import/all` endpoint with same error handling pattern
+  - Updated `/api/yahoo/leagues` endpoint with logging and specific error messages
+  - All errors now include actionable messages for the user
+- Files modified:
+  - `backend/app/api/yahoo.py` - Added logging, validate_league_key(), improved error handling
+- **Learnings:**
+  - Generic "catch Exception" blocks hide valuable debugging info
+  - League key validation prevents wasted API calls for malformed keys
+  - Logging with traceback helps debug issues in production
+  - SQLAlchemy errors need explicit rollback to prevent transaction issues

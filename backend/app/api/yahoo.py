@@ -1,18 +1,26 @@
 """Yahoo Fantasy API routes for OAuth2 authentication and data import."""
 
+import logging
 import os
+import re
 import time
+import traceback
 from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.database import get_db
 from app.services.yahoo_client import YahooClient, YahooToken, YahooAuthError, YahooAPIError
 from app.services.yahoo_service import YahooService
 from app.services.yahoo_token_cache import get_token_cache, YahooTokenCache
+
+# Configure logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 router = APIRouter(prefix="/api/yahoo", tags=["yahoo"])
 
@@ -233,6 +241,23 @@ def get_redirect_uri() -> str:
     )
 
 
+def validate_league_key(league_key: str) -> bool:
+    """Validate Yahoo league key format.
+
+    Valid formats:
+    - 449.l.123456 (game_key.l.league_id)
+
+    Args:
+        league_key: The league key to validate.
+
+    Returns:
+        True if valid, False otherwise.
+    """
+    # Pattern: game_key.l.league_id (e.g., "449.l.123456")
+    pattern = r"^\d+\.l\.\d+$"
+    return bool(re.match(pattern, league_key))
+
+
 # ============= OAuth2 Authentication Routes =============
 
 @router.get("/auth/url", response_model=AuthUrlResponse)
@@ -411,10 +436,17 @@ async def get_user_leagues(
     session_id: str = Query("default", description="Session identifier")
 ):
     """Get all leagues for the authenticated user."""
-    client = get_authenticated_client(session_id)
+    logger.info(f"Fetching user leagues for session_id={session_id}, game_key={game_key}")
+
+    try:
+        client = get_authenticated_client(session_id)
+    except HTTPException as e:
+        logger.warning(f"Authentication failed for get_user_leagues: {e.detail}")
+        raise
 
     try:
         leagues = await client.get_user_leagues(game_key)
+        logger.info(f"Found {len(leagues)} leagues for user")
 
         return [
             UserLeagueResponse(
@@ -428,9 +460,25 @@ async def get_user_leagues(
             for league in leagues
         ]
     except YahooAPIError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Yahoo API error fetching leagues: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to fetch leagues from Yahoo: {str(e)}"
+        )
     except YahooAuthError as e:
-        raise HTTPException(status_code=401, detail=str(e))
+        logger.error(f"Yahoo auth error fetching leagues: {str(e)}")
+        raise HTTPException(
+            status_code=401,
+            detail=f"Authentication error: {str(e)}. Please login to Yahoo again."
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error fetching leagues: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected error: {str(e)}. Check server logs for details."
+        )
 
 
 @router.get("/league/{league_key:path}", response_model=LeagueInfoResponse)
@@ -581,7 +629,23 @@ async def import_league(
     - All trades for the season
     - Champion detection for completed seasons
     """
-    client = get_authenticated_client(session_id)
+    logger.info(f"Starting Yahoo import for league_key={request.league_key}, session_id={session_id}")
+
+    # Validate league key format
+    if not validate_league_key(request.league_key):
+        logger.warning(f"Invalid league key format: {request.league_key}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid league key format: '{request.league_key}'. Expected format: '449.l.123456' (game_key.l.league_id)"
+        )
+
+    # Get authenticated client (may raise 401)
+    try:
+        client = get_authenticated_client(session_id)
+        logger.info(f"Successfully authenticated for session_id={session_id}")
+    except HTTPException:
+        logger.warning(f"Authentication failed for session_id={session_id}")
+        raise
 
     try:
         service = YahooService(db, client)
@@ -590,13 +654,40 @@ async def import_league(
             request.start_week,
             request.end_week,
         )
+        logger.info(f"Successfully imported league: {result.get('league_name', 'Unknown')}")
         return ImportLeagueResponse(**result)
+
     except YahooAPIError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Yahoo API error during import: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=400,
+            detail=f"Yahoo API error: {str(e)}. Check that you have access to this league."
+        )
+
     except YahooAuthError as e:
-        raise HTTPException(status_code=401, detail=str(e))
+        logger.error(f"Yahoo authentication error during import: {str(e)}")
+        raise HTTPException(
+            status_code=401,
+            detail=f"Authentication error: {str(e)}. Please try logging in to Yahoo again."
+        )
+
+    except SQLAlchemyError as e:
+        logger.error(f"Database error during import: {str(e)}")
+        logger.error(traceback.format_exc())
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error while saving league data. Please try again."
+        )
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Unexpected error during Yahoo import: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected error: {str(e)}. Check server logs for details."
+        )
 
 
 @router.post("/import/all", response_model=ImportHistoricalResponse)
@@ -617,7 +708,13 @@ async def import_all_leagues(
     By default, imports leagues from the past 6 seasons (2024-2019).
     Pass custom game_keys to import from specific seasons.
     """
-    client = get_authenticated_client(session_id)
+    logger.info(f"Starting historical Yahoo import for session_id={session_id}")
+
+    try:
+        client = get_authenticated_client(session_id)
+    except HTTPException:
+        logger.warning(f"Authentication failed for session_id={session_id}")
+        raise
 
     try:
         service = YahooService(db, client)
@@ -628,14 +725,41 @@ async def import_all_leagues(
         leagues_imported = sum(1 for r in results if "league_id" in r)
         seasons_imported = leagues_imported  # Each league is one season in Yahoo
 
+        logger.info(f"Successfully imported {leagues_imported} leagues")
         return ImportHistoricalResponse(
             leagues_imported=leagues_imported,
             seasons_imported=seasons_imported,
             results=results,
         )
+
     except YahooAPIError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Yahoo API error during historical import: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=400,
+            detail=f"Yahoo API error: {str(e)}. Check your Yahoo connection."
+        )
+
     except YahooAuthError as e:
-        raise HTTPException(status_code=401, detail=str(e))
+        logger.error(f"Yahoo authentication error during historical import: {str(e)}")
+        raise HTTPException(
+            status_code=401,
+            detail=f"Authentication error: {str(e)}. Please try logging in to Yahoo again."
+        )
+
+    except SQLAlchemyError as e:
+        logger.error(f"Database error during historical import: {str(e)}")
+        logger.error(traceback.format_exc())
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database error while saving league data. Please try again."
+        )
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Unexpected error during historical Yahoo import: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Unexpected error: {str(e)}. Check server logs for details."
+        )
