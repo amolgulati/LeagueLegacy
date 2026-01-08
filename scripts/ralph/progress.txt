@@ -62,3 +62,24 @@ Started: 2025-01-07
   - Python 3.9 requires `Optional[str]` instead of `str | None` for type hints
   - Use `app.services.sleeper_client.SleeperClient` path when patching in tests
   - All 38 tests pass (14 models + 24 sleeper)
+
+## 2025-01-07 - FLH-004
+- What was implemented: Yahoo Fantasy API integration with OAuth2 authentication
+- Files changed:
+  - Created backend/app/services/yahoo_client.py - HTTP client with OAuth2 support
+  - Created backend/app/services/yahoo_service.py - Service for importing Yahoo data to DB
+  - Created backend/app/api/yahoo.py - FastAPI routes for Yahoo OAuth and data endpoints
+  - Updated backend/app/services/__init__.py - Added Yahoo exports
+  - Updated backend/app/main.py - Include yahoo_router
+  - Created backend/tests/test_yahoo.py - 28 comprehensive tests
+- **Learnings:**
+  - Yahoo Fantasy API requires OAuth2 authentication (unlike Sleeper which is public)
+  - Yahoo API returns deeply nested JSON structures that need careful parsing
+  - Token refresh is automatic when access token expires (with 5-minute buffer)
+  - League keys use format "gameKey.l.leagueId" (e.g., "449.l.123456")
+  - Yahoo stores standings with separate outcome_totals object for W/L/T
+  - Matchups come from scoreboard endpoint, not matchups endpoint
+  - Trades are a type of transaction, filtered from transactions endpoint
+  - Use path parameters with :path suffix for league keys containing dots
+  - In-memory token store works for development, needs proper session management for production
+  - All 66 tests pass (14 models + 24 sleeper + 28 yahoo)

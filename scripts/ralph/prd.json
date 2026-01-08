@@ -49,7 +49,7 @@
         "Store results in database"
       ],
       "priority": 4,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-005",
