@@ -5,6 +5,31 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fantasy League History Tracker</title>
+    <!-- Prevent flash of wrong theme by applying theme class before React loads -->
+    <script>
+      (function() {
+        var theme = 'dark';
+        try {
+          var saved = localStorage.getItem('fantasy-league-theme');
+          if (saved && ['dark', 'light', 'espn-retro'].includes(saved)) {
+            theme = saved;
+          } else {
+            // Migrate from old dark mode setting
+            var oldDarkMode = localStorage.getItem('fantasy-league-dark-mode');
+            if (oldDarkMode !== null) {
+              theme = oldDarkMode === 'false' ? 'light' : 'dark';
+            }
+          }
+        } catch (e) {}
+        document.documentElement.classList.add(theme);
+      })();
+    </script>
+    <!-- Set initial background to prevent white flash -->
+    <style>
+      html { background-color: #0f172a; }
+      html.light { background-color: #f8fafc; }
+      html.espn-retro { background-color: #0a0a0a; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

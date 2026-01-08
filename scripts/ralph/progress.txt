@@ -221,3 +221,32 @@ Started: 2026-01-08
   - Passing color objects as props to components avoids redundant getComputedStyle calls
   - Separating UI colors (gradients, backgrounds) from text colors maintains accessibility
   - Using 'var(--text-primary)' in inline styles works for simple theming, but computed colors need state
+
+## 2026-01-08 - IMP-020: Theme Polish and Typography
+- What was implemented:
+  - Added smooth 300ms transitions for all theme-related CSS properties
+    - Applied transition-property to background-color, border-color, color, fill, stroke, opacity, box-shadow
+    - Interactive elements (buttons, links, inputs) use faster 150ms for snappier feedback
+    - Excluded animation classes from transition to avoid interference
+  - Added bolder typography for ESPN retro theme
+    - Uppercase text for headers (h1, h2, h3) with tight letter-spacing
+    - Extra bold (800) weights for stats and numbers
+    - Uppercase button/nav text with wider letter-spacing for impact
+    - Card titles use uppercase with moderate letter-spacing
+  - Created visual indicator showing current theme on toggle button
+    - Desktop: Shows theme icon + label (e.g., "Dark Mode", "ESPN Retro")
+    - Mobile: Shows tooltip on tap with current theme name
+  - Fixed flash of wrong theme on page load
+    - Added inline blocking script in index.html that reads localStorage before React loads
+    - Script applies theme class to <html> immediately with same logic as React ThemeProvider
+    - Added initial background-color CSS for each theme to prevent white flash
+- Files modified:
+  - `frontend/src/index.css` - Theme transitions, ESPN retro typography styles
+  - `frontend/src/App.tsx` - Enhanced theme toggle with visual indicator and label
+  - `frontend/index.html` - Blocking theme script and initial background colors
+- **Learnings:**
+  - Blocking scripts in <head> run before any rendering, perfect for theme hydration
+  - Applying theme class to <html> element allows CSS to match immediately
+  - Duplicating theme logic (JS in HTML + ThemeProvider) is acceptable trade-off for UX
+  - Interactive elements need faster transitions than containers for good UX
+  - CSS text-transform: uppercase with letter-spacing creates bold ESPN aesthetic

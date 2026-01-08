@@ -219,16 +219,30 @@ function App() {
                 )}
               </div>
 
-              {/* Theme Toggle */}
-              <button
-                onClick={cycleTheme}
-                className="p-2 rounded-lg transition-colors"
-                style={{ backgroundColor: 'var(--bg-tertiary)' }}
-                aria-label={`Switch theme (current: ${THEME_LABELS[theme]})`}
-                title={THEME_LABELS[theme]}
-              >
-                {THEME_ICONS[theme]}
-              </button>
+              {/* Theme Toggle with Visual Indicator */}
+              <div className="relative group">
+                <button
+                  onClick={cycleTheme}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
+                  style={{ backgroundColor: 'var(--bg-tertiary)' }}
+                  aria-label={`Switch theme (current: ${THEME_LABELS[theme]})`}
+                >
+                  {THEME_ICONS[theme]}
+                  <span
+                    className="hidden sm:inline text-xs font-medium"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    {THEME_LABELS[theme]}
+                  </span>
+                </button>
+                {/* Tooltip for mobile */}
+                <div
+                  className="absolute sm:hidden bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs rounded opacity-0 group-active:opacity-100 pointer-events-none whitespace-nowrap transition-opacity"
+                  style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border-primary)' }}
+                >
+                  {THEME_LABELS[theme]}
+                </div>
+              </div>
 
               {/* Mobile Menu Button */}
               <button

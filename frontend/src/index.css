@@ -179,9 +179,17 @@ html.espn-retro {
 
 /* ==================== Theme Class Overrides ==================== */
 
-/* Smooth transitions for theme changes */
-body {
-  transition: background-color 0.3s ease, color 0.3s ease;
+/* Smooth transitions for theme changes (300ms) */
+body,
+body *:not(.no-transition):not([class*="animate-"]) {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* Exclude interactive elements from transition delays to keep them snappy */
+button, a, input, select, textarea {
+  transition-duration: 0.15s;
 }
 
 /* Light mode overrides */
@@ -300,6 +308,70 @@ html.espn-retro .text-slate-500 {
 
 html.espn-retro .to-slate-800 {
   --tw-gradient-to: var(--bg-secondary);
+}
+
+/* ==================== ESPN Retro Typography ==================== */
+/* Bolder, more impactful typography for the ESPN retro theme */
+/* Inspired by classic ESPN SportsCenter graphics */
+
+html.espn-retro h1,
+html.espn-retro h2,
+html.espn-retro h3,
+html.espn-retro .font-bold,
+html.espn-retro .font-semibold {
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+html.espn-retro h1 {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+html.espn-retro h2 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+html.espn-retro h3 {
+  font-size: 1.125rem;
+  line-height: 1.3;
+  font-weight: 700;
+}
+
+/* Bold stat numbers in ESPN retro theme */
+html.espn-retro .stat-number,
+html.espn-retro .text-4xl,
+html.espn-retro .text-3xl,
+html.espn-retro .text-2xl {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* ESPN retro button text */
+html.espn-retro button,
+html.espn-retro .btn {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+/* Tab labels in ESPN retro */
+html.espn-retro nav button {
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Card titles in ESPN retro */
+html.espn-retro .card-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 /* ==================== Custom Animations ==================== */
