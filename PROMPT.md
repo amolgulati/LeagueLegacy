@@ -280,3 +280,40 @@ Otherwise, end normally after completing one story.
 - ✅ Visually appealing card design
 
 **Tests:** Frontend builds successfully, all 118 backend tests passing
+
+
+### FLH-010: Build head-to-head rivalry view ✅
+**Completed:** 2025-01-09
+
+**Implementation:**
+- Created HeadToHead page component with owner selection dropdowns
+- Utilizes existing `/api/history/head-to-head/{owner1}/{owner2}` API endpoint
+- Added "Rivalries" tab to main navigation
+- Full rivalry comparison with historical matchup list
+
+**Files Created:**
+- `frontend/src/pages/HeadToHead.tsx` - Main rivalry comparison page
+
+**Files Modified:**
+- `frontend/src/types/owner.ts` - Added OwnerBrief, MatchupDetail, HeadToHeadResponse types
+- `frontend/src/App.tsx` - Added Rivalries tab to navigation
+
+**Features:**
+- Owner selection dropdowns with swap button
+- Owner comparison cards showing wins and average scores
+- "LEADING" badge for owner with more wins
+- Summary stats: total matchups, ties, playoff matchups, playoff record
+- Historical matchup list with scrollable container (max-h-96)
+- Playoff matchups highlighted with purple styling
+- Championship matchups highlighted with gold styling and trophy icon
+- Winner/Loser (W/L) indicators on each matchup row
+- Responsive design for mobile and desktop
+
+**Acceptance Criteria Met:**
+- ✅ Select two owners to compare
+- ✅ Show all-time record between them
+- ✅ Show average score in matchups
+- ✅ List all historical matchups
+- ✅ Highlight playoff matchups
+
+**Tests:** Frontend builds successfully, all 118 backend tests passing

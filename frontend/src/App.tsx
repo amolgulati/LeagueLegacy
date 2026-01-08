@@ -3,6 +3,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Owners } from './pages/Owners';
 import { Seasons } from './pages/Seasons';
 import { Trades } from './pages/Trades';
+import { HeadToHead } from './pages/HeadToHead';
 
 interface ApiStatus {
   name: string;
@@ -10,7 +11,7 @@ interface ApiStatus {
   status: string;
 }
 
-type TabType = 'dashboard' | 'owners' | 'seasons' | 'trades';
+type TabType = 'dashboard' | 'owners' | 'seasons' | 'trades' | 'rivalries';
 
 interface TabConfig {
   id: TabType;
@@ -52,6 +53,15 @@ const tabs: TabConfig[] = [
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+      </svg>
+    ),
+  },
+  {
+    id: 'rivalries',
+    label: 'Rivalries',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
     ),
   },
@@ -108,6 +118,8 @@ function App() {
         return <Seasons />;
       case 'trades':
         return <Trades />;
+      case 'rivalries':
+        return <HeadToHead />;
       default:
         return <Dashboard apiStatus={apiStatus} leagueName={leagueName} />;
     }

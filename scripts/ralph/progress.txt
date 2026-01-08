@@ -187,3 +187,25 @@ Started: 2025-01-07
   - Character code hashing is simple way to generate consistent color gradients per owner
   - CSS ribbon effects use absolute positioning with transform rotate
   - Grid gap sizing (gap-6) provides balanced spacing in card layouts
+
+## 2025-01-09 - FLH-010
+- What was implemented: Head-to-head rivalry view for comparing two owners
+- Files changed:
+  - Created frontend/src/pages/HeadToHead.tsx - Main rivalry comparison page
+  - Updated frontend/src/types/owner.ts - Added OwnerBrief, MatchupDetail, HeadToHeadResponse types
+  - Updated frontend/src/App.tsx - Added Rivalries tab to navigation
+- **Features:**
+  - Owner selection dropdowns with swap button
+  - Owner comparison cards showing wins and average scores
+  - Leading indicator badge for owner with more wins
+  - Summary stats: total matchups, ties, playoff matchups, playoff record
+  - Historical matchup list with scrollable container
+  - Playoff matchups highlighted with purple styling
+  - Championship matchups highlighted with gold styling and trophy icon
+  - Winner/Loser indicators (W/L) on each matchup row
+  - Responsive design for mobile and desktop
+- **Learnings:**
+  - API already had full head-to-head endpoint from FLH-006, just needed frontend
+  - Select dropdowns can filter out already-selected options using excludeId prop
+  - Color-coded borders and backgrounds help distinguish playoff/championship games
+  - Scrollable matchup list (max-h-96) prevents page from being too long
