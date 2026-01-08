@@ -179,3 +179,31 @@ Otherwise, end normally after completing one story.
 - Matchup detail history
 
 **Tests:** All 101 tests passing (14 models + 24 sleeper + 28 yahoo + 19 owners + 16 history)
+
+
+### FLH-007: Build trade analytics API ✅
+**Completed:** 2025-01-08
+
+**Implementation:**
+- Created trade analytics API with comprehensive endpoints
+- Trade filtering by owner, season, and league with pagination
+- Full trade analytics per owner: frequency, partners, win rate analysis
+- Overall trade statistics including most active traders
+
+**Files Created:**
+- `backend/app/api/trades.py` - Trade analytics API endpoints
+- `backend/tests/test_trades.py` - 17 comprehensive tests
+
+**API Endpoints:**
+- GET `/api/trades` - List all trades with filters (owner_id, season_id, league_id) and pagination
+- GET `/api/trades/owners/{id}` - Get all trades for an owner with full analytics
+- GET `/api/trades/stats` - Overall trade statistics
+
+**Analytics Features:**
+- Trade frequency per owner (trades per season calculation)
+- Most common trade partners (sorted by trade count)
+- Win rate before/after first trade analysis
+- Trade counts by season and overall statistics
+- Most active traders leaderboard
+
+**Tests:** All 118 tests passing (14 models + 24 sleeper + 28 yahoo + 19 owners + 16 history + 17 trades)

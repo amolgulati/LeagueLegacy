@@ -85,7 +85,7 @@
         "Calculate win rate before/after trades"
       ],
       "priority": 7,
-      "passes": false
+      "passes": true
     },
     {
       "id": "FLH-008",
