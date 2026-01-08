@@ -7,6 +7,7 @@ import { HeadToHead } from './pages/HeadToHead';
 import { Records } from './pages/Records';
 import { HallOfFame } from './pages/HallOfFame';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { useTheme, type ThemeType } from './hooks/useTheme';
 
 interface ApiStatus {
   name: string;
@@ -88,32 +89,48 @@ const tabs: TabConfig[] = [
   },
 ];
 
+// Theme icon components
+const SunIcon = () => (
+  <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+    <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg className="w-5 h-5 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+  </svg>
+);
+
+const RetroIcon = () => (
+  <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+    <path d="M10 2L3 7v11h4v-6h6v6h4V7l-7-5z" />
+    <path d="M10 0l8 6v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6l8-6zm0 2.5L4.5 7v10.5h3.5v-5a1 1 0 011-1h2a1 1 0 011 1v5h3.5V7L10 2.5z" />
+  </svg>
+);
+
+const THEME_LABELS: Record<ThemeType, string> = {
+  'dark': 'Dark Mode',
+  'light': 'Light Mode',
+  'espn-retro': 'ESPN Retro',
+};
+
+const THEME_ICONS: Record<ThemeType, React.ReactNode> = {
+  'dark': <MoonIcon />,
+  'light': <SunIcon />,
+  'espn-retro': <RetroIcon />,
+};
+
 function App() {
   const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
-  const [darkMode, setDarkMode] = useState(() => {
-    // Check for saved preference, default to dark
-    const saved = localStorage.getItem('fantasy-league-dark-mode');
-    return saved !== 'false'; // Default to true (dark mode)
-  });
+  const { theme, cycleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // Initialize league name from localStorage (lazy initialization avoids useEffect)
   const [leagueName] = useState(() => {
     return localStorage.getItem('fantasy-league-name') || 'Fantasy League';
   });
-
-  // Apply dark mode class to html element
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    }
-    localStorage.setItem('fantasy-league-dark-mode', String(darkMode));
-  }, [darkMode]);
 
   useEffect(() => {
     fetch('http://localhost:8000/')
@@ -121,10 +138,6 @@ function App() {
       .then((data) => setApiStatus(data))
       .catch(() => setError('Could not connect to API'));
   }, []);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
 
   // Render content with page transition animation
   const renderContent = () => {
@@ -206,21 +219,14 @@ function App() {
                 )}
               </div>
 
-              {/* Dark Mode Toggle */}
+              {/* Theme Toggle */}
               <button
-                onClick={toggleDarkMode}
+                onClick={cycleTheme}
                 className="p-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors"
-                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                aria-label={`Switch theme (current: ${THEME_LABELS[theme]})`}
+                title={THEME_LABELS[theme]}
               >
-                {darkMode ? (
-                  <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                  </svg>
-                )}
+                {THEME_ICONS[theme]}
               </button>
 
               {/* Mobile Menu Button */}

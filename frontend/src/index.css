@@ -12,23 +12,156 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Light mode colors */
-:root {
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --border-color: #e2e8f0;
-}
+/* ==================== Theme CSS Variables ==================== */
 
 /* Dark mode colors (default) */
-html.dark, html:not(.light) {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --border-color: #334155;
+:root, html.dark {
+  /* Background colors */
+  --bg-primary: #0f172a;       /* slate-900 */
+  --bg-secondary: #1e293b;     /* slate-800 */
+  --bg-tertiary: #334155;      /* slate-700 */
+  --bg-card: #1e293b;          /* slate-800 */
+  --bg-hover: #334155;         /* slate-700 */
+  --bg-input: #1e293b;         /* slate-800 */
+
+  /* Text colors */
+  --text-primary: #f8fafc;     /* slate-50 */
+  --text-secondary: #94a3b8;   /* slate-400 */
+  --text-muted: #64748b;       /* slate-500 */
+  --text-inverted: #0f172a;    /* slate-900 */
+
+  /* Border colors */
+  --border-primary: #334155;   /* slate-700 */
+  --border-secondary: #475569; /* slate-600 */
+
+  /* Accent colors */
+  --accent-primary: #3b82f6;   /* blue-500 */
+  --accent-primary-hover: #2563eb; /* blue-600 */
+  --accent-secondary: #8b5cf6; /* purple-500 */
+
+  /* Status colors */
+  --success: #22c55e;          /* green-500 */
+  --success-muted: rgba(34, 197, 94, 0.2);
+  --warning: #eab308;          /* yellow-500 */
+  --warning-muted: rgba(234, 179, 8, 0.1);
+  --error: #ef4444;            /* red-500 */
+  --error-muted: rgba(239, 68, 68, 0.2);
+
+  /* Chart/Data colors */
+  --chart-1: #3b82f6;          /* blue-500 */
+  --chart-2: #8b5cf6;          /* purple-500 */
+  --chart-3: #22c55e;          /* green-500 */
+  --chart-4: #f97316;          /* orange-500 */
+
+  /* Gradient stops */
+  --gradient-from: #0f172a;    /* slate-900 */
+  --gradient-to: #1e293b;      /* slate-800 */
+
+  /* Trophy/Medal colors */
+  --trophy-gold: #fbbf24;      /* amber-400 */
+  --trophy-silver: #9ca3af;    /* gray-400 */
+  --trophy-bronze: #f97316;    /* orange-500 */
 }
+
+/* Light mode colors */
+html.light {
+  /* Background colors */
+  --bg-primary: #f8fafc;       /* slate-50 */
+  --bg-secondary: #ffffff;     /* white */
+  --bg-tertiary: #f1f5f9;      /* slate-100 */
+  --bg-card: #ffffff;          /* white */
+  --bg-hover: #f1f5f9;         /* slate-100 */
+  --bg-input: #ffffff;         /* white */
+
+  /* Text colors */
+  --text-primary: #0f172a;     /* slate-900 */
+  --text-secondary: #475569;   /* slate-600 */
+  --text-muted: #64748b;       /* slate-500 */
+  --text-inverted: #f8fafc;    /* slate-50 */
+
+  /* Border colors */
+  --border-primary: #e2e8f0;   /* slate-200 */
+  --border-secondary: #cbd5e1; /* slate-300 */
+
+  /* Accent colors */
+  --accent-primary: #2563eb;   /* blue-600 */
+  --accent-primary-hover: #1d4ed8; /* blue-700 */
+  --accent-secondary: #7c3aed; /* purple-600 */
+
+  /* Status colors */
+  --success: #16a34a;          /* green-600 */
+  --success-muted: rgba(22, 163, 74, 0.15);
+  --warning: #ca8a04;          /* yellow-600 */
+  --warning-muted: rgba(202, 138, 4, 0.1);
+  --error: #dc2626;            /* red-600 */
+  --error-muted: rgba(220, 38, 38, 0.15);
+
+  /* Chart/Data colors */
+  --chart-1: #2563eb;          /* blue-600 */
+  --chart-2: #7c3aed;          /* purple-600 */
+  --chart-3: #16a34a;          /* green-600 */
+  --chart-4: #ea580c;          /* orange-600 */
+
+  /* Gradient stops */
+  --gradient-from: #f1f5f9;    /* slate-100 */
+  --gradient-to: #f8fafc;      /* slate-50 */
+
+  /* Trophy/Medal colors */
+  --trophy-gold: #d97706;      /* amber-600 */
+  --trophy-silver: #6b7280;    /* gray-500 */
+  --trophy-bronze: #ea580c;    /* orange-600 */
+}
+
+/* ESPN Retro theme - evokes early 2000s ESPN/NFL Primetime aesthetic */
+html.espn-retro {
+  /* Background colors - deep blacks and charcoals */
+  --bg-primary: #0a0a0a;       /* near black */
+  --bg-secondary: #141414;     /* dark charcoal */
+  --bg-tertiary: #1f1f1f;      /* charcoal */
+  --bg-card: #141414;          /* dark charcoal */
+  --bg-hover: #262626;         /* lighter charcoal */
+  --bg-input: #1f1f1f;         /* charcoal */
+
+  /* Text colors */
+  --text-primary: #fafafa;     /* off-white */
+  --text-secondary: #a3a3a3;   /* gray-400 */
+  --text-muted: #737373;       /* gray-500 */
+  --text-inverted: #0a0a0a;    /* near black */
+
+  /* Border colors */
+  --border-primary: #262626;   /* charcoal */
+  --border-secondary: #404040; /* gray-700 */
+
+  /* Accent colors - ESPN red and gold */
+  --accent-primary: #cc0000;   /* ESPN Red */
+  --accent-primary-hover: #990000; /* darker red */
+  --accent-secondary: #ffd700; /* Gold */
+
+  /* Status colors */
+  --success: #22c55e;          /* green-500 */
+  --success-muted: rgba(34, 197, 94, 0.2);
+  --warning: #ffd700;          /* gold */
+  --warning-muted: rgba(255, 215, 0, 0.15);
+  --error: #cc0000;            /* ESPN red */
+  --error-muted: rgba(204, 0, 0, 0.2);
+
+  /* Chart/Data colors */
+  --chart-1: #cc0000;          /* ESPN red */
+  --chart-2: #ffd700;          /* gold */
+  --chart-3: #22c55e;          /* green */
+  --chart-4: #ff6b00;          /* bright orange */
+
+  /* Gradient stops */
+  --gradient-from: #0a0a0a;    /* near black */
+  --gradient-to: #141414;      /* dark charcoal */
+
+  /* Trophy/Medal colors */
+  --trophy-gold: #ffd700;      /* pure gold */
+  --trophy-silver: #c0c0c0;    /* silver */
+  --trophy-bronze: #cd7f32;    /* bronze */
+}
+
+/* ==================== Theme Class Overrides ==================== */
 
 /* Smooth transitions for theme changes */
 body {
@@ -75,6 +208,51 @@ html.light .from-slate-900 {
 
 html.light .to-slate-800 {
   @apply to-slate-50;
+}
+
+/* ESPN Retro theme overrides */
+html.espn-retro body {
+  background-color: var(--bg-primary);
+}
+
+html.espn-retro .bg-slate-900 {
+  background-color: var(--bg-primary);
+}
+
+html.espn-retro .bg-slate-800 {
+  background-color: var(--bg-secondary);
+}
+
+html.espn-retro .bg-slate-700 {
+  background-color: var(--bg-tertiary);
+}
+
+html.espn-retro .border-slate-700 {
+  border-color: var(--border-primary);
+}
+
+html.espn-retro .text-blue-400 {
+  color: var(--accent-secondary);
+}
+
+html.espn-retro .text-blue-500 {
+  color: var(--accent-secondary);
+}
+
+html.espn-retro .bg-blue-600 {
+  background-color: var(--accent-primary);
+}
+
+html.espn-retro .hover\:bg-blue-500:hover {
+  background-color: var(--accent-primary-hover);
+}
+
+html.espn-retro .from-slate-900 {
+  --tw-gradient-from: var(--bg-primary);
+}
+
+html.espn-retro .to-slate-800 {
+  --tw-gradient-to: var(--bg-secondary);
 }
 
 /* ==================== Custom Animations ==================== */
