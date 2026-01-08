@@ -226,3 +226,45 @@ class SleeperClient:
         if not avatar_id:
             return None
         return f"https://sleepercdn.com/avatars/{avatar_id}"
+
+    @staticmethod
+    def get_previous_league_id(league_data: dict[str, Any]) -> Optional[str]:
+        """Extract the previous_league_id from league data.
+
+        Sleeper leagues have a chain of previous_league_id fields that link
+        to the same league from prior seasons.
+
+        Args:
+            league_data: League data dictionary from get_league().
+
+        Returns:
+            The previous league ID if it exists, None otherwise.
+        """
+        prev_id = league_data.get("previous_league_id")
+        # Sleeper returns None or empty string if no previous league
+        if not prev_id:
+            return None
+        return prev_id
+
+    async def get_league_history_chain(self, league_id: str) -> list[str]:
+        """Traverse the chain of previous_league_id to find all historical league IDs.
+
+        Starting from the given league_id, follows the chain of previous_league_id
+        references to find all historical seasons of this league.
+
+        Args:
+            league_id: The current (most recent) Sleeper league ID.
+
+        Returns:
+            List of league IDs from newest to oldest (current season first).
+            For example: ["2023_league_id", "2022_league_id", "2021_league_id"]
+        """
+        chain: list[str] = []
+        current_id: Optional[str] = league_id
+
+        while current_id:
+            chain.append(current_id)
+            league_data = await self.get_league(current_id)
+            current_id = self.get_previous_league_id(league_data)
+
+        return chain

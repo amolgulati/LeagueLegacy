@@ -215,6 +215,112 @@ class TestSleeperClient:
             mock_get.assert_called_once_with("/league/123456789/transactions/1")
             assert len(result) == 2
 
+    def test_get_previous_league_id(self):
+        """Test extracting previous_league_id from league data."""
+        client = SleeperClient()
+
+        # League with previous league
+        league_with_prev = {
+            "league_id": "123456789",
+            "name": "Test League",
+            "season": "2023",
+            "previous_league_id": "987654321",
+        }
+        assert client.get_previous_league_id(league_with_prev) == "987654321"
+
+        # League without previous league (first season)
+        league_no_prev = {
+            "league_id": "123456789",
+            "name": "Test League",
+            "season": "2020",
+            "previous_league_id": None,
+        }
+        assert client.get_previous_league_id(league_no_prev) is None
+
+        # League without previous_league_id key at all
+        league_no_key = {
+            "league_id": "123456789",
+            "name": "Test League",
+            "season": "2020",
+        }
+        assert client.get_previous_league_id(league_no_key) is None
+
+    @pytest.mark.asyncio
+    async def test_get_league_history_chain_single_season(self):
+        """Test chain traversal with single season (no history)."""
+        client = SleeperClient()
+
+        # Single season league with no previous_league_id
+        mock_league = {
+            "league_id": "123456789",
+            "name": "Test League",
+            "season": "2023",
+            "previous_league_id": None,
+        }
+
+        with patch.object(client, "get_league", new_callable=AsyncMock) as mock_get:
+            mock_get.return_value = mock_league
+            chain = await client.get_league_history_chain("123456789")
+
+            mock_get.assert_called_once_with("123456789")
+            assert chain == ["123456789"]
+
+    @pytest.mark.asyncio
+    async def test_get_league_history_chain_multiple_seasons(self):
+        """Test chain traversal with multiple historical seasons."""
+        client = SleeperClient()
+
+        # Three seasons: 2023 -> 2022 -> 2021
+        league_2023 = {
+            "league_id": "league_2023",
+            "name": "Test League",
+            "season": "2023",
+            "previous_league_id": "league_2022",
+        }
+        league_2022 = {
+            "league_id": "league_2022",
+            "name": "Test League",
+            "season": "2022",
+            "previous_league_id": "league_2021",
+        }
+        league_2021 = {
+            "league_id": "league_2021",
+            "name": "Test League",
+            "season": "2021",
+            "previous_league_id": None,  # First season
+        }
+
+        with patch.object(client, "get_league", new_callable=AsyncMock) as mock_get:
+            mock_get.side_effect = [league_2023, league_2022, league_2021]
+            chain = await client.get_league_history_chain("league_2023")
+
+            assert mock_get.call_count == 3
+            assert chain == ["league_2023", "league_2022", "league_2021"]
+
+    @pytest.mark.asyncio
+    async def test_get_league_history_chain_long_history(self):
+        """Test chain traversal with many historical seasons."""
+        client = SleeperClient()
+
+        # Five seasons of history: 2024 -> 2023 -> 2022 -> 2021 -> 2020
+        leagues = []
+        for year in range(2024, 2019, -1):  # 2024, 2023, 2022, 2021, 2020
+            prev_id = f"league_{year - 1}" if year > 2020 else None
+            leagues.append({
+                "league_id": f"league_{year}",
+                "name": "Test League",
+                "season": str(year),
+                "previous_league_id": prev_id,
+            })
+
+        with patch.object(client, "get_league", new_callable=AsyncMock) as mock_get:
+            mock_get.side_effect = leagues
+            chain = await client.get_league_history_chain("league_2024")
+
+            assert mock_get.call_count == 5
+            expected = [f"league_{year}" for year in range(2024, 2019, -1)]
+            assert chain == expected
+
 
 # ============================================================================
 # SleeperService Tests
