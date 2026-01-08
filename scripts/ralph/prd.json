@@ -1,190 +1,137 @@
 {
-  "branchName": "ralph/fantasy-league-history",
+  "branchName": "ralph/improvements-v2",
   "userStories": [
     {
-      "id": "FLH-001",
-      "title": "Initialize project structure",
+      "id": "IMP-001",
+      "title": "Traverse Sleeper league history chain",
       "acceptanceCriteria": [
-        "Create backend/ folder with FastAPI app skeleton",
-        "Create frontend/ folder with React/Vite setup",
-        "Add README.md with project description",
-        "Both apps start without errors"
+        "SleeperClient has method to fetch previous_league_id from league data",
+        "Service can traverse the chain of previous_league_id to find all historical league IDs",
+        "Unit tests verify chain traversal with mocked API responses",
+        "typecheck passes"
       ],
       "priority": 1,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "FLH-002",
-      "title": "Create SQLite database schema",
+      "id": "IMP-002",
+      "title": "Import all historical Sleeper seasons",
       "acceptanceCriteria": [
-        "Create models for: League, Season, Team, Owner, Matchup, Trade",
-        "Owners persist across seasons and platforms",
-        "Database initializes on app start",
-        "Schema supports both Yahoo and Sleeper data"
+        "import_league fetches and imports all historical seasons (not just current)",
+        "Each historical season creates proper Season, Team, Matchup, Trade records",
+        "Duplicate import is idempotent (re-running doesn't create duplicate records)",
+        "Integration test verifies multiple seasons are imported",
+        "typecheck passes"
       ],
       "priority": 2,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "FLH-003",
-      "title": "Build Sleeper API integration",
+      "id": "IMP-003",
+      "title": "Fetch and cache Sleeper player database",
       "acceptanceCriteria": [
-        "Fetch league info by league ID",
-        "Fetch all rosters and users",
-        "Fetch matchups for a season",
-        "Fetch all trades for a season",
-        "Store results in database"
+        "SleeperClient fetches player database from Sleeper API",
+        "Player data is cached to avoid repeated fetches (file or database)",
+        "Player lookup function returns player name given player ID",
+        "Cache has reasonable TTL or manual refresh option",
+        "typecheck passes"
       ],
       "priority": 3,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "FLH-004",
-      "title": "Build Yahoo Fantasy API integration",
+      "id": "IMP-004",
+      "title": "Display player names in trades",
       "acceptanceCriteria": [
-        "OAuth2 authentication flow works",
-        "Fetch historical league data",
-        "Fetch standings and matchups",
-        "Fetch trade history",
-        "Store results in database"
+        "Trade records store resolved player names (not just IDs)",
+        "API returns player names in trade responses",
+        "Frontend displays player names in trade timeline and details",
+        "Existing trades can be updated with player names via re-import",
+        "typecheck passes"
       ],
       "priority": 4,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "FLH-005",
-      "title": "Create owner mapping system",
+      "id": "IMP-005",
+      "title": "Detect Sleeper playoff bracket winner",
       "acceptanceCriteria": [
-        "UI to link Yahoo user to Sleeper user as same owner",
-        "API endpoint to save owner mappings",
-        "Stats aggregate correctly across platforms"
+        "SleeperClient fetches playoff bracket or championship matchups",
+        "Service identifies championship game and determines winner",
+        "Championship week/round is correctly identified from bracket or matchups",
+        "Unit tests verify champion detection with mocked playoff data",
+        "typecheck passes"
       ],
       "priority": 5,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "FLH-006",
-      "title": "Build league history API endpoints",
+      "id": "IMP-006",
+      "title": "Store champion in Season record",
       "acceptanceCriteria": [
-        "GET /owners - list all owners with career stats",
-        "GET /owners/{id}/history - full history for one owner",
-        "GET /seasons - list all seasons with champions",
-        "GET /head-to-head/{owner1}/{owner2} - rivalry stats"
+        "Season model has champion_team_id field if not already present",
+        "import_league sets champion on Season after detecting playoff winner",
+        "API returns champion info in season responses",
+        "Hall of Fame page correctly shows champions from Sleeper leagues",
+        "typecheck passes"
       ],
       "priority": 6,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "FLH-007",
-      "title": "Build trade analytics API",
+      "id": "IMP-007",
+      "title": "Implement Yahoo OAuth2 authentication flow",
       "acceptanceCriteria": [
-        "GET /trades - all trades with filters",
-        "GET /owners/{id}/trades - trades for owner",
-        "Calculate trade frequency per owner",
-        "Calculate most common trade partners",
-        "Calculate win rate before/after trades"
+        "Yahoo OAuth2 credentials can be configured via environment variables",
+        "Auth endpoint initiates OAuth2 flow and redirects to Yahoo",
+        "Callback endpoint exchanges code for access/refresh tokens",
+        "Tokens are stored securely and can be refreshed",
+        "User can verify authentication status via API",
+        "typecheck passes"
       ],
       "priority": 7,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "FLH-008",
-      "title": "Create frontend dashboard layout",
+      "id": "IMP-008",
+      "title": "Import Yahoo Fantasy league data",
       "acceptanceCriteria": [
-        "Navigation with tabs: Dashboard, Owners, Seasons, Trades",
-        "Responsive design works on mobile",
-        "Dark mode support",
-        "League branding/name displayed"
+        "Fetch and import leagues user has access to",
+        "Import standings for each season",
+        "Import matchups/scores for each week",
+        "Import trade history",
+        "All data stored in database with proper relationships",
+        "typecheck passes"
       ],
       "priority": 8,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "FLH-009",
-      "title": "Build owner profile cards",
+      "id": "IMP-009",
+      "title": "Add import modal loading states and error handling",
       "acceptanceCriteria": [
-        "Display owner name and avatar",
-        "Show career record (W-L)",
-        "Show championships count",
-        "Show playoff appearances",
-        "Visually appealing card design"
+        "Import modal shows loading spinner during import",
+        "Progress indicator shows import steps (fetching league, importing seasons, etc.)",
+        "Error messages are displayed clearly when import fails",
+        "User can dismiss error and retry import",
+        "Success message confirms what was imported",
+        "typecheck passes"
       ],
       "priority": 9,
-      "passes": true
+      "passes": false
     },
     {
-      "id": "FLH-010",
-      "title": "Build head-to-head rivalry view",
+      "id": "IMP-010",
+      "title": "Add import history and re-import functionality",
       "acceptanceCriteria": [
-        "Select two owners to compare",
-        "Show all-time record between them",
-        "Show average score in matchups",
-        "List all historical matchups",
-        "Highlight playoff matchups"
+        "Dashboard shows list of imported leagues with import date",
+        "User can trigger re-import for any previously imported league",
+        "Re-import updates existing data without creating duplicates",
+        "Delete option removes a league and all its data",
+        "typecheck passes"
       ],
       "priority": 10,
-      "passes": true
-    },
-    {
-      "id": "FLH-011",
-      "title": "Build trade history visualization",
-      "acceptanceCriteria": [
-        "Timeline view of all trades",
-        "Filter by owner or season",
-        "Show trade partners network graph",
-        "Display trade frequency stats"
-      ],
-      "priority": 11,
-      "passes": true
-    },
-    {
-      "id": "FLH-012",
-      "title": "Create league records page",
-      "acceptanceCriteria": [
-        "Highest single-week score (all-time)",
-        "Most points in a season",
-        "Longest win streak",
-        "Most trades in a season",
-        "Records show owner name and year"
-      ],
-      "priority": 12,
-      "passes": true
-    },
-    {
-      "id": "FLH-013",
-      "title": "Build Hall of Fame section",
-      "acceptanceCriteria": [
-        "Display all champions by year",
-        "Trophy icons or visuals",
-        "Championship count leaderboard",
-        "Eye-catching design worthy of bragging"
-      ],
-      "priority": 13,
-      "passes": true
-    },
-    {
-      "id": "FLH-014",
-      "title": "Add season-by-season breakdown",
-      "acceptanceCriteria": [
-        "Select any season to view",
-        "Show final standings",
-        "Show playoff bracket",
-        "Show notable trades that season"
-      ],
-      "priority": 14,
-      "passes": true
-    },
-    {
-      "id": "FLH-015",
-      "title": "Polish UI and add animations",
-      "acceptanceCriteria": [
-        "Smooth page transitions",
-        "Loading states for data fetches",
-        "Celebratory animation for championships",
-        "Consistent color scheme throughout"
-      ],
-      "priority": 15,
-      "passes": true
+      "passes": false
     }
   ]
 }

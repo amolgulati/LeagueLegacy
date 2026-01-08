@@ -5,6 +5,7 @@
  * - League overview stats
  * - API connection status
  * - Quick links to other sections
+ * - Import functionality
  */
 
 import { useEffect, useState } from 'react';
@@ -27,28 +28,73 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
     totalTrades: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Import modal state
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [leagueId, setLeagueId] = useState('');
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{success: boolean; message: string} | null>(null);
+
+  const loadStats = async () => {
+    try {
+      const [ownersRes, seasonsRes, tradesRes] = await Promise.all([
+        fetch('http://localhost:8000/api/history/owners').then(r => r.ok ? r.json() : []),
+        fetch('http://localhost:8000/api/history/seasons').then(r => r.ok ? r.json() : []),
+        fetch('http://localhost:8000/api/trades/stats').then(r => r.ok ? r.json() : { total_trades: 0 }),
+      ]);
+      setStats({
+        totalOwners: Array.isArray(ownersRes) ? ownersRes.length : 0,
+        totalSeasons: Array.isArray(seasonsRes) ? seasonsRes.length : 0,
+        totalTrades: tradesRes.total_trades ?? 0,
+      });
+    } catch {
+      // Stats not available, that's ok
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const [ownersRes, seasonsRes, tradesRes] = await Promise.all([
-          fetch('http://localhost:8000/api/history/owners').then(r => r.ok ? r.json() : []),
-          fetch('http://localhost:8000/api/history/seasons').then(r => r.ok ? r.json() : []),
-          fetch('http://localhost:8000/api/trades/stats').then(r => r.ok ? r.json() : { total_trades: 0 }),
-        ]);
-        setStats({
-          totalOwners: Array.isArray(ownersRes) ? ownersRes.length : 0,
-          totalSeasons: Array.isArray(seasonsRes) ? seasonsRes.length : 0,
-          totalTrades: tradesRes.total_trades ?? 0,
-        });
-      } catch {
-        // Stats not available, that's ok
-      } finally {
-        setLoading(false);
-      }
-    };
     loadStats();
   }, []);
+
+  const handleImport = async () => {
+    if (!leagueId.trim()) return;
+    
+    setImporting(true);
+    setImportResult(null);
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/sleeper/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ league_id: leagueId.trim() }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setImportResult({
+          success: true,
+          message: `Imported "${data.league_name}" (${data.season_year}): ${data.teams_imported} teams, ${data.matchups_imported} matchups, ${data.trades_imported} trades`
+        });
+        // Refresh stats
+        loadStats();
+      } else {
+        const error = await response.json();
+        setImportResult({
+          success: false,
+          message: error.detail || 'Failed to import league'
+        });
+      }
+    } catch (err) {
+      setImportResult({
+        success: false,
+        message: 'Network error - is the backend running?'
+      });
+    } finally {
+      setImporting(false);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -136,6 +182,41 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
         </div>
       </div>
 
+      {/* Import Section */}
+      <div className="bg-slate-800 rounded-lg p-6 border border-slate-700 mb-8">
+        <h3 className="text-xl font-bold text-white mb-4">Import League</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Sleeper Import */}
+          <div 
+            onClick={() => setShowImportModal(true)}
+            className="p-6 bg-slate-700/50 rounded-lg border-2 border-dashed border-slate-600 hover:border-blue-500 cursor-pointer transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-blue-600/20 flex items-center justify-center">
+                <span className="text-2xl">🌙</span>
+              </div>
+              <div>
+                <div className="text-white font-semibold">Import from Sleeper</div>
+                <p className="text-slate-400 text-sm">Enter your Sleeper league ID</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Yahoo Import - Coming Soon */}
+          <div className="p-6 bg-slate-700/30 rounded-lg border-2 border-dashed border-slate-700 opacity-60">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-lg bg-purple-600/20 flex items-center justify-center">
+                <span className="text-2xl">🏈</span>
+              </div>
+              <div>
+                <div className="text-white font-semibold">Import from Yahoo</div>
+                <p className="text-slate-400 text-sm">Coming soon - requires OAuth setup</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Getting Started Section */}
       <div className="bg-slate-800 dark:bg-slate-800 rounded-lg p-6 border border-slate-700 dark:border-slate-700 mb-8">
         <h3 className="text-xl font-bold text-white mb-4">Getting Started</h3>
@@ -168,6 +249,57 @@ export function Dashboard({ apiStatus, leagueName }: DashboardProps) {
             <span>API: {apiStatus.name}</span>
             <span>Version: {apiStatus.version}</span>
             <span>Status: {apiStatus.status}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md mx-4 border border-slate-700">
+            <h3 className="text-xl font-bold text-white mb-4">Import Sleeper League</h3>
+            
+            <div className="mb-4">
+              <label className="block text-slate-400 text-sm mb-2">
+                Sleeper League ID
+              </label>
+              <input
+                type="text"
+                value={leagueId}
+                onChange={(e) => setLeagueId(e.target.value)}
+                placeholder="e.g. 123456789012345678"
+                className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+              />
+              <p className="text-slate-500 text-xs mt-2">
+                Find this in your Sleeper app URL: sleeper.app/leagues/[LEAGUE_ID]
+              </p>
+            </div>
+
+            {importResult && (
+              <div className={`p-3 rounded-lg mb-4 ${importResult.success ? 'bg-green-600/20 text-green-400' : 'bg-red-600/20 text-red-400'}`}>
+                {importResult.message}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowImportModal(false);
+                  setLeagueId('');
+                  setImportResult(null);
+                }}
+                className="flex-1 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleImport}
+                disabled={importing || !leagueId.trim()}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {importing ? 'Importing...' : 'Import'}
+              </button>
+            </div>
           </div>
         </div>
       )}
