@@ -11,3 +11,68 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Light mode colors */
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+}
+
+/* Dark mode colors (default) */
+html.dark, html:not(.light) {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+}
+
+/* Smooth transitions for theme changes */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light mode overrides */
+html.light body {
+  @apply bg-slate-100;
+}
+
+html.light .bg-slate-900 {
+  @apply bg-slate-100;
+}
+
+html.light .bg-slate-800 {
+  @apply bg-white;
+}
+
+html.light .bg-slate-700 {
+  @apply bg-slate-100;
+}
+
+html.light .border-slate-700 {
+  @apply border-slate-200;
+}
+
+html.light .text-white {
+  @apply text-slate-900;
+}
+
+html.light .text-slate-400 {
+  @apply text-slate-600;
+}
+
+html.light .text-slate-300 {
+  @apply text-slate-700;
+}
+
+/* Keep gradient background in dark mode only */
+html.light .from-slate-900 {
+  @apply from-slate-100;
+}
+
+html.light .to-slate-800 {
+  @apply to-slate-50;
+}
