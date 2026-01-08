@@ -5,7 +5,7 @@
  * Renders falling confetti pieces with various colors and animations.
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 
 interface ConfettiPiece {
   id: number;
@@ -61,10 +61,12 @@ export function Confetti({
   pieceCount?: number;
   onComplete?: () => void;
 }) {
-  const [pieces, setPieces] = useState<ConfettiPiece[]>([]);
   const [isActive, setIsActive] = useState(active);
+  const hasStartedRef = useRef(false);
 
-  const generatePieces = useCallback(() => {
+  // Generate pieces only once when active, using useMemo to avoid impure render
+  const pieces = useMemo<ConfettiPiece[]>(() => {
+    if (!active || !isActive) return [];
     const shapes: ConfettiPiece['shape'][] = ['square', 'circle', 'triangle'];
     return Array.from({ length: pieceCount }, (_, i) => ({
       id: i,
@@ -75,21 +77,22 @@ export function Confetti({
       duration: 2 + Math.random() * 2,
       shape: shapes[Math.floor(Math.random() * shapes.length)],
     }));
-  }, [pieceCount]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, pieceCount]); // Only regenerate when active or pieceCount changes
 
   useEffect(() => {
-    if (active && isActive) {
-      setPieces(generatePieces());
+    if (active && !hasStartedRef.current) {
+      hasStartedRef.current = true;
 
       const timer = setTimeout(() => {
         setIsActive(false);
-        setPieces([]);
+        hasStartedRef.current = false;
         onComplete?.();
       }, duration);
 
       return () => clearTimeout(timer);
     }
-  }, [active, isActive, duration, generatePieces, onComplete]);
+  }, [active, duration, onComplete]);
 
   if (!isActive || pieces.length === 0) return null;
 
@@ -102,46 +105,25 @@ export function Confetti({
   );
 }
 
-// Hook to trigger confetti on demand
-export function useConfetti(options?: { duration?: number; pieceCount?: number }) {
-  const [showConfetti, setShowConfetti] = useState(false);
-
-  const triggerConfetti = useCallback(() => {
-    setShowConfetti(true);
-  }, []);
-
-  const handleComplete = useCallback(() => {
-    setShowConfetti(false);
-  }, []);
-
-  const ConfettiComponent = showConfetti ? (
-    <Confetti
-      active={showConfetti}
-      duration={options?.duration}
-      pieceCount={options?.pieceCount}
-      onComplete={handleComplete}
-    />
-  ) : null;
-
-  return { triggerConfetti, ConfettiComponent, isActive: showConfetti };
-}
-
 // Trophy burst animation component - shows when clicking on championship items
 export function TrophyBurst({ show, onComplete }: { show: boolean; onComplete?: () => void }) {
-  const [visible, setVisible] = useState(show);
+  // Use a ref to track if we've already called onComplete for this show cycle
+  const hasCompletedRef = useRef(false);
 
   useEffect(() => {
     if (show) {
-      setVisible(true);
+      hasCompletedRef.current = false;
       const timer = setTimeout(() => {
-        setVisible(false);
-        onComplete?.();
+        if (!hasCompletedRef.current) {
+          hasCompletedRef.current = true;
+          onComplete?.();
+        }
       }, 1000);
       return () => clearTimeout(timer);
     }
   }, [show, onComplete]);
 
-  if (!visible) return null;
+  if (!show) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">

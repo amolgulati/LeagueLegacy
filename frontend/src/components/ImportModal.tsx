@@ -160,7 +160,7 @@ export function ImportModal({ isOpen, onClose, onSuccess, initialLeagueId = '' }
           message: error.detail || 'Failed to import league. Please check the league ID and try again.',
         });
       }
-    } catch (err) {
+    } catch {
       cleanup();
       setProgress({
         step: 'error',

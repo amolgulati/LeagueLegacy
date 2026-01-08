@@ -122,6 +122,9 @@ export function StatCardSkeleton() {
 }
 
 // Skeleton for chart/graph areas
+// Pre-computed heights for deterministic rendering (React purity requirement)
+const CHART_BAR_HEIGHTS = [45, 72, 38, 85, 55, 68, 42, 78];
+
 export function ChartSkeleton({ height = 200 }: { height?: number }) {
   return (
     <div
@@ -129,12 +132,12 @@ export function ChartSkeleton({ height = 200 }: { height?: number }) {
       style={{ height }}
     >
       <div className="h-full flex items-end justify-around gap-2 p-4">
-        {Array.from({ length: 8 }).map((_, i) => (
+        {CHART_BAR_HEIGHTS.map((barHeight, i) => (
           <div
             key={i}
             className="skeleton flex-1 rounded-t"
             style={{
-              height: `${30 + Math.random() * 60}%`,
+              height: `${barHeight}%`,
               animationDelay: `${i * 0.1}s`
             }}
           />

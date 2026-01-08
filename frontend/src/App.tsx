@@ -97,7 +97,10 @@ function App() {
     return saved !== 'false'; // Default to true (dark mode)
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [leagueName, setLeagueName] = useState('Fantasy League');
+  // Initialize league name from localStorage (lazy initialization avoids useEffect)
+  const [leagueName] = useState(() => {
+    return localStorage.getItem('fantasy-league-name') || 'Fantasy League';
+  });
 
   // Apply dark mode class to html element
   useEffect(() => {
@@ -116,12 +119,6 @@ function App() {
       .then((res) => res.json())
       .then((data) => setApiStatus(data))
       .catch(() => setError('Could not connect to API'));
-
-    // Try to load league name from API or localStorage
-    const savedLeagueName = localStorage.getItem('fantasy-league-name');
-    if (savedLeagueName) {
-      setLeagueName(savedLeagueName);
-    }
   }, []);
 
   const toggleDarkMode = () => {
