@@ -655,3 +655,35 @@ Otherwise, end normally after completing one story.
 - ✅ typecheck passes
 
 **Tests:** 47 sleeper tests passing, 169 total backend tests passing
+
+### IMP-006: Store champion in Season record ✅
+**Completed:** 2025-01-10
+
+**Implementation:**
+- Added `detect_and_set_champion()` method to SleeperService
+- Fetches winners bracket from Sleeper API to identify championship game
+- Maps champion/runner-up roster IDs to team IDs using team lookup
+- Sets `champion_team_id` and `runner_up_team_id` on Season record
+- Integrated champion detection into `import_single_season()` flow
+- Returns champion/runner-up team IDs in import result
+
+**Files Modified:**
+- `backend/app/services/sleeper_service.py` - Added detect_and_set_champion() method, updated import_single_season()
+- `backend/tests/test_sleeper.py` - Added 3 new tests for champion detection, updated existing import tests
+
+**Key Features:**
+- Automatic champion detection during league import
+- Works for all historical seasons in the league chain
+- Gracefully handles incomplete/empty brackets (returns None)
+- Season model already had champion_team_id and runner_up_team_id fields
+- API already returns champion info in season responses
+- Hall of Fame page already uses champion_team_id to show champions
+
+**Acceptance Criteria Met:**
+- ✅ Season model has champion_team_id field (already present)
+- ✅ import_league sets champion on Season after detecting playoff winner
+- ✅ API returns champion info in season responses (already implemented)
+- ✅ Hall of Fame page correctly shows champions from Sleeper leagues (already implemented)
+- ✅ typecheck passes (172 tests passing)
+
+**Tests:** 50 sleeper tests passing (47 + 3 new), 172 total backend tests passing
