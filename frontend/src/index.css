@@ -1,0 +1,852 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==================== Theme CSS Variables ==================== */
+
+/* Dark mode colors (default) */
+:root, html.dark {
+  /* Background colors */
+  --bg-primary: #0f172a;       /* slate-900 */
+  --bg-secondary: #1e293b;     /* slate-800 */
+  --bg-tertiary: #334155;      /* slate-700 */
+  --bg-card: #1e293b;          /* slate-800 */
+  --bg-hover: #334155;         /* slate-700 */
+  --bg-input: #1e293b;         /* slate-800 */
+
+  /* Text colors */
+  --text-primary: #f8fafc;     /* slate-50 */
+  --text-secondary: #94a3b8;   /* slate-400 */
+  --text-muted: #64748b;       /* slate-500 */
+  --text-inverted: #0f172a;    /* slate-900 */
+
+  /* Border colors */
+  --border-primary: #334155;   /* slate-700 */
+  --border-secondary: #475569; /* slate-600 */
+
+  /* Accent colors */
+  --accent-primary: #3b82f6;   /* blue-500 */
+  --accent-primary-hover: #2563eb; /* blue-600 */
+  --accent-secondary: #8b5cf6; /* purple-500 */
+
+  /* Status colors */
+  --success: #22c55e;          /* green-500 */
+  --success-muted: rgba(34, 197, 94, 0.2);
+  --warning: #eab308;          /* yellow-500 */
+  --warning-muted: rgba(234, 179, 8, 0.1);
+  --error: #ef4444;            /* red-500 */
+  --error-muted: rgba(239, 68, 68, 0.2);
+
+  /* Chart/Data colors */
+  --chart-1: #3b82f6;          /* blue-500 */
+  --chart-2: #8b5cf6;          /* purple-500 */
+  --chart-3: #22c55e;          /* green-500 */
+  --chart-4: #f97316;          /* orange-500 */
+
+  /* Gradient stops */
+  --gradient-from: #0f172a;    /* slate-900 */
+  --gradient-to: #1e293b;      /* slate-800 */
+
+  /* Trophy/Medal colors */
+  --trophy-gold: #fbbf24;      /* amber-400 */
+  --trophy-silver: #9ca3af;    /* gray-400 */
+  --trophy-bronze: #f97316;    /* orange-500 */
+}
+
+/* Light mode colors */
+html.light {
+  /* Background colors */
+  --bg-primary: #f8fafc;       /* slate-50 */
+  --bg-secondary: #ffffff;     /* white */
+  --bg-tertiary: #f1f5f9;      /* slate-100 */
+  --bg-card: #ffffff;          /* white */
+  --bg-hover: #f1f5f9;         /* slate-100 */
+  --bg-input: #ffffff;         /* white */
+
+  /* Text colors */
+  --text-primary: #0f172a;     /* slate-900 */
+  --text-secondary: #475569;   /* slate-600 */
+  --text-muted: #64748b;       /* slate-500 */
+  --text-inverted: #f8fafc;    /* slate-50 */
+
+  /* Border colors */
+  --border-primary: #e2e8f0;   /* slate-200 */
+  --border-secondary: #cbd5e1; /* slate-300 */
+
+  /* Accent colors */
+  --accent-primary: #2563eb;   /* blue-600 */
+  --accent-primary-hover: #1d4ed8; /* blue-700 */
+  --accent-secondary: #7c3aed; /* purple-600 */
+
+  /* Status colors */
+  --success: #16a34a;          /* green-600 */
+  --success-muted: rgba(22, 163, 74, 0.15);
+  --warning: #ca8a04;          /* yellow-600 */
+  --warning-muted: rgba(202, 138, 4, 0.1);
+  --error: #dc2626;            /* red-600 */
+  --error-muted: rgba(220, 38, 38, 0.15);
+
+  /* Chart/Data colors */
+  --chart-1: #2563eb;          /* blue-600 */
+  --chart-2: #7c3aed;          /* purple-600 */
+  --chart-3: #16a34a;          /* green-600 */
+  --chart-4: #ea580c;          /* orange-600 */
+
+  /* Gradient stops */
+  --gradient-from: #f1f5f9;    /* slate-100 */
+  --gradient-to: #f8fafc;      /* slate-50 */
+
+  /* Trophy/Medal colors */
+  --trophy-gold: #d97706;      /* amber-600 */
+  --trophy-silver: #6b7280;    /* gray-500 */
+  --trophy-bronze: #ea580c;    /* orange-600 */
+}
+
+/* ESPN NFL 2K5 Broadcast Theme
+ * ================================
+ * Inspired by ESPN NFL 2K5 (2004) and SportsCenter broadcast graphics (2002-2006 era)
+ *
+ * Key characteristics:
+ * - Deep burgundy backgrounds with radial gradients
+ * - Metallic silver score boxes with bevel effects
+ * - Copper accent lines and borders
+ * - Bold serif team names (Rockwell/Georgia)
+ * - Gold stat numbers with Impact font
+ * - Dark red record badges
+ * - Sharp corners (no rounded > 4px)
+ * - Information-dense layouts
+ */
+html.espn-retro {
+  /* Background colors - deep burgundy and black */
+  --bg-primary: #0D0D0D;       /* pure black base */
+  --bg-secondary: #2D0A0A;     /* deep burgundy */
+  --bg-tertiary: #4A1515;      /* mid burgundy */
+  --bg-card: #2D0A0A;          /* deep burgundy - card backgrounds */
+  --bg-hover: #4A1515;         /* mid burgundy - hover states */
+  --bg-input: #1a0505;         /* very dark burgundy - form inputs */
+  --bg-card-rgb: 45, 10, 10;   /* RGB values for rgba usage */
+
+  /* Text colors - high contrast for broadcast style */
+  --text-primary: #FFFFFF;     /* pure white */
+  --text-secondary: #C0C0C0;   /* silver */
+  --text-muted: #888888;       /* muted gray */
+  --text-inverted: #0D0D0D;    /* black - for light backgrounds */
+
+  /* Border colors - copper accents */
+  --border-primary: #CD7F32;   /* copper - primary accent */
+  --border-secondary: #8B4513; /* darker copper */
+
+  /* Accent colors - ESPN palette */
+  --accent-primary: #CC0000;   /* ESPN red */
+  --accent-primary-hover: #990000; /* darker red */
+  --accent-primary-ui: #CC0000;/* ESPN brand red */
+  --accent-secondary: #FFD700; /* Gold - for stats and highlights */
+
+  /* Status colors */
+  --success: #22c55e;          /* green */
+  --success-muted: rgba(34, 197, 94, 0.2);
+  --warning: #FFD700;          /* gold */
+  --warning-muted: rgba(255, 215, 0, 0.15);
+  --error: #CC0000;            /* ESPN red */
+  --error-muted: rgba(204, 0, 0, 0.2);
+
+  /* Chart/Data colors - broadcast palette */
+  --chart-1: #FFD700;          /* gold */
+  --chart-2: #CD7F32;          /* copper */
+  --chart-3: #CC0000;          /* red */
+  --chart-4: #E85D04;          /* orange */
+
+  /* Gradient stops - burgundy to black radial */
+  --gradient-from: #4A1515;    /* mid burgundy */
+  --gradient-to: #0D0D0D;      /* black */
+
+  /* Trophy/Medal colors - classic metallic palette */
+  --trophy-gold: #FFD700;      /* pure gold */
+  --trophy-silver: #C0C0C0;    /* silver */
+  --trophy-bronze: #CD7F32;    /* bronze/copper */
+
+  /* ESPN 2K5 specific colors */
+  --espn-red: #CC0000;         /* ESPN red */
+  --espn-copper: #CD7F32;      /* copper accent */
+  --espn-orange: #E85D04;      /* orange highlight */
+  --espn-burgundy: #2D0A0A;    /* deep burgundy */
+  --espn-burgundy-mid: #4A1515;/* mid burgundy */
+  --espn-burgundy-light: #6B1F1F; /* light burgundy */
+  --espn-gold: #FFD700;        /* gold */
+  --espn-record-bg: #8B0000;   /* dark red for badges */
+  --metallic-light: #D4D4D4;   /* score box top */
+  --metallic-mid: #A8A8A8;     /* score box middle */
+  --metallic-dark: #6B6B6B;    /* score box bottom */
+
+  /* Glow effects */
+  --espn-red-glow: rgba(204, 0, 0, 0.4);
+  --gold-glow: rgba(255, 215, 0, 0.3);
+  --copper-glow: rgba(205, 127, 50, 0.3);
+}
+
+/* ==================== Theme Class Overrides ==================== */
+
+/* Smooth transitions for theme changes (300ms) */
+body,
+body *:not(.no-transition):not([class*="animate-"]) {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+
+/* Exclude interactive elements from transition delays to keep them snappy */
+button, a, input, select, textarea {
+  transition-duration: 0.15s;
+}
+
+/* Light mode overrides */
+html.light body {
+  @apply bg-slate-100;
+}
+
+html.light .bg-slate-900 {
+  @apply bg-slate-100;
+}
+
+html.light .bg-slate-800 {
+  @apply bg-white;
+}
+
+html.light .bg-slate-700 {
+  @apply bg-slate-100;
+}
+
+html.light .border-slate-700 {
+  @apply border-slate-200;
+}
+
+html.light .text-white {
+  @apply text-slate-900;
+}
+
+html.light .text-slate-400 {
+  @apply text-slate-600;
+}
+
+html.light .text-slate-300 {
+  @apply text-slate-700;
+}
+
+/* Keep gradient background in dark mode only */
+html.light .from-slate-900 {
+  @apply from-slate-100;
+}
+
+html.light .to-slate-800 {
+  @apply to-slate-50;
+}
+
+/* ==================== ESPN NFL 2K5 Theme Overrides ==================== */
+
+/* Page background - burgundy to black radial gradient */
+html.espn-retro body {
+  background: radial-gradient(
+    ellipse at top center,
+    var(--espn-burgundy-mid) 0%,
+    var(--espn-burgundy) 30%,
+    var(--bg-primary) 70%
+  );
+  min-height: 100vh;
+}
+
+/* Override slate backgrounds with theme colors */
+html.espn-retro .bg-slate-900 {
+  background-color: var(--bg-primary);
+}
+
+html.espn-retro .bg-slate-800 {
+  background-color: var(--bg-secondary);
+}
+
+html.espn-retro .bg-slate-700 {
+  background-color: var(--bg-tertiary);
+}
+
+/* Copper borders instead of gray */
+html.espn-retro .border-slate-700 {
+  border-color: var(--espn-copper);
+}
+
+html.espn-retro .border-slate-600 {
+  border-color: var(--border-secondary);
+}
+
+/* Link colors - gold for emphasis */
+html.espn-retro .text-blue-400,
+html.espn-retro .text-blue-500 {
+  color: var(--espn-gold);
+}
+
+/* Button colors - use ESPN brand red */
+html.espn-retro .bg-blue-600 {
+  background-color: var(--espn-red);
+}
+
+html.espn-retro .hover\:bg-blue-500:hover,
+html.espn-retro .hover\:bg-blue-700:hover {
+  background-color: #990000;
+}
+
+/* Ring/focus colors - copper */
+html.espn-retro .ring-blue-500,
+html.espn-retro .focus\:ring-blue-500:focus {
+  --tw-ring-color: var(--espn-copper);
+}
+
+/* Gradient backgrounds */
+html.espn-retro .from-slate-900 {
+  --tw-gradient-from: var(--espn-burgundy-mid);
+}
+
+html.espn-retro .to-slate-800 {
+  --tw-gradient-to: var(--bg-primary);
+}
+
+/* Text colors */
+html.espn-retro .text-red-500,
+html.espn-retro .text-red-400 {
+  color: var(--espn-red);
+}
+
+html.espn-retro .text-slate-400 {
+  color: var(--text-secondary);
+}
+
+html.espn-retro .text-slate-500 {
+  color: var(--text-muted);
+}
+
+/* Yellow/amber colors become gold */
+html.espn-retro .text-yellow-400,
+html.espn-retro .text-yellow-500,
+html.espn-retro .text-amber-400 {
+  color: var(--espn-gold);
+}
+
+html.espn-retro .bg-yellow-500\/20 {
+  background-color: rgba(255, 215, 0, 0.2);
+}
+
+/* ==================== ESPN 2K5 Component Classes ==================== */
+
+/* Card component - black header with copper border */
+html.espn-retro .espn-card {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+html.espn-retro .espn-card-header {
+  background: var(--bg-primary);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid var(--espn-copper);
+}
+
+html.espn-retro .espn-card-body {
+  background: linear-gradient(180deg, var(--espn-burgundy-mid) 0%, var(--espn-burgundy) 100%);
+  padding: 1.5rem;
+}
+
+/* Team/Owner name typography - serif, uppercase */
+html.espn-retro .espn-team-name {
+  font-family: Rockwell, Georgia, serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+/* Stat value typography - Impact, gold */
+html.espn-retro .espn-stat-value {
+  font-family: Impact, 'Arial Black', sans-serif;
+  color: var(--espn-gold);
+  font-weight: bold;
+}
+
+/* Stat label typography - silver */
+html.espn-retro .espn-stat-label {
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-secondary);
+}
+
+/* Score box - metallic gradient with bevel */
+html.espn-retro .espn-score-box {
+  background: linear-gradient(180deg, var(--metallic-light) 0%, var(--metallic-mid) 50%, var(--metallic-dark) 100%);
+  color: var(--bg-primary);
+  font-family: Impact, 'Arial Black', sans-serif;
+  font-size: 1.75rem;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  border-radius: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    0 2px 4px rgba(0,0,0,0.5);
+}
+
+html.espn-retro .espn-score-box.winner {
+  background: linear-gradient(180deg, var(--espn-gold) 0%, #B8860B 100%);
+}
+
+/* Record badge - dark red background */
+html.espn-retro .espn-record-badge {
+  background: var(--espn-record-bg);
+  color: var(--text-primary);
+  font-family: Impact, 'Arial Black', sans-serif;
+  padding: 0.375rem 0.75rem;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 2px;
+}
+
+/* Divider - copper gradient */
+html.espn-retro .espn-divider {
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--espn-copper) 10%,
+    var(--espn-orange) 50%,
+    var(--espn-copper) 90%,
+    transparent 100%
+  );
+  margin: 1rem 0;
+}
+
+html.espn-retro .espn-divider-solid {
+  height: 3px;
+  background: var(--espn-copper);
+}
+
+/* Table styling - copper header border */
+html.espn-retro .espn-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+html.espn-retro .espn-table thead {
+  background: var(--bg-primary);
+}
+
+html.espn-retro .espn-table th {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 3px solid var(--espn-copper);
+}
+
+html.espn-retro .espn-table tbody {
+  background: linear-gradient(180deg, var(--espn-burgundy-mid) 0%, var(--espn-burgundy) 100%);
+}
+
+html.espn-retro .espn-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-primary);
+}
+
+html.espn-retro .espn-table tr:nth-child(even) {
+  background: rgba(0,0,0,0.15);
+}
+
+html.espn-retro .espn-table .rank-cell {
+  font-family: Impact, 'Arial Black', sans-serif;
+  color: var(--espn-gold);
+  font-weight: bold;
+}
+
+html.espn-retro .espn-table .owner-cell {
+  font-family: Rockwell, Georgia, serif;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+html.espn-retro .espn-table .points-cell {
+  font-family: Impact, 'Arial Black', sans-serif;
+  color: var(--espn-gold);
+}
+
+html.espn-retro .espn-table .champion-row {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, transparent 100%) !important;
+  border-left: 4px solid var(--espn-gold);
+}
+
+/* Hall of Fame - gold border */
+html.espn-retro .espn-hof {
+  border: 2px solid var(--espn-gold);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+html.espn-retro .espn-hof-header {
+  background: linear-gradient(90deg, var(--bg-primary) 0%, var(--espn-record-bg) 50%, var(--bg-primary) 100%);
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 3px solid var(--espn-gold);
+}
+
+html.espn-retro .espn-hof-title {
+  font-family: Rockwell, Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--espn-gold);
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+html.espn-retro .espn-champion-card {
+  background: linear-gradient(135deg, #3D3D3D 0%, #1A1A1A 100%);
+  border: 2px solid var(--espn-gold);
+  border-radius: 2px;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Two-column stats grid */
+html.espn-retro .espn-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--bg-primary);
+}
+
+html.espn-retro .espn-stats-panel {
+  background: linear-gradient(180deg, var(--espn-burgundy-mid) 0%, var(--espn-burgundy) 100%);
+  padding: 1.25rem;
+}
+
+html.espn-retro .espn-stats-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Utility classes */
+html.espn-retro .espn-text-gold { color: var(--espn-gold); }
+html.espn-retro .espn-text-silver { color: var(--text-secondary); }
+html.espn-retro .espn-text-copper { color: var(--espn-copper); }
+html.espn-retro .espn-bg-burgundy { background: var(--espn-burgundy); }
+html.espn-retro .espn-border-copper { border-color: var(--espn-copper); }
+html.espn-retro .espn-border-gold { border-color: var(--espn-gold); }
+
+/* Sharp corners - override rounded classes */
+html.espn-retro .rounded-lg,
+html.espn-retro .rounded-xl,
+html.espn-retro .rounded-2xl {
+  border-radius: 2px;
+}
+
+html.espn-retro .rounded-full {
+  /* Keep rounded-full for avatars */
+}
+
+/* Reduce rounding on cards */
+html.espn-retro [class*="rounded-"] {
+  border-radius: 2px;
+}
+
+/* Keep full rounding only for avatars and specific elements */
+html.espn-retro img[class*="rounded-full"],
+html.espn-retro .rounded-full:not(.ring-2) {
+  border-radius: 9999px;
+}
+
+/* ==================== ESPN NFL 2K5 Typography ==================== */
+/* Bold broadcast-style typography inspired by NFL 2K5 and ESPN SportsCenter */
+
+/* Headings - Rockwell/Georgia serif, uppercase */
+html.espn-retro h1,
+html.espn-retro h2,
+html.espn-retro h3 {
+  font-family: Rockwell, Georgia, serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+html.espn-retro h1 {
+  font-size: 2.25rem;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+html.espn-retro h2 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+html.espn-retro h3 {
+  font-size: 1.125rem;
+  line-height: 1.3;
+}
+
+/* Stat numbers - Impact font, gold color */
+html.espn-retro .stat-number,
+html.espn-retro .text-4xl,
+html.espn-retro .text-3xl,
+html.espn-retro .text-2xl {
+  font-family: Impact, 'Arial Black', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--espn-gold);
+}
+
+/* Owner/team names in tables and cards */
+html.espn-retro .font-medium,
+html.espn-retro .font-semibold,
+html.espn-retro .font-bold {
+  font-family: Rockwell, Georgia, serif;
+  font-weight: 700;
+}
+
+/* Button text - uppercase with spacing */
+html.espn-retro button,
+html.espn-retro .btn {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+  border-radius: 2px;
+}
+
+/* Navigation tabs - uppercase */
+html.espn-retro nav button {
+  font-family: Rockwell, Georgia, serif;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Card titles */
+html.espn-retro .card-title {
+  font-family: Rockwell, Georgia, serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Table header text */
+html.espn-retro th {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 3px solid var(--espn-copper);
+}
+
+/* Table body - owner names */
+html.espn-retro td .font-medium,
+html.espn-retro td .font-semibold {
+  font-family: Rockwell, Georgia, serif;
+  text-transform: uppercase;
+}
+
+/* Numeric values in tables */
+html.espn-retro td .font-mono,
+html.espn-retro .font-mono {
+  font-family: Impact, 'Arial Black', sans-serif;
+  color: var(--espn-gold);
+}
+
+/* ==================== Custom Animations ==================== */
+
+/* Page transition animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInFromRight 0.3s ease-out forwards;
+}
+
+.animate-slide-in-bottom {
+  animation: slideInFromBottom 0.4s ease-out forwards;
+}
+
+/* Staggered animation delays for lists */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.4s; }
+
+/* Skeleton loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+    var(--bg-tertiary) 25%,
+    var(--border-secondary) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Confetti animation for championships */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes confetti-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.confetti-piece {
+  position: fixed;
+  top: 0;
+  animation: confetti-fall 3s ease-out forwards, confetti-shake 0.5s ease-in-out infinite;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Trophy glow animation */
+@keyframes trophy-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+  }
+}
+
+.animate-trophy-glow {
+  animation: trophy-glow 2s ease-in-out infinite;
+}
+
+/* Pulse scale animation */
+@keyframes pulse-scale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-scale {
+  animation: pulse-scale 2s ease-in-out infinite;
+}
+
+/* Number count up animation */
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-count-up {
+  animation: count-up 0.5s ease-out forwards;
+}
+
+/* Hover lift effect */
+.hover-lift {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Card entrance animation */
+@keyframes card-entrance {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-card-entrance {
+  animation: card-entrance 0.4s ease-out forwards;
+  opacity: 0;
+}

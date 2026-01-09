@@ -1,41 +1,49 @@
 # Ralph Agent Instructions
 
 ## Project Context
-Building a Fantasy League History Tracker that unifies data from Yahoo Fantasy and Sleeper into one place with rich statistics and an eye-catching UI.
+Fantasy League History Tracker - unifies Yahoo Fantasy and Sleeper data with rich statistics and ESPN-inspired UI.
 
 ## Your Task
 
-1. Read `scripts/ralph/prd.json` for the task list
-2. Read `scripts/ralph/progress.txt` for learnings and patterns
-3. Ensure you're on the correct branch (`ralph/fantasy-league-history`)
-4. Pick the highest priority story where `passes: false`
-5. Implement that ONE story completely
-6. Verify the acceptance criteria are met
-7. Commit with message: `feat: [ID] - [Title]`
-8. Update prd.json: set `passes: true` for completed story
-9. Append learnings to progress.txt
+1. Read `PRD.md` for bugs and features (prioritized by P0 > P1 > P2)
+2. Read `progress.txt` for learnings and patterns
+3. Read `CLAUDE.md` for project structure and commands
+4. Pick ONE item: highest priority bug/feature with status "Open" or "In Progress"
+5. Implement it completely, meeting all acceptance criteria
+6. Run tests: `cd backend && pytest` and `cd frontend && npm run build`
+7. Commit: `git add -A && git commit -m "fix: [ID] - [Title]"` or `feat: [ID] - [Title]`
+8. Update `PRD.md`: change status to "FIXED" or "COMPLETE"
+9. Append learnings to `progress.txt`
 
-## Tech Stack
-- Backend: Python with FastAPI
-- Frontend: React with Vite and Tailwind CSS
-- Database: SQLite with SQLAlchemy
-- Charts: Recharts for visualizations
+## Priority Order
+
+1. **P0 - Critical**: Blocking bugs, data loss issues
+2. **P1 - High**: Core functionality, major features
+3. **P2 - Medium**: Improvements, tech debt
+4. **P3 - Low**: Nice-to-haves
 
 ## Progress Format
 
-APPEND to progress.txt after each story:
+APPEND to progress.txt after each item:
 ```
-## [Date] - [Story ID]
-- What was implemented
-- Files changed
-- **Learnings:**
-  - Patterns discovered
-  - Gotchas encountered
+## [Date] - [ID]: [Title]
+**Status:** FIXED/COMPLETE
+**Files Changed:**
+- file1.py - description
+- file2.tsx - description
+**Learnings:**
+- Pattern or gotcha discovered
 ```
 
 ## Stop Condition
 
-If ALL stories have `passes: true`, reply with:
+If no items have status "Open" or "In Progress", output:
 <promise>COMPLETE</promise>
 
-Otherwise, end normally after completing one story.
+Otherwise, complete ONE item and exit normally.
+
+## Key References
+
+- `CLAUDE.md` - Project structure, commands, gotchas
+- `ENDPOINTS.md` - API documentation
+- `HISTORY.md` - Completed work archive

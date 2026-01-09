@@ -1,0 +1,93 @@
+"""
+Fantasy League History Tracker - FastAPI Backend
+
+This API provides endpoints for tracking fantasy league history
+across Yahoo Fantasy and Sleeper platforms.
+"""
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.db import init_db
+
+
+def get_cors_origins() -> list[str]:
+    """Get CORS origins from environment variable.
+
+    Returns:
+        List of allowed origins. Defaults to localhost:5173 if not set.
+    """
+    cors_origins = os.environ.get("CORS_ORIGINS", "http://localhost:5173")
+    # Split by comma and strip whitespace
+    return [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+
+
+from app.api.sleeper import router as sleeper_router
+from app.api.yahoo import router as yahoo_router
+from app.api.owners import router as owners_router
+from app.api.history import router as history_router
+from app.api.trades import router as trades_router
+from app.api.records import router as records_router
+from app.api.hall_of_fame import router as hall_of_fame_router
+from app.api.seasons import router as seasons_router
+from app.api.leagues import router as leagues_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan handler - runs on startup and shutdown."""
+    # Startup: Initialize database
+    init_db()
+    yield
+    # Shutdown: cleanup if needed
+
+
+app = FastAPI(
+    title="Fantasy League History Tracker",
+    description="Unified fantasy league history tracking for Yahoo Fantasy and Sleeper",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+# Configure CORS for frontend
+# Origins read from CORS_ORIGINS env var, defaults to localhost:5173
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_cors_origins(),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/")
+async def root():
+    """Root endpoint returning API info."""
+    return {
+        "name": "Fantasy League History Tracker API",
+        "version": "0.1.0",
+        "status": "running",
+    }
+
+
+@app.get("/health")
+async def health():
+    """Health check endpoint."""
+    return {"status": "healthy"}
+
+
+# Include routers
+app.include_router(sleeper_router)
+app.include_router(yahoo_router)
+app.include_router(owners_router)
+app.include_router(history_router)
+app.include_router(trades_router)
+app.include_router(records_router)
+app.include_router(hall_of_fame_router)
+app.include_router(seasons_router)
+app.include_router(leagues_router)
