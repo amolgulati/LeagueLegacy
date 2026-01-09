@@ -112,69 +112,86 @@ html.light {
   --trophy-bronze: #ea580c;    /* orange-600 */
 }
 
-/* ESPN Retro theme - evokes early 2000s ESPN/NFL Primetime aesthetic */
-/*
- * Color palette inspired by classic ESPN SportsCenter/NFL Primetime (1998-2005)
- * - Deep blacks as backdrop (like studio set)
- * - Bold ESPN Red (#CC0000) for brand identity
- * - Gold highlights for achievements/emphasis
- * - High contrast for readability
- * All text colors tested for WCAG AA compliance (4.5:1 minimum)
+/* ESPN NFL 2K5 Broadcast Theme
+ * ================================
+ * Inspired by ESPN NFL 2K5 (2004) and SportsCenter broadcast graphics (2002-2006 era)
+ *
+ * Key characteristics:
+ * - Deep burgundy backgrounds with radial gradients
+ * - Metallic silver score boxes with bevel effects
+ * - Copper accent lines and borders
+ * - Bold serif team names (Rockwell/Georgia)
+ * - Gold stat numbers with Impact font
+ * - Dark red record badges
+ * - Sharp corners (no rounded > 4px)
+ * - Information-dense layouts
  */
 html.espn-retro {
-  /* Background colors - deep blacks and charcoals */
-  --bg-primary: #0a0a0a;       /* near black - main backdrop */
-  --bg-secondary: #141414;     /* dark charcoal - cards/panels */
-  --bg-tertiary: #1f1f1f;      /* charcoal - elevated surfaces */
-  --bg-card: #141414;          /* dark charcoal - card backgrounds */
-  --bg-hover: #262626;         /* lighter charcoal - hover states */
-  --bg-input: #1f1f1f;         /* charcoal - form inputs */
+  /* Background colors - deep burgundy and black */
+  --bg-primary: #0D0D0D;       /* pure black base */
+  --bg-secondary: #2D0A0A;     /* deep burgundy */
+  --bg-tertiary: #4A1515;      /* mid burgundy */
+  --bg-card: #2D0A0A;          /* deep burgundy - card backgrounds */
+  --bg-hover: #4A1515;         /* mid burgundy - hover states */
+  --bg-input: #1a0505;         /* very dark burgundy - form inputs */
+  --bg-card-rgb: 45, 10, 10;   /* RGB values for rgba usage */
 
-  /* Text colors - WCAG AA compliant */
-  --text-primary: #fafafa;     /* off-white - 18.97:1 contrast */
-  --text-secondary: #a3a3a3;   /* gray-400 - 7.85:1 contrast */
-  --text-muted: #8a8a8a;       /* lighter gray - 5.73:1 contrast (meets 4.5:1) */
-  --text-inverted: #0a0a0a;    /* near black - for light backgrounds */
+  /* Text colors - high contrast for broadcast style */
+  --text-primary: #FFFFFF;     /* pure white */
+  --text-secondary: #C0C0C0;   /* silver */
+  --text-muted: #888888;       /* muted gray */
+  --text-inverted: #0D0D0D;    /* black - for light backgrounds */
 
-  /* Border colors */
-  --border-primary: #333333;   /* visible border - 2.63:1 UI contrast */
-  --border-secondary: #404040; /* stronger border - gray-700 */
+  /* Border colors - copper accents */
+  --border-primary: #CD7F32;   /* copper - primary accent */
+  --border-secondary: #8B4513; /* darker copper */
 
-  /* Accent colors - ESPN red and gold */
-  /* Note: #CC0000 used for UI elements/large text (3.36:1 OK for buttons/icons)
-   * #ef4444 used for small text where 4.5:1 is required */
-  --accent-primary: #ef4444;   /* accessible red - 5.26:1 contrast */
-  --accent-primary-hover: #dc2626; /* darker accessible red */
-  --accent-primary-ui: #cc0000;/* ESPN brand red - for buttons/icons */
-  --accent-secondary: #ffd700; /* Gold - 14.12:1 excellent contrast */
+  /* Accent colors - ESPN palette */
+  --accent-primary: #CC0000;   /* ESPN red */
+  --accent-primary-hover: #990000; /* darker red */
+  --accent-primary-ui: #CC0000;/* ESPN brand red */
+  --accent-secondary: #FFD700; /* Gold - for stats and highlights */
 
   /* Status colors */
-  --success: #22c55e;          /* green-500 - 8.69:1 contrast */
+  --success: #22c55e;          /* green */
   --success-muted: rgba(34, 197, 94, 0.2);
-  --warning: #ffd700;          /* gold - high visibility */
+  --warning: #FFD700;          /* gold */
   --warning-muted: rgba(255, 215, 0, 0.15);
-  --error: #ef4444;            /* accessible red - 5.26:1 */
-  --error-muted: rgba(239, 68, 68, 0.2);
+  --error: #CC0000;            /* ESPN red */
+  --error-muted: rgba(204, 0, 0, 0.2);
 
-  /* Chart/Data colors - designed for data visualization */
-  --chart-1: #ef4444;          /* accessible red */
-  --chart-2: #ffd700;          /* gold */
-  --chart-3: #22c55e;          /* green */
-  --chart-4: #f97316;          /* orange-500 - better contrast */
+  /* Chart/Data colors - broadcast palette */
+  --chart-1: #FFD700;          /* gold */
+  --chart-2: #CD7F32;          /* copper */
+  --chart-3: #CC0000;          /* red */
+  --chart-4: #E85D04;          /* orange */
 
-  /* Gradient stops */
-  --gradient-from: #0a0a0a;    /* near black */
-  --gradient-to: #1a1a1a;      /* slightly lighter for visible gradient */
+  /* Gradient stops - burgundy to black radial */
+  --gradient-from: #4A1515;    /* mid burgundy */
+  --gradient-to: #0D0D0D;      /* black */
 
   /* Trophy/Medal colors - classic metallic palette */
-  --trophy-gold: #ffd700;      /* pure gold */
-  --trophy-silver: #c0c0c0;    /* silver */
-  --trophy-bronze: #cd7f32;    /* bronze */
+  --trophy-gold: #FFD700;      /* pure gold */
+  --trophy-silver: #C0C0C0;    /* silver */
+  --trophy-bronze: #CD7F32;    /* bronze/copper */
 
-  /* ESPN Retro specific accent colors */
-  --espn-red: #cc0000;         /* original ESPN red for branding */
-  --espn-red-glow: rgba(204, 0, 0, 0.4); /* glow effect */
-  --gold-glow: rgba(255, 215, 0, 0.3);   /* gold glow effect */
+  /* ESPN 2K5 specific colors */
+  --espn-red: #CC0000;         /* ESPN red */
+  --espn-copper: #CD7F32;      /* copper accent */
+  --espn-orange: #E85D04;      /* orange highlight */
+  --espn-burgundy: #2D0A0A;    /* deep burgundy */
+  --espn-burgundy-mid: #4A1515;/* mid burgundy */
+  --espn-burgundy-light: #6B1F1F; /* light burgundy */
+  --espn-gold: #FFD700;        /* gold */
+  --espn-record-bg: #8B0000;   /* dark red for badges */
+  --metallic-light: #D4D4D4;   /* score box top */
+  --metallic-mid: #A8A8A8;     /* score box middle */
+  --metallic-dark: #6B6B6B;    /* score box bottom */
+
+  /* Glow effects */
+  --espn-red-glow: rgba(204, 0, 0, 0.4);
+  --gold-glow: rgba(255, 215, 0, 0.3);
+  --copper-glow: rgba(205, 127, 50, 0.3);
 }
 
 /* ==================== Theme Class Overrides ==================== */
@@ -234,11 +251,20 @@ html.light .to-slate-800 {
   @apply to-slate-50;
 }
 
-/* ESPN Retro theme overrides */
+/* ==================== ESPN NFL 2K5 Theme Overrides ==================== */
+
+/* Page background - burgundy to black radial gradient */
 html.espn-retro body {
-  background-color: var(--bg-primary);
+  background: radial-gradient(
+    ellipse at top center,
+    var(--espn-burgundy-mid) 0%,
+    var(--espn-burgundy) 30%,
+    var(--bg-primary) 70%
+  );
+  min-height: 100vh;
 }
 
+/* Override slate backgrounds with theme colors */
 html.espn-retro .bg-slate-900 {
   background-color: var(--bg-primary);
 }
@@ -251,53 +277,52 @@ html.espn-retro .bg-slate-700 {
   background-color: var(--bg-tertiary);
 }
 
+/* Copper borders instead of gray */
 html.espn-retro .border-slate-700 {
-  border-color: var(--border-primary);
+  border-color: var(--espn-copper);
+}
+
+html.espn-retro .border-slate-600 {
+  border-color: var(--border-secondary);
 }
 
 /* Link colors - gold for emphasis */
-html.espn-retro .text-blue-400 {
-  color: var(--accent-secondary);
-}
-
+html.espn-retro .text-blue-400,
 html.espn-retro .text-blue-500 {
-  color: var(--accent-secondary);
+  color: var(--espn-gold);
 }
 
-/* Button colors - use ESPN brand red for UI elements (3:1 OK for buttons) */
+/* Button colors - use ESPN brand red */
 html.espn-retro .bg-blue-600 {
   background-color: var(--espn-red);
 }
 
-html.espn-retro .hover\:bg-blue-500:hover {
-  background-color: #aa0000; /* darker ESPN red on hover */
-}
-
+html.espn-retro .hover\:bg-blue-500:hover,
 html.espn-retro .hover\:bg-blue-700:hover {
-  background-color: #990000; /* even darker */
+  background-color: #990000;
 }
 
-/* Ring/focus colors */
-html.espn-retro .ring-blue-500 {
-  --tw-ring-color: var(--accent-secondary);
-}
-
+/* Ring/focus colors - copper */
+html.espn-retro .ring-blue-500,
 html.espn-retro .focus\:ring-blue-500:focus {
-  --tw-ring-color: var(--accent-secondary);
+  --tw-ring-color: var(--espn-copper);
 }
 
 /* Gradient backgrounds */
 html.espn-retro .from-slate-900 {
-  --tw-gradient-from: var(--bg-primary);
+  --tw-gradient-from: var(--espn-burgundy-mid);
 }
 
-/* Text accent colors for accessibility */
+html.espn-retro .to-slate-800 {
+  --tw-gradient-to: var(--bg-primary);
+}
+
+/* Text colors */
 html.espn-retro .text-red-500,
 html.espn-retro .text-red-400 {
-  color: var(--accent-primary); /* accessible red for text */
+  color: var(--espn-red);
 }
 
-/* Muted text */
 html.espn-retro .text-slate-400 {
   color: var(--text-secondary);
 }
@@ -306,72 +331,349 @@ html.espn-retro .text-slate-500 {
   color: var(--text-muted);
 }
 
-html.espn-retro .to-slate-800 {
-  --tw-gradient-to: var(--bg-secondary);
+/* Yellow/amber colors become gold */
+html.espn-retro .text-yellow-400,
+html.espn-retro .text-yellow-500,
+html.espn-retro .text-amber-400 {
+  color: var(--espn-gold);
 }
 
-/* ==================== ESPN Retro Typography ==================== */
-/* Bolder, more impactful typography for the ESPN retro theme */
-/* Inspired by classic ESPN SportsCenter graphics */
+html.espn-retro .bg-yellow-500\/20 {
+  background-color: rgba(255, 215, 0, 0.2);
+}
 
+/* ==================== ESPN 2K5 Component Classes ==================== */
+
+/* Card component - black header with copper border */
+html.espn-retro .espn-card {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+html.espn-retro .espn-card-header {
+  background: var(--bg-primary);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid var(--espn-copper);
+}
+
+html.espn-retro .espn-card-body {
+  background: linear-gradient(180deg, var(--espn-burgundy-mid) 0%, var(--espn-burgundy) 100%);
+  padding: 1.5rem;
+}
+
+/* Team/Owner name typography - serif, uppercase */
+html.espn-retro .espn-team-name {
+  font-family: Rockwell, Georgia, serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+}
+
+/* Stat value typography - Impact, gold */
+html.espn-retro .espn-stat-value {
+  font-family: Impact, 'Arial Black', sans-serif;
+  color: var(--espn-gold);
+  font-weight: bold;
+}
+
+/* Stat label typography - silver */
+html.espn-retro .espn-stat-label {
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-secondary);
+}
+
+/* Score box - metallic gradient with bevel */
+html.espn-retro .espn-score-box {
+  background: linear-gradient(180deg, var(--metallic-light) 0%, var(--metallic-mid) 50%, var(--metallic-dark) 100%);
+  color: var(--bg-primary);
+  font-family: Impact, 'Arial Black', sans-serif;
+  font-size: 1.75rem;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  border-radius: 2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    0 2px 4px rgba(0,0,0,0.5);
+}
+
+html.espn-retro .espn-score-box.winner {
+  background: linear-gradient(180deg, var(--espn-gold) 0%, #B8860B 100%);
+}
+
+/* Record badge - dark red background */
+html.espn-retro .espn-record-badge {
+  background: var(--espn-record-bg);
+  color: var(--text-primary);
+  font-family: Impact, 'Arial Black', sans-serif;
+  padding: 0.375rem 0.75rem;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 2px;
+}
+
+/* Divider - copper gradient */
+html.espn-retro .espn-divider {
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--espn-copper) 10%,
+    var(--espn-orange) 50%,
+    var(--espn-copper) 90%,
+    transparent 100%
+  );
+  margin: 1rem 0;
+}
+
+html.espn-retro .espn-divider-solid {
+  height: 3px;
+  background: var(--espn-copper);
+}
+
+/* Table styling - copper header border */
+html.espn-retro .espn-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+html.espn-retro .espn-table thead {
+  background: var(--bg-primary);
+}
+
+html.espn-retro .espn-table th {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 3px solid var(--espn-copper);
+}
+
+html.espn-retro .espn-table tbody {
+  background: linear-gradient(180deg, var(--espn-burgundy-mid) 0%, var(--espn-burgundy) 100%);
+}
+
+html.espn-retro .espn-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-primary);
+}
+
+html.espn-retro .espn-table tr:nth-child(even) {
+  background: rgba(0,0,0,0.15);
+}
+
+html.espn-retro .espn-table .rank-cell {
+  font-family: Impact, 'Arial Black', sans-serif;
+  color: var(--espn-gold);
+  font-weight: bold;
+}
+
+html.espn-retro .espn-table .owner-cell {
+  font-family: Rockwell, Georgia, serif;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+html.espn-retro .espn-table .points-cell {
+  font-family: Impact, 'Arial Black', sans-serif;
+  color: var(--espn-gold);
+}
+
+html.espn-retro .espn-table .champion-row {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, transparent 100%) !important;
+  border-left: 4px solid var(--espn-gold);
+}
+
+/* Hall of Fame - gold border */
+html.espn-retro .espn-hof {
+  border: 2px solid var(--espn-gold);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+html.espn-retro .espn-hof-header {
+  background: linear-gradient(90deg, var(--bg-primary) 0%, var(--espn-record-bg) 50%, var(--bg-primary) 100%);
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 3px solid var(--espn-gold);
+}
+
+html.espn-retro .espn-hof-title {
+  font-family: Rockwell, Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--espn-gold);
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+html.espn-retro .espn-champion-card {
+  background: linear-gradient(135deg, #3D3D3D 0%, #1A1A1A 100%);
+  border: 2px solid var(--espn-gold);
+  border-radius: 2px;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Two-column stats grid */
+html.espn-retro .espn-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--bg-primary);
+}
+
+html.espn-retro .espn-stats-panel {
+  background: linear-gradient(180deg, var(--espn-burgundy-mid) 0%, var(--espn-burgundy) 100%);
+  padding: 1.25rem;
+}
+
+html.espn-retro .espn-stats-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Utility classes */
+html.espn-retro .espn-text-gold { color: var(--espn-gold); }
+html.espn-retro .espn-text-silver { color: var(--text-secondary); }
+html.espn-retro .espn-text-copper { color: var(--espn-copper); }
+html.espn-retro .espn-bg-burgundy { background: var(--espn-burgundy); }
+html.espn-retro .espn-border-copper { border-color: var(--espn-copper); }
+html.espn-retro .espn-border-gold { border-color: var(--espn-gold); }
+
+/* Sharp corners - override rounded classes */
+html.espn-retro .rounded-lg,
+html.espn-retro .rounded-xl,
+html.espn-retro .rounded-2xl {
+  border-radius: 2px;
+}
+
+html.espn-retro .rounded-full {
+  /* Keep rounded-full for avatars */
+}
+
+/* Reduce rounding on cards */
+html.espn-retro [class*="rounded-"] {
+  border-radius: 2px;
+}
+
+/* Keep full rounding only for avatars and specific elements */
+html.espn-retro img[class*="rounded-full"],
+html.espn-retro .rounded-full:not(.ring-2) {
+  border-radius: 9999px;
+}
+
+/* ==================== ESPN NFL 2K5 Typography ==================== */
+/* Bold broadcast-style typography inspired by NFL 2K5 and ESPN SportsCenter */
+
+/* Headings - Rockwell/Georgia serif, uppercase */
 html.espn-retro h1,
 html.espn-retro h2,
-html.espn-retro h3,
-html.espn-retro .font-bold,
-html.espn-retro .font-semibold {
-  letter-spacing: -0.02em;
+html.espn-retro h3 {
+  font-family: Rockwell, Georgia, serif;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 html.espn-retro h1 {
   font-size: 2.25rem;
   line-height: 1.2;
-  text-transform: uppercase;
   font-weight: 800;
 }
 
 html.espn-retro h2 {
   font-size: 1.5rem;
   line-height: 1.25;
-  font-weight: 700;
 }
 
 html.espn-retro h3 {
   font-size: 1.125rem;
   line-height: 1.3;
-  font-weight: 700;
 }
 
-/* Bold stat numbers in ESPN retro theme */
+/* Stat numbers - Impact font, gold color */
 html.espn-retro .stat-number,
 html.espn-retro .text-4xl,
 html.espn-retro .text-3xl,
 html.espn-retro .text-2xl {
+  font-family: Impact, 'Arial Black', sans-serif;
   font-weight: 800;
   letter-spacing: -0.03em;
+  color: var(--espn-gold);
 }
 
-/* ESPN retro button text */
+/* Owner/team names in tables and cards */
+html.espn-retro .font-medium,
+html.espn-retro .font-semibold,
+html.espn-retro .font-bold {
+  font-family: Rockwell, Georgia, serif;
+  font-weight: 700;
+}
+
+/* Button text - uppercase with spacing */
 html.espn-retro button,
 html.espn-retro .btn {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 0.875rem;
+  border-radius: 2px;
 }
 
-/* Tab labels in ESPN retro */
+/* Navigation tabs - uppercase */
 html.espn-retro nav button {
+  font-family: Rockwell, Georgia, serif;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.04em;
 }
 
-/* Card titles in ESPN retro */
+/* Card titles */
 html.espn-retro .card-title {
+  font-family: Rockwell, Georgia, serif;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+}
+
+/* Table header text */
+html.espn-retro th {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 3px solid var(--espn-copper);
+}
+
+/* Table body - owner names */
+html.espn-retro td .font-medium,
+html.espn-retro td .font-semibold {
+  font-family: Rockwell, Georgia, serif;
+  text-transform: uppercase;
+}
+
+/* Numeric values in tables */
+html.espn-retro td .font-mono,
+html.espn-retro .font-mono {
+  font-family: Impact, 'Arial Black', sans-serif;
+  color: var(--espn-gold);
 }
 
 /* ==================== Custom Animations ==================== */

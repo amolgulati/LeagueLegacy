@@ -75,6 +75,23 @@ class YahooClient:
     # NFL game key for 2024 season (updates yearly)
     NFL_GAME_KEY = "449"  # 2024 NFL season
 
+    # All NFL game keys from 2012-2024 for historical data
+    ALL_NFL_GAME_KEYS = [
+        "449",  # 2024
+        "423",  # 2023
+        "406",  # 2022
+        "399",  # 2021
+        "390",  # 2020
+        "380",  # 2019
+        "371",  # 2018
+        "359",  # 2017
+        "348",  # 2016
+        "331",  # 2015
+        "314",  # 2014
+        "273",  # 2013
+        "257",  # 2012
+    ]
+
     def __init__(
         self,
         client_id: Optional[str] = None,
@@ -300,40 +317,61 @@ class YahooClient:
         """Get all leagues for the authenticated user.
 
         Args:
-            game_key: Game key (default: current NFL season).
+            game_key: Game key for specific season. If None, fetches from all seasons (2012-2024).
 
         Returns:
             List of league data dictionaries.
         """
-        gk = game_key or self.NFL_GAME_KEY
-        response = await self._get(f"/users;use_login=1/games;game_keys={gk}/leagues")
-        content = self._extract_value(response)
+        if game_key:
+            # Single season requested
+            return await self._fetch_leagues_for_game_keys([game_key])
+        else:
+            # Fetch from all seasons
+            return await self._fetch_leagues_for_game_keys(self.ALL_NFL_GAME_KEYS)
 
-        leagues = []
-        try:
-            # Navigate Yahoo's complex nested structure
-            users = content.get("users", {})
-            if "0" in users:
-                user = users["0"]["user"]
-                if isinstance(user, list):
-                    for item in user:
-                        if isinstance(item, dict) and "games" in item:
-                            games = item["games"]
-                            if "0" in games:
-                                game = games["0"]["game"]
-                                if isinstance(game, list):
-                                    for g_item in game:
-                                        if isinstance(g_item, dict) and "leagues" in g_item:
-                                            league_data = g_item["leagues"]
-                                            for key, value in league_data.items():
-                                                if key.isdigit() and "league" in value:
-                                                    leagues.append(
-                                                        self._parse_league(value["league"])
-                                                    )
-        except (KeyError, IndexError, TypeError):
-            pass  # Return empty list if structure doesn't match
+    async def _fetch_leagues_for_game_keys(self, game_keys: List[str]) -> List[Dict[str, Any]]:
+        """Fetch leagues for multiple game keys.
 
-        return leagues
+        Args:
+            game_keys: List of game keys to fetch leagues from.
+
+        Returns:
+            List of league data dictionaries from all specified seasons.
+        """
+        all_leagues = []
+        seen_league_keys = set()
+
+        for gk in game_keys:
+            try:
+                response = await self._get(f"/users;use_login=1/games;game_keys={gk}/leagues")
+                content = self._extract_value(response)
+
+                # Navigate Yahoo's complex nested structure
+                users = content.get("users", {})
+                if "0" in users:
+                    user = users["0"]["user"]
+                    if isinstance(user, list):
+                        for item in user:
+                            if isinstance(item, dict) and "games" in item:
+                                games = item["games"]
+                                if "0" in games:
+                                    game = games["0"]["game"]
+                                    if isinstance(game, list):
+                                        for g_item in game:
+                                            if isinstance(g_item, dict) and "leagues" in g_item:
+                                                league_data = g_item["leagues"]
+                                                for key, value in league_data.items():
+                                                    if key.isdigit() and "league" in value:
+                                                        parsed = self._parse_league(value["league"])
+                                                        league_key = parsed.get("league_key", "")
+                                                        if league_key and league_key not in seen_league_keys:
+                                                            seen_league_keys.add(league_key)
+                                                            all_leagues.append(parsed)
+            except (KeyError, IndexError, TypeError, YahooAPIError):
+                # Skip seasons with no data or errors
+                continue
+
+        return all_leagues
 
     async def get_league(self, league_key: str) -> Dict[str, Any]:
         """Fetch league information by league key.
@@ -406,11 +444,21 @@ class YahooClient:
         return standings
 
     def _parse_team(self, team_data: Any) -> Dict[str, Any]:
-        """Parse team data from Yahoo's response format."""
+        """Parse team data from Yahoo's response format.
+
+        Yahoo returns team data as a list where:
+        - First element is often a nested list containing team info dicts
+        - Remaining elements are dicts with team_points, team_standings, etc.
+        """
         if isinstance(team_data, list):
             merged = {}
             for item in team_data:
-                if isinstance(item, dict):
+                if isinstance(item, list):
+                    # Flatten nested list (contains team_key, name, managers, etc.)
+                    for nested_item in item:
+                        if isinstance(nested_item, dict):
+                            merged.update(nested_item)
+                elif isinstance(item, dict):
                     merged.update(item)
             team_data = merged
 
@@ -423,12 +471,12 @@ class YahooClient:
             "team_id": team_data.get("team_id", ""),
             "name": team_data.get("name", ""),
             "manager": self._parse_manager(team_data.get("managers", [])),
-            "wins": int(outcome_totals.get("wins", 0)),
-            "losses": int(outcome_totals.get("losses", 0)),
-            "ties": int(outcome_totals.get("ties", 0)),
-            "points_for": float(standings.get("points_for", 0)),
-            "points_against": float(standings.get("points_against", 0)),
-            "rank": int(standings.get("rank", 0)),
+            "wins": int(outcome_totals.get("wins", 0) or 0),
+            "losses": int(outcome_totals.get("losses", 0) or 0),
+            "ties": int(outcome_totals.get("ties", 0) or 0),
+            "points_for": float(standings.get("points_for", 0) or 0),
+            "points_against": float(standings.get("points_against", 0) or 0),
+            "rank": int(standings.get("rank", 0) or 0),
             "playoff_seed": standings.get("playoff_seed"),
         }
 
@@ -523,7 +571,12 @@ class YahooClient:
         if isinstance(team_data, list):
             merged = {}
             for item in team_data:
-                if isinstance(item, dict):
+                if isinstance(item, list):
+                    # Flatten nested list (contains team_key, name, etc.)
+                    for nested_item in item:
+                        if isinstance(nested_item, dict):
+                            merged.update(nested_item)
+                elif isinstance(item, dict):
                     merged.update(item)
             team_data = merged
 
@@ -579,11 +632,19 @@ class YahooClient:
             for item in league:
                 if isinstance(item, dict) and "transactions" in item:
                     trans_data = item["transactions"]
-                    for key, value in trans_data.items():
-                        if key.isdigit() and "transaction" in value:
-                            transactions.append(
-                                self._parse_transaction(value["transaction"])
-                            )
+                    # Handle both dict and list formats from Yahoo API
+                    if isinstance(trans_data, dict):
+                        for key, value in trans_data.items():
+                            if key.isdigit() and isinstance(value, dict) and "transaction" in value:
+                                transactions.append(
+                                    self._parse_transaction(value["transaction"])
+                                )
+                    elif isinstance(trans_data, list):
+                        for value in trans_data:
+                            if isinstance(value, dict) and "transaction" in value:
+                                transactions.append(
+                                    self._parse_transaction(value["transaction"])
+                                )
         except (KeyError, IndexError, TypeError):
             pass
 
@@ -677,8 +738,22 @@ class YahooClient:
             List of league data from all specified seasons.
         """
         if not game_keys:
-            # Default to recent NFL seasons
-            game_keys = ["449", "423", "406", "399", "390"]  # 2024-2020
+            # Default to NFL seasons going back to 2012
+            game_keys = [
+                "449",  # 2024
+                "423",  # 2023
+                "406",  # 2022
+                "399",  # 2021
+                "390",  # 2020
+                "380",  # 2019
+                "371",  # 2018
+                "359",  # 2017
+                "348",  # 2016
+                "331",  # 2015
+                "314",  # 2014
+                "273",  # 2013
+                "257",  # 2012
+            ]
 
         all_leagues = []
         for game_key in game_keys:

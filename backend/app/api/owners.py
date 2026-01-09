@@ -384,9 +384,13 @@ async def merge_owners(
     display_name_to_merge = secondary.display_name if not primary.display_name else None
     avatar_url_to_merge = secondary.avatar_url if not primary.avatar_url else None
 
-    # Transfer all teams from secondary to primary
-    for team in secondary.teams:
-        team.owner_id = primary.id
+    # Transfer all teams from secondary to primary using bulk update
+    # (Don't iterate through the relationship collection while modifying it)
+    db.query(Team).filter(Team.owner_id == secondary.id).update(
+        {Team.owner_id: primary.id},
+        synchronize_session='fetch'
+    )
+    db.flush()  # Ensure team transfers are persisted
 
     # Clear unique fields on secondary before deletion to avoid constraint violations
     secondary.sleeper_user_id = None

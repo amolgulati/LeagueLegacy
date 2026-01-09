@@ -705,7 +705,7 @@ async def import_all_leagues(
     - All trades for each season
     - Champion detection for completed seasons
 
-    By default, imports leagues from the past 6 seasons (2024-2019).
+    By default, imports leagues from 2012-2024 (13 seasons).
     Pass custom game_keys to import from specific seasons.
     """
     logger.info(f"Starting historical Yahoo import for session_id={session_id}")

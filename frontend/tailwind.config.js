@@ -24,6 +24,31 @@ export default {
           DEFAULT: '#720E9E',
           dark: '#5A0B7E',
         },
+        // ESPN NFL 2K5 Theme Colors
+        espn: {
+          dark: '#0D0D0D',
+          burgundy: {
+            DEFAULT: '#2D0A0A',
+            mid: '#4A1515',
+            light: '#6B1F1F',
+          },
+          copper: '#CD7F32',
+          orange: '#E85D04',
+          red: '#CC0000',
+          gold: '#FFD700',
+          metallic: {
+            light: '#D4D4D4',
+            mid: '#A8A8A8',
+            dark: '#6B6B6B',
+          },
+          'record-bg': '#8B0000',
+          silver: '#C0C0C0',
+          gray: '#888888',
+        },
+      },
+      fontFamily: {
+        display: ['Rockwell', 'Georgia', 'serif'],
+        stats: ['Impact', 'Arial Black', 'sans-serif'],
       },
       // Custom animations
       animation: {

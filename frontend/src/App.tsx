@@ -112,7 +112,7 @@ const RetroIcon = () => (
 const THEME_LABELS: Record<ThemeType, string> = {
   'dark': 'Dark Mode',
   'light': 'Light Mode',
-  'espn-retro': 'ESPN Retro',
+  'espn-retro': 'ESPN 2K5',
 };
 
 const THEME_ICONS: Record<ThemeType, React.ReactNode> = {
@@ -171,7 +171,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, var(--gradient-from), var(--gradient-to))' }}>
+    <div className="min-h-screen" style={{ background: 'radial-gradient(ellipse at top center, var(--gradient-from) 0%, var(--gradient-to) 70%)' }}>
       {/* Header */}
       <header className="backdrop-blur-sm sticky top-0 z-40" style={{ borderBottom: '1px solid var(--border-primary)', backgroundColor: 'rgba(var(--bg-card-rgb, 30, 41, 59), 0.5)' }}>
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">

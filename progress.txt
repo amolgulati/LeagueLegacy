@@ -1,4 +1,4 @@
-# Fantasy League History Tracker - Ralph Progress Log (Improvements v3)
+# Fantasy League History Tracker - Ralph Progress Log (Improvements v3 & v4)
 Started: 2026-01-08
 
 ## Codebase Patterns
@@ -22,8 +22,15 @@ Started: 2026-01-08
 4. IMP-014: Add React Error Boundary (error resilience) ✓
 5. IMP-015: API Documentation ✓
 6. IMP-021: Fix Yahoo Import Error Handling (bug fix - fails immediately) ✓
-7. IMP-022: Fix Owners Tab Championships Display (bug fix - not showing titles)
-8. IMP-023: Track 2nd and 3rd Place Finishes (enhancement)
+7. IMP-022: Fix Owners Tab Championships Display (bug fix - not showing titles) ✓
+8. IMP-023: Track 2nd and 3rd Place Finishes (enhancement) ✓
+
+## Stories for v4 (Theme System)
+1. IMP-016: Theme Infrastructure Setup ✓
+2. IMP-017: ESPN Retro Color Palette Design ✓
+3. IMP-018: Update Core Components for Theming ✓
+4. IMP-019: Update Data Visualization for Theming ✓
+5. IMP-020: Theme Polish and Typography ✓
 
 ## Execution Order
 1. IMP-012 (Env Config) - Needed for Yahoo OAuth credentials ✓
@@ -32,8 +39,8 @@ Started: 2026-01-08
 4. IMP-014 (Error Boundary) - Safety net ✓
 5. IMP-015 (API Docs) - Documentation polish ✓
 6. IMP-021 (Yahoo Import Fix) - Bug fix, blocking issue ✓
-7. IMP-022 (Owners Championships Fix) - Quick fix
-8. IMP-023 (2nd/3rd Place Tracking) - Enhancement
+7. IMP-022 (Owners Championships Fix) - Quick fix ✓
+8. IMP-023 (2nd/3rd Place Tracking) - Enhancement ✓
 
 ---
 

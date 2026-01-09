@@ -7,6 +7,7 @@ This service handles:
 """
 
 import json
+import logging
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 
@@ -14,6 +15,9 @@ from sqlalchemy.orm import Session
 
 from app.db.models import League, Season, Team, Owner, Matchup, Trade, Platform
 from app.services.yahoo_client import YahooClient, YahooToken
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class YahooService:
@@ -231,31 +235,44 @@ class YahooService:
         Returns:
             List of created/updated Matchup models.
         """
+        logger.info(f"Starting matchup import for {league_key} (weeks {start_week}-{end_week})")
+
         # Ensure teams exist
         teams = await self.import_standings(league_key)
         season = teams[0].season if teams else await self.import_season(league_key)
 
+        logger.info(f"Found {len(teams)} teams for season {season.year}")
+
         # Build team lookup by team_key (platform_team_id)
         team_lookup = {t.platform_team_id: t for t in teams if t.platform_team_id}
+        logger.debug(f"Team lookup keys: {list(team_lookup.keys())}")
 
         # Fetch all matchups
         all_matchups_data = await self.client.get_all_matchups_for_season(
             league_key, start_week, end_week
         )
 
+        logger.info(f"Fetched matchups for {len(all_matchups_data)} weeks")
+
         matchups = []
 
         for week, week_matchups in all_matchups_data.items():
+            logger.debug(f"Processing week {week}: {len(week_matchups)} matchups")
             for matchup_data in week_matchups:
                 teams_in_matchup = matchup_data.get("teams", [])
                 if len(teams_in_matchup) != 2:
+                    logger.warning(f"Week {week}: Skipping matchup with {len(teams_in_matchup)} teams (expected 2)")
+                    logger.debug(f"Matchup data: {matchup_data}")
                     continue  # Skip incomplete matchups
 
                 t1, t2 = teams_in_matchup
-                team_1 = team_lookup.get(t1.get("team_key"))
-                team_2 = team_lookup.get(t2.get("team_key"))
+                team_1_key = t1.get("team_key")
+                team_2_key = t2.get("team_key")
+                team_1 = team_lookup.get(team_1_key)
+                team_2 = team_lookup.get(team_2_key)
 
                 if not team_1 or not team_2:
+                    logger.warning(f"Week {week}: Could not find teams - team_1_key={team_1_key} (found={team_1 is not None}), team_2_key={team_2_key} (found={team_2 is not None})")
                     continue
 
                 score_1 = t1.get("points", 0.0)
@@ -566,7 +583,7 @@ class YahooService:
             List of import results for each league.
         """
         if not game_keys:
-            # Default game keys for recent NFL seasons
+            # Default game keys for NFL seasons (going back to 2012)
             # Note: These change yearly, adjust as needed
             game_keys = [
                 "449",  # 2024
@@ -575,6 +592,13 @@ class YahooService:
                 "399",  # 2021
                 "390",  # 2020
                 "380",  # 2019
+                "371",  # 2018
+                "359",  # 2017
+                "348",  # 2016
+                "331",  # 2015
+                "314",  # 2014
+                "273",  # 2013
+                "257",  # 2012
             ]
 
         results = []

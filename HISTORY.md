@@ -1007,3 +1007,200 @@ For active task instructions, see PROMPT.md.
 - typecheck passes (frontend builds successfully, 204 backend tests passing)
 
 **Tests:** 204 backend tests passing, frontend builds and lint passes
+
+---
+
+## Improvements V4 (IMP-016 to IMP-023)
+
+### IMP-016: Theme Infrastructure Setup
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Created ThemeContext with ThemeProvider managing 3 themes: dark, light, espn-retro
+- Created useTheme hook for components to access theme state and cycleTheme function
+- Updated App.tsx theme toggle to cycle through all 3 themes
+- Expanded CSS variables to 24 variables across 6 categories (background, text, border, accent, status, chart/trophy)
+- Theme persists to localStorage with migration from old dark mode setting
+
+**Files Created:**
+- `frontend/src/hooks/useTheme.tsx` - ThemeContext, ThemeProvider, useTheme hook
+
+**Files Modified:**
+- `frontend/src/main.tsx` - Wrap App with ThemeProvider
+- `frontend/src/App.tsx` - Use useTheme hook, update toggle button
+- `frontend/src/index.css` - Comprehensive CSS variables for all 3 themes
+
+**Acceptance Criteria Met:**
+- ThemeContext created with provider that manages theme state (dark, light, espn-retro)
+- Theme toggle in App.tsx cycles through all 3 themes
+- Theme preference persists in localStorage
+- CSS variables expanded to cover all colors used in app
+- useTheme hook available for components to access current theme
+- typecheck passes
+
+
+### IMP-017: ESPN Retro Color Palette Design
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Refined ESPN Retro theme with WCAG AA compliant colors
+- Updated color palette inspired by ESPN SportsCenter/NFL Primetime (1998-2005)
+- Calculated and documented contrast ratios for all color combinations
+- Separated UI colors (buttons) from text colors for accessibility
+
+**Files Modified:**
+- `frontend/src/index.css` - Updated ESPN retro CSS variables and overrides
+
+**Acceptance Criteria Met:**
+- ESPN retro theme colors defined: primary red (#CC0000), gold accents (#FFD700), deep black backgrounds
+- All CSS variables have values for espn-retro theme in index.css
+- Color scheme has sufficient contrast for accessibility (4.5:1 minimum)
+- Theme visually evokes early 2000s ESPN/NFL Primetime aesthetic
+- typecheck passes
+
+
+### IMP-018: Update Core Components for Theming
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Updated Dashboard.tsx to use CSS variables for all colors
+- Updated OwnerProfileCard.tsx with theme-aware avatar gradients
+- Updated ImportModal.tsx with themed modal background, inputs, progress bars
+- Updated ImportedLeagues.tsx with themed cards and buttons
+- Updated LoadingStates.tsx skeleton components to use theme variables
+- Updated App.tsx header, navigation tabs, mobile menu with CSS variables
+
+**Files Modified:**
+- `frontend/src/pages/Dashboard.tsx` - CSS variables for all UI elements
+- `frontend/src/components/OwnerProfileCard.tsx` - Theme-aware gradients
+- `frontend/src/components/ImportModal.tsx` - Themed modal states
+- `frontend/src/components/ImportedLeagues.tsx` - Themed league cards
+- `frontend/src/components/LoadingStates.tsx` - Skeleton backgrounds use theme variables
+- `frontend/src/index.css` - Updated skeleton shimmer gradient
+- `frontend/src/App.tsx` - Header and navigation use theme variables
+
+**Acceptance Criteria Met:**
+- Dashboard.tsx uses CSS variables instead of hardcoded Tailwind colors
+- OwnerProfileCard.tsx avatar gradients are theme-aware
+- ImportModal.tsx and ImportedLeagues.tsx use theme variables
+- LoadingStates.tsx skeleton colors respect current theme
+- Navigation and header respect current theme
+- typecheck passes
+
+
+### IMP-019: Update Data Visualization for Theming
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Updated TradeTimeline.tsx with theme-aware chart colors and tooltip styles
+- Updated TradeNetwork.tsx with theme-aware visualization
+- Updated HallOfFame.tsx with theme-aware trophy SVG gradients
+- Updated Records.tsx with theme-aware medals and stat colors
+
+**Files Modified:**
+- `frontend/src/components/TradeTimeline.tsx` - Theme-aware charts
+- `frontend/src/components/TradeNetwork.tsx` - Theme-aware visualization
+- `frontend/src/pages/HallOfFame.tsx` - Theme-aware trophies and medals
+- `frontend/src/pages/Records.tsx` - Theme-aware records display
+
+**Acceptance Criteria Met:**
+- TradeTimeline.tsx chart colors come from theme (not hardcoded hex)
+- HallOfFame.tsx trophy SVG gradients are theme-aware
+- Records.tsx medal and stat colors use theme variables
+- TradeNetwork.tsx visualization respects theme
+- All pages render correctly in all 3 themes
+- typecheck passes
+
+
+### IMP-020: Theme Polish and Typography
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Added smooth 300ms transitions for all theme-related CSS properties
+- Added bolder typography for ESPN retro theme (uppercase headers, extra bold stats)
+- Created visual indicator showing current theme on toggle button
+- Fixed flash of wrong theme on page load with inline blocking script in index.html
+
+**Files Modified:**
+- `frontend/src/index.css` - Theme transitions, ESPN retro typography styles
+- `frontend/src/App.tsx` - Enhanced theme toggle with visual indicator
+- `frontend/index.html` - Blocking theme script and initial background colors
+
+**Acceptance Criteria Met:**
+- Smooth transitions when switching themes (300ms)
+- ESPN retro theme has bolder typography feel where appropriate
+- Theme toggle has visual indicator showing current theme
+- No flash of wrong theme on page load
+- All 3 themes tested on all major pages
+- typecheck passes
+
+
+### IMP-021: Fix Yahoo Import Error Handling
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Added Python logging throughout Yahoo API routes
+- Added validate_league_key() function to check league key format
+- Updated /api/yahoo/import endpoint with specific error handling for invalid keys, API errors, auth errors, database errors
+- All errors now include actionable messages for the user
+
+**Files Modified:**
+- `backend/app/api/yahoo.py` - Added logging, validate_league_key(), improved error handling
+
+**Acceptance Criteria Met:**
+- Generic exceptions no longer hide debugging info
+- League key validation prevents wasted API calls for malformed keys
+- SQLAlchemy errors trigger explicit rollback
+- typecheck passes
+
+
+### IMP-022: Fix Owners Tab Championships Display
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Verified backend calculate_owner_stats() already uses Season.champion_team_id correctly
+- Fixed broken unit tests that expected championships from final_rank=1 instead of champion_team_id
+- Both Owners API and Hall of Fame API now use the same data source for consistency
+
+**Files Modified:**
+- `backend/tests/test_history.py` - Fixed 2 tests to use champion_team_id instead of final_rank
+
+**Acceptance Criteria Met:**
+- Championships count on Owners tab matches Hall of Fame tab
+- Use same data source (Season.champion_team_id) as Hall of Fame for consistency
+- Owner profile cards show correct championship trophy count
+- typecheck passes
+
+
+### IMP-023: Track 2nd and 3rd Place Finishes
+**Completed:** 2026-01-08
+
+**Implementation:**
+- Added third_place_team_id field to Season model
+- Updated calculate_owner_stats() to include runner_up_finishes and third_place_finishes counts
+- Updated OwnerWithStats and CareerStats Pydantic models with new fields
+- Added PlacementCount model and runner_up_leaderboard/third_place_leaderboard to Hall of Fame API
+- Added PlacementRecord model and placement records to Records API
+- Updated frontend types and components to display podium stats
+
+**Files Modified:**
+- `backend/app/db/models.py` - Added third_place_team_id to Season
+- `backend/app/api/history.py` - Updated calculate_owner_stats and Pydantic models
+- `backend/app/api/hall_of_fame.py` - Added PlacementCount, leaderboards
+- `backend/app/api/records.py` - Added PlacementRecord, get_placement_records
+- `backend/tests/test_history.py` - Added TestPodiumFinishes test class
+- `frontend/src/types/owner.ts` - Added runner_up_finishes, third_place_finishes
+- `frontend/src/components/OwnerProfileCard.tsx` - Podium stats display
+- `frontend/src/pages/HallOfFame.tsx` - Runner-up/third-place leaderboards
+- `frontend/src/pages/Records.tsx` - Placement record cards
+
+**Acceptance Criteria Met:**
+- Season model has third_place_team_id field
+- Owner stats include runner_up_finishes and third_place_finishes counts
+- Hall of Fame shows runner-up leaderboard (silver medals)
+- Hall of Fame shows 3rd place leaderboard (bronze medals)
+- Owner profile cards display 2nd/3rd place trophy counts
+- Records page shows Most Runner-Up Finishes and Most Third Place Finishes
+- typecheck passes
+
+**Tests:** 207 backend tests passing, frontend builds and lint passes

@@ -204,10 +204,11 @@ const RankMedal = ({ rank, colors }: { rank: number; colors?: ReturnType<typeof 
 
   return (
     <span
-      className="inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-lg shadow-lg ring-2"
+      className="inline-flex items-center justify-center w-10 h-10 font-bold text-lg shadow-lg ring-2"
       style={{
         background: style.background,
         color: style.color,
+        borderRadius: '2px',
         ['--tw-ring-color' as string]: style.ring,
       }}
     >
@@ -260,28 +261,32 @@ const ChampionAvatar = ({ name, avatarUrl, size = "md" }: { name: string; avatar
 const ChampionCard = ({ champion, isFirst, index }: { champion: ChampionSeason; isFirst: boolean; index: number }) => {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl hover-lift animate-card-entrance ${
-        isFirst
-          ? 'bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-orange-500/20 ring-2 ring-yellow-500/50'
-          : 'bg-slate-800/80'
-      }`}
-      style={{ animationDelay: `${index * 0.1}s` }}
+      className="relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover-lift animate-card-entrance"
+      style={{
+        animationDelay: `${index * 0.1}s`,
+        borderRadius: '2px',
+        background: isFirst
+          ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(139, 0, 0, 0.3) 100%)'
+          : 'var(--bg-secondary)',
+        border: isFirst ? '2px solid var(--trophy-gold)' : '1px solid rgba(255,255,255,0.1)',
+      }}
     >
       {/* Decorative corner */}
       <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
-        <div className={`absolute -top-8 -right-8 w-16 h-16 transform rotate-45 ${
-          isFirst ? 'bg-yellow-500' : 'bg-slate-700'
-        }`} />
+        <div
+          className="absolute -top-8 -right-8 w-16 h-16 transform rotate-45"
+          style={{ background: isFirst ? 'var(--trophy-gold)' : 'var(--bg-tertiary)' }}
+        />
         <TrophyIcon className="absolute top-1 right-1 w-5 h-5 text-white" />
       </div>
 
       <div className="p-5">
         {/* Year header */}
         <div className="flex items-center gap-3 mb-4">
-          <span className={`text-3xl font-bold ${isFirst ? 'text-yellow-400' : 'text-slate-300'}`}>
+          <span className="text-3xl font-bold espn-stat-value" style={{ color: isFirst ? 'var(--trophy-gold)' : 'var(--text-secondary)' }}>
             {champion.year}
           </span>
-          <span className="text-slate-500 text-sm">
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
             {champion.league_name}
           </span>
         </div>
@@ -295,25 +300,25 @@ const ChampionCard = ({ champion, isFirst, index }: { champion: ChampionSeason; 
           />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <CrownIcon className="w-5 h-5 text-yellow-500" />
-              <span className="text-xl font-bold text-white">
+              <CrownIcon className="w-5 h-5" style={{ color: 'var(--trophy-gold)' }} />
+              <span className="text-xl font-bold espn-team-name" style={{ color: 'var(--text-primary)' }}>
                 {champion.champion.display_name || champion.champion.name}
               </span>
             </div>
-            <div className="text-slate-400 text-sm mb-1">{champion.team_name}</div>
+            <div className="text-sm mb-1" style={{ color: 'var(--text-secondary)' }}>{champion.team_name}</div>
             <div className="flex items-center gap-3 text-sm">
-              <span className="text-green-400 font-semibold">{champion.record}</span>
-              <span className="text-slate-500">|</span>
-              <span className="text-blue-400">{champion.points_for.toFixed(1)} pts</span>
+              <span className="font-semibold" style={{ color: 'var(--success)' }}>{champion.record}</span>
+              <span style={{ color: 'var(--text-muted)' }}>|</span>
+              <span className="espn-stat-value" style={{ color: 'var(--trophy-gold)' }}>{champion.points_for.toFixed(1)} pts</span>
             </div>
           </div>
         </div>
 
         {/* Runner-up */}
         {champion.runner_up && (
-          <div className="mt-4 pt-4 border-t border-slate-700/50">
-            <div className="flex items-center gap-2 text-slate-400 text-sm">
-              <span className="text-slate-500">Runner-up:</span>
+          <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Runner-up:</span>
               <ChampionAvatar
                 name={champion.runner_up.display_name || champion.runner_up.name}
                 avatarUrl={champion.runner_up.avatar_url}

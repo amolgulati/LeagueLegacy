@@ -584,6 +584,8 @@ List all owners with their career statistics.
     "seasons_played": 8,
     "playoff_appearances": 6,
     "championships": 2,
+    "runner_up_finishes": 1,
+    "third_place_finishes": 2,
     "win_percentage": 66.41
   }
 ]
@@ -610,6 +612,8 @@ Get full history for a specific owner.
     "seasons_played": 8,
     "playoff_appearances": 6,
     "championships": 2,
+    "runner_up_finishes": 1,
+    "third_place_finishes": 2,
     "win_percentage": 66.41,
     "matchups_won": 85,
     "matchups_lost": 42,
@@ -835,6 +839,18 @@ Get all league records.
     "owner_name": "Bob Johnson",
     "year": 2023
   },
+  "most_runner_up_finishes": {
+    "owner_id": 2,
+    "owner_name": "Jane Smith",
+    "count": 3,
+    "years": [2024, 2022, 2019]
+  },
+  "most_third_place_finishes": {
+    "owner_id": 4,
+    "owner_name": "Alice Williams",
+    "count": 2,
+    "years": [2023, 2021]
+  },
   "top_weekly_scores": [...],
   "top_season_points": [...],
   "top_win_streaks": [...]
@@ -883,6 +899,20 @@ Get complete Hall of Fame data.
       "championships": 3,
       "years": [2024, 2022, 2020],
       "leagues": ["My League"]
+    }
+  ],
+  "runner_up_leaderboard": [
+    {
+      "owner": {"id": 2, "name": "Jane Smith"},
+      "count": 2,
+      "years": [2024, 2022]
+    }
+  ],
+  "third_place_leaderboard": [
+    {
+      "owner": {"id": 3, "name": "Bob Johnson"},
+      "count": 2,
+      "years": [2023, 2021]
     }
   ],
   "dynasties": [

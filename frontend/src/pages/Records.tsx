@@ -123,10 +123,11 @@ const RankMedal = ({ rank, colors }: { rank: number; colors: ReturnType<typeof g
 
   return (
     <span
-      className="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm"
+      className="inline-flex items-center justify-center w-8 h-8 font-bold text-sm"
       style={{
         background: style.background,
         color: style.color,
+        borderRadius: '2px',
       }}
     >
       {rank}
@@ -153,18 +154,18 @@ const RecordCard = ({
   color: string; // Now accepts actual color value
 }) => {
   return (
-    <div className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-      <div className="p-4" style={{ background: `linear-gradient(to right, ${color}, ${adjustColor(color, -20)})` }}>
+    <div className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow" style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '2px' }}>
+      <div className="p-4" style={{ background: `linear-gradient(to right, ${color}, ${adjustColor(color, -20)})`, borderBottom: '3px solid var(--border-primary)' }}>
         <div className="flex items-center gap-3">
-          <div className="rounded-lg p-2" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
+          <div className="p-2" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '2px' }}>
             {icon}
           </div>
-          <h3 className="text-white font-bold text-lg">{title}</h3>
+          <h3 className="text-white font-bold text-lg espn-team-name">{title}</h3>
         </div>
       </div>
-      <div className="p-5">
-        <div className="text-4xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{value}</div>
-        <div className="text-xl font-semibold" style={{ color: 'var(--text-secondary)' }}>{ownerName}</div>
+      <div className="p-5" style={{ background: 'linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%)' }}>
+        <div className="text-4xl font-bold mb-2 espn-stat-value" style={{ color: 'var(--trophy-gold)' }}>{value}</div>
+        <div className="text-xl font-semibold espn-team-name" style={{ color: 'var(--text-primary)' }}>{ownerName}</div>
         <div className="flex items-center gap-2 mt-2">
           <span style={{ color: 'var(--text-secondary)' }}>{year}</span>
           {subtitle && <span style={{ color: 'var(--text-muted)' }}>• {subtitle}</span>}
@@ -191,18 +192,18 @@ const PlacementRecordCard = ({
   color: string;
 }) => {
   return (
-    <div className="rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-      <div className="p-4" style={{ background: `linear-gradient(to right, ${color}, ${adjustColor(color, -20)})` }}>
+    <div className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow" style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '2px' }}>
+      <div className="p-4" style={{ background: `linear-gradient(to right, ${color}, ${adjustColor(color, -20)})`, borderBottom: '3px solid var(--border-primary)' }}>
         <div className="flex items-center gap-3">
-          <div className="rounded-lg p-2" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}>
+          <div className="p-2" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '2px' }}>
             {icon}
           </div>
-          <h3 className="text-white font-bold text-lg">{title}</h3>
+          <h3 className="text-white font-bold text-lg espn-team-name">{title}</h3>
         </div>
       </div>
-      <div className="p-5">
-        <div className="text-4xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>{count}x</div>
-        <div className="text-xl font-semibold" style={{ color: 'var(--text-secondary)' }}>{ownerName}</div>
+      <div className="p-5" style={{ background: 'linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%)' }}>
+        <div className="text-4xl font-bold mb-2 espn-stat-value" style={{ color: color }}>{count}x</div>
+        <div className="text-xl font-semibold espn-team-name" style={{ color: 'var(--text-primary)' }}>{ownerName}</div>
         <div className="flex items-center gap-2 mt-2 flex-wrap">
           <span style={{ color: 'var(--text-muted)' }}>Years: {years.slice(0, 5).join(', ')}{years.length > 5 ? '...' : ''}</span>
         </div>
@@ -230,18 +231,18 @@ const LeaderboardTable = ({
   colors: ReturnType<typeof getRecordColors>;
 }) => {
   return (
-    <div className="rounded-xl overflow-hidden shadow-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-      <div className="p-4 flex items-center gap-3" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+    <div className="overflow-hidden shadow-lg" style={{ backgroundColor: 'var(--bg-secondary)', borderRadius: '2px' }}>
+      <div className="p-4 flex items-center gap-3" style={{ backgroundColor: 'var(--bg-primary)', borderBottom: '3px solid var(--border-primary)' }}>
         <div style={{ color: colors.chart1 }}>{icon}</div>
-        <h3 className="font-bold text-lg" style={{ color: 'var(--text-primary)' }}>{title}</h3>
+        <h3 className="font-bold text-lg espn-team-name" style={{ color: 'var(--text-primary)' }}>{title}</h3>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full espn-table">
           <thead>
-            <tr style={{ borderBottomWidth: '1px', borderColor: 'var(--border-primary)' }}>
-              <th className="px-4 py-3 text-left text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Rank</th>
+            <tr style={{ borderBottom: '3px solid var(--border-primary)', backgroundColor: 'var(--bg-primary)' }}>
+              <th className="px-4 py-3 text-left text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Rank</th>
               {columns.map((col) => (
-                <th key={col.key} className="px-4 py-3 text-left text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                <th key={col.key} className="px-4 py-3 text-left text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
                   {col.label}
                 </th>
               ))}
@@ -253,12 +254,15 @@ const LeaderboardTable = ({
                 key={index}
                 className="transition-colors"
                 style={{
-                  borderBottomWidth: '1px',
-                  borderColor: 'var(--border-primary)',
+                  borderBottom: '1px solid rgba(255,255,255,0.1)',
                   backgroundColor: index < 3 ? 'var(--bg-tertiary)' : 'transparent',
+                  ...(index === 0 ? {
+                    background: 'linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, transparent 100%)',
+                    borderLeft: '4px solid var(--trophy-gold)'
+                  } : {})
                 }}
               >
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 rank-cell">
                   <RankMedal rank={index + 1} colors={colors} />
                 </td>
                 {columns.map((col) => (

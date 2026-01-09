@@ -138,36 +138,46 @@ export function Owners() {
         </div>
       ) : (
         /* List View (Table) */
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+          <table className="w-full espn-table">
             <thead>
-              <tr className="border-b border-slate-700">
-                <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Rank</th>
-                <th className="text-left py-3 px-4 text-slate-400 font-medium text-sm">Owner</th>
-                <th className="text-center py-3 px-4 text-slate-400 font-medium text-sm">Record</th>
-                <th className="text-center py-3 px-4 text-slate-400 font-medium text-sm hidden sm:table-cell">Win %</th>
-                <th className="text-center py-3 px-4 text-slate-400 font-medium text-sm hidden md:table-cell">Playoffs</th>
-                <th className="text-center py-3 px-4 text-slate-400 font-medium text-sm">Titles</th>
+              <tr style={{ borderBottom: '3px solid var(--border-primary)' }}>
+                <th className="text-left py-3 px-4 font-medium text-sm" style={{ color: 'var(--text-muted)' }}>Rank</th>
+                <th className="text-left py-3 px-4 font-medium text-sm" style={{ color: 'var(--text-muted)' }}>Owner</th>
+                <th className="text-center py-3 px-4 font-medium text-sm" style={{ color: 'var(--text-muted)' }}>Record</th>
+                <th className="text-center py-3 px-4 font-medium text-sm hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>Win %</th>
+                <th className="text-center py-3 px-4 font-medium text-sm hidden md:table-cell" style={{ color: 'var(--text-muted)' }}>Playoffs</th>
+                <th className="text-center py-3 px-4 font-medium text-sm" style={{ color: 'var(--text-muted)' }}>Titles</th>
               </tr>
             </thead>
             <tbody>
               {owners.map((owner, index) => (
                 <tr
                   key={owner.id}
-                  className="border-b border-slate-700/50 hover:bg-slate-700/30 transition-colors"
+                  className={`transition-colors ${owner.championships > 0 ? 'champion-row' : ''}`}
+                  style={{
+                    borderBottom: '1px solid rgba(255,255,255,0.1)',
+                    ...(owner.championships > 0 ? {
+                      background: 'linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, transparent 100%)',
+                      borderLeft: '4px solid var(--trophy-gold)'
+                    } : {})
+                  }}
                 >
-                  <td className="py-4 px-4">
-                    <span className={`
-                      inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold
-                      ${index === 0 ? 'bg-yellow-500/20 text-yellow-400' :
-                        index === 1 ? 'bg-slate-400/20 text-slate-300' :
-                        index === 2 ? 'bg-orange-500/20 text-orange-400' :
-                        'bg-slate-700 text-slate-400'}
-                    `}>
+                  <td className="py-4 px-4 rank-cell">
+                    <span
+                      className="inline-flex items-center justify-center w-8 h-8 text-sm font-bold"
+                      style={{
+                        borderRadius: '2px',
+                        ...(index === 0 ? { backgroundColor: 'rgba(255, 215, 0, 0.2)', color: 'var(--trophy-gold)' } :
+                          index === 1 ? { backgroundColor: 'rgba(192, 192, 192, 0.2)', color: 'var(--trophy-silver)' } :
+                          index === 2 ? { backgroundColor: 'rgba(205, 127, 50, 0.2)', color: 'var(--trophy-bronze)' } :
+                          { backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-secondary)' })
+                      }}
+                    >
                       {index + 1}
                     </span>
                   </td>
-                  <td className="py-4 px-4">
+                  <td className="py-4 px-4 owner-cell">
                     <div className="flex items-center gap-3">
                       {owner.avatar_url ? (
                         <img
@@ -180,29 +190,29 @@ export function Owners() {
                           {(owner.display_name || owner.name).charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <span className="font-medium text-white">{owner.display_name || owner.name}</span>
+                      <span className="font-medium espn-team-name" style={{ color: 'var(--text-primary)' }}>{owner.display_name || owner.name}</span>
                     </div>
                   </td>
-                  <td className="py-4 px-4 text-center text-white font-mono">
+                  <td className="py-4 px-4 text-center points-cell" style={{ color: 'var(--text-primary)' }}>
                     {owner.total_wins}-{owner.total_losses}
                     {owner.total_ties > 0 && `-${owner.total_ties}`}
                   </td>
-                  <td className="py-4 px-4 text-center text-slate-300 hidden sm:table-cell">
+                  <td className="py-4 px-4 text-center hidden sm:table-cell" style={{ color: 'var(--text-secondary)' }}>
                     {owner.win_percentage.toFixed(1)}%
                   </td>
-                  <td className="py-4 px-4 text-center text-slate-300 hidden md:table-cell">
+                  <td className="py-4 px-4 text-center hidden md:table-cell" style={{ color: 'var(--text-secondary)' }}>
                     {owner.playoff_appearances}
                   </td>
                   <td className="py-4 px-4 text-center">
                     {owner.championships > 0 ? (
-                      <span className="inline-flex items-center gap-1 text-yellow-400 font-bold">
+                      <span className="inline-flex items-center gap-1 font-bold" style={{ color: 'var(--trophy-gold)' }}>
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 2a1 1 0 00-1 1v1H6a1 1 0 00-1 1v3a3 3 0 003 3h.17A5.986 5.986 0 0110 12.17V15H8a1 1 0 000 2h4a1 1 0 000-2h-2v-2.83A5.986 5.986 0 0011.83 11H12a3 3 0 003-3V5a1 1 0 00-1-1h-3V3a1 1 0 00-1-1zM7 5h6v3a1 1 0 01-1 1H8a1 1 0 01-1-1V5z" clipRule="evenodd" />
                         </svg>
                         {owner.championships}
                       </span>
                     ) : (
-                      <span className="text-slate-500">-</span>
+                      <span style={{ color: 'var(--text-muted)' }}>-</span>
                     )}
                   </td>
                 </tr>
